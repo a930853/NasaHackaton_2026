@@ -178,7 +178,7 @@ Godot → Node:
 ```
 Motivos de rechazo definidos por Godot: `event_closed`, `not_eligible`, `invalid_option`, `already_decided`. Node valida el mensaje, pero no entrega este resultado al mando.
 
-Un `actionId` repetido debe recibir **la misma respuesta** que la primera vez, sin repetir efectos (lo garantiza Godot, ver [godot.md](godot.md#validar-un-choose)).
+Un `actionId` repetido debe recibir **la misma respuesta** que la primera vez, sin repetir efectos (lo garantiza Godot, ver [godot/red.md](godot/red.md#validar-un-choose)).
 
 ### `resume_player`
 Mando → Node. Recupera una sesión tras una desconexión (recarga, cambio de red, pantalla bloqueada).

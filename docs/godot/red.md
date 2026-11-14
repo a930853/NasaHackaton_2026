@@ -1,6 +1,6 @@
-# Guía de implementación en Godot
+# Red en Godot: conexión con el backend y los móviles
 
-Cómo conectar `game/` con el backend siguiendo el [contrato de mensajes](protocol.md). Los fragmentos son una propuesta de punto de partida (GDScript, Godot 4.x); adaptadlos al estilo del proyecto.
+Cómo conectar `game/` con el backend siguiendo el [contrato de mensajes](../protocol.md). La organización del resto del juego (gestores, máquina de estados, `events.json`) está en [arquitectura.md](arquitectura.md). Los fragmentos son una propuesta de punto de partida (GDScript, Godot 4.x); adaptadlos al estilo del proyecto.
 
 ## Qué le toca a Godot
 
