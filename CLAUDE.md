@@ -25,14 +25,17 @@ backend/
   src/protocol.js  Tipos de mensaje y validación de entrada
   package.json
   Dockerfile
-deploy/nginx.conf  Sirve estáticos y hace proxy de /ws y /api al backend
+deploy/web.Dockerfile     Imagen web: compila el mando y copia landing/ y dist/<GAME_EXPORT>/
+deploy/nginx/default.conf HTTPS para todo (Godot web lo exige), estáticos y proxy de /ws y /api
+deploy/nginx/15-cert.sh   Certificado autofirmado al arrancar (volumen `certs`)
 scripts/dev.mjs    `npm run dev`: arranca backend y mando con puertos libres y log de mensajes
 dist/game/         Exportación web de Godot (generada)
 dist/game_debug/   Exportación web de game_debug (generada, se versiona)
 dist/controller/   Build del mando (generado, no se versiona)
-compose.yaml       Servicios `web` (Nginx) y `backend` (Node)
+compose.yaml       Servicios `web` (Nginx) y `backend` (Node). Producción: sirve dist/game
+compose.dev.yaml   Solo cambia GAME_EXPORT=game_debug y LOG_MESSAGES=1
 docs/protocol.md   Contrato de mensajes: FUENTE DE VERDAD compartida
-docs/controller.md, docs/backend.md   Guías por componente
+docs/controller.md, docs/backend.md, docs/deploy.md   Guías por componente
 docs/godot/        arquitectura.md (gestores, FSM, events.json) y red.md (autoload Net)
 docs/juego/        diseno.md (reglas y decisiones pendientes) y eventos.md (catálogo)
 game/Data/events.json  Cifras de eventos y reglas: fuente de verdad del diseño numérico
@@ -91,11 +94,12 @@ cd controller && npm install && npm run dev   # http://localhost:5173/controller
 cd controller && npm test                     # store contra el backend real
 cd controller && npm run build                # → dist/controller/
 
-# Todo con Docker (tras exportar Godot a dist/game/)
-docker compose up --build
+# Todo con Docker, por HTTPS (antes exportar a web el proyecto de Godot que se sirve)
+npm run docker:dev                            # sirve dist/game_debug, con log de mensajes
+npm run docker:prod                           # sirve dist/game
 ```
 
-Exportar Godot: abrir `game/project.godot` → Proyecto → Exportar → preset **Web** (apunta a `../dist/game/index.html`). `thread_support=false`, así que no hacen falta cabeceras COOP/COEP.
+Exportar Godot: abrir `game/project.godot` → Proyecto → Exportar → preset **Web** (apunta a `../dist/game/index.html`). `thread_support=false`, así que no hacen falta cabeceras COOP/COEP. Godot 4 web sí exige contexto seguro (HTTPS o localhost): por eso Nginx sirve todo por HTTPS.
 
 En Windows, Hyper-V/WSL pueden reservar el puerto 3000 (`listen EACCES`). Comprobar con `netsh interface ipv4 show excludedportrange protocol=tcp` y usar otro puerto (`PORT` en el backend, `BACKEND_PORT` en el mando).
 

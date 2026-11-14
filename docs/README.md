@@ -8,7 +8,8 @@
 | Programar la lógica del juego en Godot | [godot/arquitectura.md](godot/arquitectura.md) |
 | Conectar Godot con los móviles | [protocol.md](protocol.md) → [godot/red.md](godot/red.md) |
 | Tocar el mando web | [protocol.md](protocol.md) → [controller.md](controller.md) |
-| Tocar el backend o el despliegue | [protocol.md](protocol.md) → [backend.md](backend.md) |
+| Tocar el backend | [protocol.md](protocol.md) → [backend.md](backend.md) |
+| Desplegar con Docker | [deploy.md](deploy.md) |
 
 ## Documentos
 
@@ -17,6 +18,7 @@ docs/
   protocol.md          Contrato de mensajes entre Godot, mandos y backend. FUENTE DE VERDAD de la red.
   backend.md           Servidor Node: estructura, modelo de sala, reconexión, log de mensajes
   controller.md        Mando web (Vue): rutas de rol y NFC, estados, recuperación de sesión, estilos
+  deploy.md            Docker Compose, HTTPS en Nginx, desarrollo frente a producción
   juego/
     diseno.md          Reglas: bucle de un Sol, roles, recursos, objetivos, APIs y decisiones pendientes
     eventos.md         Catálogo de eventos con sus opciones, efectos y fuentes de la NASA

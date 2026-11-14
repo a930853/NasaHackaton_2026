@@ -9,7 +9,7 @@ Juego cooperativo por salas para el NASA Hackathon 2026. Una **pantalla principa
 ```text
  Pantalla (Godot, web) ──┐
                          ├── WebSocket /ws ──► Backend Node ◄── Mandos (móviles)
- Mandos (HTML/JS) ───────┘        (Nginx hace de proxy y sirve los archivos)
+ Mandos (HTML/JS) ───────┘        (Nginx sirve los archivos, cifra con HTTPS y hace de proxy)
 ```
 
 ## Estructura
@@ -20,14 +20,14 @@ Juego cooperativo por salas para el NASA Hackathon 2026. Una **pantalla principa
 | [`game_debug/`](game_debug/) | Proyecto Godot aparte para probar la conexión con información de depuración | En desarrollo |
 | [`backend/`](backend/) | Servidor Node (Express + `ws`) | Implementado, con tests |
 | [`controller/`](controller/) | Mando web (Vue 3 + Vite + Tailwind) | Implementado, con tests |
-| `landing/` | Página de inicio `/` | Pendiente |
-| `deploy/` | Configuración de Nginx | Pendiente |
+| [`landing/`](landing/) | Página de inicio `/` | Provisional |
+| [`deploy/`](deploy/) | Imagen de Nginx (HTTPS y proxy) | Implementado |
 | [`scripts/`](scripts/) | `npm run dev` (backend + mando) | Herramientas de desarrollo |
 | `dist/game/` | Exportación web de Godot | Se genera al exportar |
-| `dist/game_debug/` | Exportación web de `game_debug` | Se genera al exportar |
+| `dist/game_debug/` | Exportación web de `game_debug` | Se genera al exportar (se versiona) |
 | `dist/controller/` | Build del mando | Se genera con `npm run build` (no se versiona) |
 | [`docs/`](docs/) | Documentación | Ver abajo |
-| `compose.yaml` | Nginx + backend | Pendiente |
+| `compose.yaml`, `compose.dev.yaml` | Nginx + backend (producción y desarrollo) | Implementado |
 
 ## Documentación
 
@@ -41,7 +41,8 @@ Juego cooperativo por salas para el NASA Hackathon 2026. Una **pantalla principa
 | [`docs/godot/arquitectura.md`](docs/godot/arquitectura.md) | Equipo Godot | Gestores, máquina de estados del Sol, modelos y formato de `events.json`. |
 | [`docs/godot/red.md`](docs/godot/red.md) | Equipo Godot | Cómo implementar el contrato: autoload `Net`, lobby, QR, eventos, idempotencia y votaciones. |
 | [`docs/controller.md`](docs/controller.md) | Mando web | Arquitectura Vue, rutas de rol (NFC), estados, recuperación de sesión, estilos y despliegue. |
-| [`docs/backend.md`](docs/backend.md) | Backend / despliegue | Tecnologías, estructura, modelo de sala, reconexión y límites del MVP. |
+| [`docs/backend.md`](docs/backend.md) | Backend | Tecnologías, estructura, modelo de sala, reconexión y límites del MVP. |
+| [`docs/deploy.md`](docs/deploy.md) | Despliegue | Docker Compose, HTTPS en Nginx, desarrollo frente a producción y problemas habituales. |
 | [`CLAUDE.md`](CLAUDE.md) | Claude Code | Contexto y convenciones del proyecto para el asistente. |
 
 ## Empezar
@@ -86,13 +87,14 @@ cd controller && npm run dev    # :5173/controller/ (BACKEND_PORT=<puerto del ba
 
 Abrir `game/project.godot` con Godot 4.7. Para exportar: **Proyecto → Exportar → Web** (genera `dist/game/index.html`).
 
-### Todo junto (cuando exista `compose.yaml`)
+### Todo junto con Docker
 
 ```bash
-docker compose up --build
+npm run docker:dev     # sirve game_debug (exportad antes game_debug a web)
+npm run docker:prod    # sirve game (exportad antes game a web)
 ```
 
-Para que el QR funcione, la pantalla debe abrirse con la **IP de la LAN** (p. ej. `http://192.168.1.50`), no con `localhost`.
+Todo va por **HTTPS** (Godot no arranca en web sin él) con un certificado autofirmado: la primera vez cada navegador avisa y hay que aceptarlo. La pantalla se abre con la **IP de la LAN** (`https://192.168.1.50/game/`), no con `localhost`, para que los móviles puedan usar la dirección que enseña. Detalles: [`docs/deploy.md`](docs/deploy.md).
 
 ## Rutas
 
