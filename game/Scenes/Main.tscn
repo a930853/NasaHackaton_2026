@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bs6yxoxmdolrs" path="res://Scripts/main.gd" id="1_idj7w"]
 [ext_resource type="Script" uid="uid://bm83gh6ysyu4q" path="res://Scripts/sfx.gd" id="2_idj7w"]
+[ext_resource type="Script" path="res://Scripts/nasa_api.gd" id="3_nasaapi"]
 [ext_resource type="AudioStream" uid="uid://cwul86wmfs4q4" path="res://Sound/Soundtrack/Chill_Space2026.mp3" id="2_kln2b"]
 
 [node name="Main" type="Node" unique_id=831378100]
@@ -12,6 +13,7 @@ script = ExtResource("1_idj7w")
 [node name="ServidoresMoviles" type="Node" parent="SistemasGlobales" unique_id=1255304508]
 
 [node name="NasaApi" type="HTTPRequest" parent="SistemasGlobales" unique_id=1803634509]
+script = ExtResource("3_nasaapi")
 
 [node name="Musica_Ambiente" type="AudioStreamPlayer2D" parent="SistemasGlobales" unique_id=1373564122]
 stream = ExtResource("2_kln2b")

@@ -2,9 +2,10 @@ extends Node
 
 const SCENES: Dictionary = {
 	"menu": preload("res://Scenes/Main_menu.tscn"),
+	"intro": preload("res://Scenes/Intro.tscn"),
 	"gameplay": preload("res://Scenes/Gameplay.tscn")
 }
-const FADE_DURATION := 1
+const FADE_DURATION := 0.4
 
 @onready var scene_container: Node = $ContenedorEscena
 @onready var fade_rect: ColorRect = $CapaTransicion/FundidoNegro

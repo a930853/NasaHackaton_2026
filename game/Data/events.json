@@ -1,0 +1,615 @@
+{
+  "version": 1,
+  "rules": {
+    "max_sols": 30,
+    "passive_oxygen_loss": 5,
+    "max_pending_events": 2,
+    "bars": ["energy", "oxygen", "integrity", "health"],
+    "role_fallback": "Una opcion con role solo se ofrece si ese rol esta presente. Todo evento tiene al menos una opcion con role null."
+  },
+
+  "objectives": {
+    "sensors": {
+      "title": "Red de Sensores Sismicos (Mision InSight)",
+      "target": 3,
+      "deadline_sol": 20,
+      "reward": { "early_warning_sols": 1 }
+    },
+    "moxie": {
+      "title": "Generador de oxigeno MOXIE",
+      "progress_max": 100,
+      "reward": { "passive_oxygen_loss": 0 }
+    }
+  },
+
+  "earth_help": {
+    "max_requests_per_sol": 1,
+    "delay_sols_min": 2,
+    "delay_sols_max": 3,
+    "mode": "discard_option",
+    "while_waiting": "event_keeps_applying_decay"
+  },
+
+  "events": [
+    {
+      "id": "solar-storm",
+      "category": "random",
+      "nasa_source": "NASA DONKI - Eyeccion de Masa Coronal (CME)",
+      "title": "Tormenta de Radiacion Solar",
+      "description": "Los sensores detectan una CME acercandose a Marte. Hay que proteger a la tripulacion antes de que llegue la radiacion.",
+      "real_fact": null,
+      "mode": "vote",
+      "persistent": false,
+      "condition": null,
+      "earth_discard": "ignore",
+      "options": [
+        {
+          "id": "shields",
+          "label": "Activar escudos magneticos",
+          "role": null,
+          "nfc_tool": "NFC_SHIELD",
+          "effects": { "energy": -20 },
+          "feedback": "Los escudos desviaron la radiacion, pero consumieron mucha bateria."
+        },
+        {
+          "id": "reroute-power",
+          "label": "Redirigir energia de los laboratorios",
+          "role": "engineer",
+          "nfc_tool": null,
+          "effects": { "energy": -5, "integrity": -5 },
+          "feedback": "El Ingeniero optimizo los escudos con poca bateria, a costa de algo de desgaste."
+        },
+        {
+          "id": "ignore",
+          "label": "Mantener los experimentos activos",
+          "role": null,
+          "nfc_tool": null,
+          "effects": { "energy": 5, "integrity": -20, "health": -10 },
+          "feedback": "Ahorrasteis energia, pero la radiacion danio los sistemas exteriores y a la tripulacion."
+        }
+      ]
+    },
+
+    {
+      "id": "greenhouse-dilemma",
+      "category": "random",
+      "nasa_source": "Mision Curiosity - Analisis de suelo en Crater Gale (minerales y arcillas)",
+      "title": "El Dilema del Invernadero",
+      "description": "Las raciones se acaban y todos tienen hambre. La Biologa cultiva patatas marcianas con probioticos en suelo del Crater Gale, pero los brotes aun son diminutos. Comemos ya o esperamos?",
+      "real_fact": null,
+      "mode": "vote",
+      "persistent": false,
+      "condition": null,
+      "earth_discard": "eat-now",
+      "options": [
+        {
+          "id": "eat-now",
+          "label": "Comerse los brotes ya",
+          "role": null,
+          "nfc_tool": null,
+          "effects": { "health": 15, "oxygen": -10 },
+          "delayed_effects": [ { "after_sols": 1, "effects": { "oxygen": -10 } } ],
+          "feedback": "Que rico! Pero sin plantas, el aire de la base empieza a viciarse."
+        },
+        {
+          "id": "ration",
+          "label": "Esperar y racionar comida",
+          "role": "biologist",
+          "nfc_tool": null,
+          "effects": { "health": -10, "oxygen": 10 },
+          "delayed_effects": [ { "after_sols": 2, "effects": { "health": 10 } } ],
+          "feedback": "La Biologa protegio el cultivo. Las plantas crecen fuertes y purifican el aire!"
+        },
+        {
+          "id": "grow-lights",
+          "label": "Usar energia extra en luces de cultivo",
+          "role": "engineer",
+          "nfc_tool": null,
+          "effects": { "energy": -15, "oxygen": 10, "health": 10 },
+          "feedback": "El Ingeniero acelero la cosecha con luz artificial, aunque gasto mucha bateria."
+        }
+      ]
+    },
+
+    {
+      "id": "space-bellies",
+      "category": "random",
+      "nasa_source": "NASA OSDR - Estudio sobre radiacion y probioticos (Lacticaseibacillus rhamnosus GG), DOI 10.26030/y1ww-ep94",
+      "title": "Barrigas Espaciales",
+      "description": "La radiacion esta molestando a la tripulacion. Si no se cura hoy, manana sera peor: cada Sol sin resolver cuesta salud.",
+      "real_fact": "Un estudio de la NASA vio que la bacteria Lacticaseibacillus rhamnosus GG puede modular la respuesta del intestino humano a la radiacion espacial.",
+      "mode": "vote",
+      "persistent": true,
+      "decay": [ { "health": -5 }, { "health": -5 }, { "health": -10 } ],
+      "on_decay_end": "close",
+      "condition": null,
+      "earth_discard": "postpone",
+      "options": [
+        {
+          "id": "probiotic-shakes",
+          "label": "Preparar batidos con probioticos",
+          "role": "biologist",
+          "nfc_tool": null,
+          "effects": { "health": 20, "energy": -5, "oxygen": -5 },
+          "feedback": "Ciencia al rescate! Los probioticos protegieron los intestinos del equipo frente a la radiacion."
+        },
+        {
+          "id": "medkit",
+          "label": "Usar el botiquin de medicinas estandar",
+          "role": "doctor",
+          "nfc_tool": "NFC_MEDKIT",
+          "effects": { "health": 15, "integrity": -5 },
+          "feedback": "El Medico alivio los sintomas rapidamente usando las reservas del botiquin."
+        },
+        {
+          "id": "postpone",
+          "label": "Posponer",
+          "role": null,
+          "nfc_tool": null,
+          "effects": { "energy": 5 },
+          "defer": true,
+          "feedback": "Lo dejais para mas tarde: el equipo aguanta, pero manana estara peor."
+        }
+      ]
+    },
+
+    {
+      "id": "mental-fog",
+      "category": "random",
+      "nasa_source": "NASA OSDR - Efectos del vuelo espacial en el cerebro humano (organoides cerebrales), DOI 10.26030/twtb-sc40",
+      "title": "Niebla Mental y Aislamiento",
+      "description": "Llevais muchos Sols viendo solo rocas rojas. En la Tierra se ha estudiado que el aislamiento y el vuelo espacial afectan al cerebro. El equipo esta triste, despistado y discute por todo.",
+      "real_fact": "Los vuelos espaciales alteran programas moleculares del cerebro humano, segun estudios con organoides cerebrales.",
+      "mode": "vote",
+      "persistent": false,
+      "condition": { "min_sol": 5, "or_pending": "space-bellies" },
+      "earth_discard": "ignore",
+      "options": [
+        {
+          "id": "game-tournament",
+          "label": "Organizar un torneo de videojuegos y musica",
+          "role": "generalist",
+          "nfc_tool": null,
+          "effects": { "health": 20, "energy": -10 },
+          "feedback": "La Comandante subio la moral del equipo. Risas en Marte!"
+        },
+        {
+          "id": "memory-relax",
+          "label": "Hacer ejercicios de memoria y relajacion",
+          "role": "doctor",
+          "nfc_tool": null,
+          "effects": { "health": 15, "energy": -5 },
+          "feedback": "El Medico ayudo a entrenar vuestros cerebros contra el estres espacial."
+        },
+        {
+          "id": "ignore",
+          "label": "Ignorarlo y trabajar en silencio",
+          "role": null,
+          "nfc_tool": null,
+          "effects": { "health": -10 },
+          "delayed_effects": [ { "after_sols": 1, "effects": { "integrity": -5 } } ],
+          "feedback": "Al estar distraidos, alguien pulso un boton equivocado y danio un panel."
+        }
+      ]
+    },
+
+    {
+      "id": "rover-stuck",
+      "category": "random",
+      "nasa_source": "Curiosity Landing Site - Dunas de Rocknest",
+      "title": "Rover Atrapado en la Arena",
+      "description": "Vuestro pequenio robot explorador se ha quedado atascado en una duna cerca de Rocknest y ha perdido la senial. Tiene datos valiosos dentro.",
+      "real_fact": null,
+      "mode": "vote",
+      "persistent": false,
+      "condition": null,
+      "earth_discard": "abandon",
+      "options": [
+        {
+          "id": "remote-control",
+          "label": "Controlarlo por control remoto desde la base",
+          "role": "engineer",
+          "nfc_tool": null,
+          "effects": { "energy": -10, "oxygen": 15 },
+          "feedback": "El Ingeniero reprogramo las ruedas y lo libero a distancia. Traia muestras de hielo que dan aire."
+        },
+        {
+          "id": "eva-rescue",
+          "label": "Salir con trajes espaciales a rescatarlo",
+          "role": null,
+          "nfc_tool": null,
+          "effects": { "oxygen": -5, "health": -10, "energy": 10 },
+          "chance_effects": [ { "probability": 0.5, "effects": { "energy": 10 }, "feedback": "Ademas encontrasteis una roca especial!" } ],
+          "feedback": "Paseo espacial epico! Rescatasteis el robot y recogisteis rocas a mano."
+        },
+        {
+          "id": "abandon",
+          "label": "Abandonar el robot y ahorrar recursos",
+          "role": null,
+          "nfc_tool": null,
+          "effects": { "energy": 5, "integrity": -10 },
+          "feedback": "La base esta a salvo, pero perdimos un valioso explorador."
+        }
+      ]
+    },
+
+    {
+      "id": "dust-panels",
+      "category": "random",
+      "nasa_source": "Mision Opportunity y datos de tormentas de polvo marcianas",
+      "title": "Polvo en los paneles",
+      "description": "Una tormenta de polvo ha cubierto los paneles solares de la base. Producen cada vez menos electricidad y las baterias bajan. Si no haceis algo, manana habra aun menos luz.",
+      "real_fact": "Opportunity siguio funcionando anios porque el viento limpio sus paneles. Vosotros no podeis esperar al viento.",
+      "mode": "vote",
+      "persistent": false,
+      "condition": null,
+      "earth_discard": "ration-power",
+      "options": [
+        {
+          "id": "clean-panels",
+          "label": "Salir con trajes a limpiar los paneles",
+          "role": null,
+          "nfc_tool": null,
+          "effects": { "oxygen": -15, "health": -5, "energy": 20 },
+          "feedback": "Barristeis el polvo a mano. Costo aire, pero los paneles vuelven a brillar."
+        },
+        {
+          "id": "self-shake",
+          "label": "Reprogramar los paneles para que se sacudan solos",
+          "role": "engineer",
+          "nfc_tool": null,
+          "effects": { "energy": -10 },
+          "delayed_effects": [ { "after_sols": 1, "effects": { "energy": 15, "integrity": 5 } } ],
+          "feedback": "El Ingeniero los hizo vibrar para soltar el polvo. Gasta bateria hoy, pero ahorra trabajo manana."
+        },
+        {
+          "id": "ration-power",
+          "label": "Racionar la electricidad hasta que pase la tormenta",
+          "role": null,
+          "nfc_tool": null,
+          "effects": { "energy": 10, "health": -10, "integrity": -5 },
+          "feedback": "Sobrevivisteis con lo justo, pero hace frio en la base y las tuberias sufren."
+        }
+      ]
+    },
+
+    {
+      "id": "sensors-fabricate",
+      "category": "objective",
+      "objective": "sensors",
+      "nasa_source": "Mision InSight - sismometro SEIS (aterrizo en Marte en 2018)",
+      "title": "Fabricar los 3 sensores",
+      "description": "Para vigilar el suelo de Marte necesitais una red de tres sensores sismicos. Son delicados: un solo golpe y dejan de funcionar. Hay que decidir como construirlos todos antes de salir.",
+      "real_fact": "InSight escucho mas de 1.300 terremotos marcianos durante su mision.",
+      "mode": "vote",
+      "persistent": false,
+      "condition": { "objective_active": "sensors", "max_sol": 17 },
+      "earth_discard": "duct-tape",
+      "options": [
+        {
+          "id": "print-3d",
+          "label": "Imprimirlos con la impresora 3D",
+          "role": "engineer",
+          "nfc_tool": null,
+          "effects": { "energy": -25 },
+          "progress": { "sensors_fabricated": 3 },
+          "feedback": "El Ingeniero imprimio los tres sensores pieza a pieza. Funcionan perfecto."
+        },
+        {
+          "id": "recycle-rover",
+          "label": "Reciclar piezas del rover viejo",
+          "role": null,
+          "nfc_tool": null,
+          "effects": { "integrity": -10, "energy": -5 },
+          "progress": { "sensors_fabricated": 3 },
+          "feedback": "Desmontasteis el rover viejo. Sensores listos, aunque la base perdio piezas utiles."
+        },
+        {
+          "id": "duct-tape",
+          "label": "Montarlos con cinta americana y paciencia",
+          "role": null,
+          "nfc_tool": null,
+          "effects": { "energy": -10 },
+          "progress": { "sensors_fabricated": 3 },
+          "triggers_event": { "id": "sensor-failure", "within_sols": 3 },
+          "feedback": "No es bonito, pero con suficiente cinta todo se sujeta... de momento."
+        }
+      ]
+    },
+
+    {
+      "id": "sensors-place",
+      "category": "objective",
+      "objective": "sensors",
+      "nasa_source": "Mision InSight - despliegue del sismometro sobre el suelo marciano",
+      "title": "Salir a colocar los 3 sensores",
+      "description": "Los tres sensores estan listos. Hay que sacarlos a la superficie, repartirlos lejos de la base para detectar los temblores y dejarlos bien asentados. Ahi fuera el aire cuesta caro.",
+      "real_fact": null,
+      "mode": "vote",
+      "persistent": false,
+      "condition": { "requires_done": "sensors-fabricate" },
+      "earth_discard": "single-trip",
+      "options": [
+        {
+          "id": "single-trip",
+          "label": "Una sola salida larga",
+          "role": null,
+          "nfc_tool": null,
+          "effects": { "energy": -35, "oxygen": -25 },
+          "progress": { "sensors_placed": 3 },
+          "feedback": "Un paseo espacial largo y agotador, pero los tres sensores ya escuchan el suelo."
+        },
+        {
+          "id": "precision-tool",
+          "label": "Salida con herramienta de precision",
+          "role": "engineer",
+          "nfc_tool": null,
+          "effects": { "energy": -30, "oxygen": -15 },
+          "progress": { "sensors_placed": 3 },
+          "feedback": "El Ingeniero los asento con precision. Menos tiempo fuera, menos aire gastado."
+        },
+        {
+          "id": "two-trips",
+          "label": "Dos salidas en dos Sols",
+          "role": null,
+          "nfc_tool": null,
+          "effects": { "energy": -20, "oxygen": -15 },
+          "progress": { "sensors_placed": 2 },
+          "delayed_effects": [
+            { "after_sols": 1, "effects": { "energy": -10, "oxygen": -10 }, "progress": { "sensors_placed": 1 } }
+          ],
+          "feedback": "Salisteis en dos turnos para respirar entre medias. Mas lento, pero mas seguro."
+        }
+      ]
+    },
+
+    {
+      "id": "sensor-failure",
+      "category": "objective",
+      "objective": "sensors",
+      "nasa_source": "Mision InSight - el polvo acumulado limito su operacion",
+      "title": "Sensor tapado por polvo",
+      "description": "Uno de los sensores ya no manda datos. Una capa de polvo lo cubre o el cable se ha soltado. Si lo dejais, ya no cuenta.",
+      "real_fact": null,
+      "mode": "vote",
+      "persistent": false,
+      "condition": { "triggered_by": "duct-tape" },
+      "earth_discard": "leave-it",
+      "options": [
+        {
+          "id": "repair-outside",
+          "label": "Salir a repararlo",
+          "role": null,
+          "nfc_tool": null,
+          "effects": { "energy": -10, "oxygen": -5 },
+          "feedback": "Lo desenterrasteis y volvio a transmitir."
+        },
+        {
+          "id": "reset-remote",
+          "label": "Reprogramarlo a distancia",
+          "role": "engineer",
+          "nfc_tool": null,
+          "effects": { "energy": -5 },
+          "feedback": "El Ingeniero reinicio la senial desde la base y recupero la conexion."
+        },
+        {
+          "id": "leave-it",
+          "label": "Dejarlo y fabricar otro",
+          "role": null,
+          "nfc_tool": null,
+          "effects": {},
+          "progress": { "sensors_placed": -1, "sensors_fabricated": -1 },
+          "reopen_event": "sensors-fabricate",
+          "feedback": "Lo abandonasteis. Habra que fabricar otro."
+        }
+      ]
+    },
+
+    {
+      "id": "quake-warned",
+      "category": "objective",
+      "objective": "sensors",
+      "nasa_source": "Mision InSight - deteccion de sismos marcianos",
+      "title": "Terremoto marciano: aviso de la red",
+      "description": "Alerta de la red sismica! Se detecta un sismo a punto de llegar a la base. Teneis un Sol para prepararos.",
+      "real_fact": "InSight detecto sismos de hasta magnitud 5 en Marte.",
+      "mode": "vote",
+      "persistent": false,
+      "condition": { "requires_done": "sensors-place", "sensors_placed_before_sol": 20 },
+      "options": [
+        {
+          "id": "reinforce",
+          "label": "Reforzar la estructura",
+          "role": "engineer",
+          "nfc_tool": null,
+          "effects": { "energy": -10 },
+          "feedback": "Gracias al aviso, el Ingeniero reforzo los puntos debiles antes del temblor."
+        },
+        {
+          "id": "evacuate",
+          "label": "Evacuar a la zona segura",
+          "role": null,
+          "nfc_tool": null,
+          "effects": { "oxygen": -5, "energy": -5 },
+          "feedback": "Todos estaban a salvo cuando llego el temblor."
+        }
+      ]
+    },
+
+    {
+      "id": "quake-unwarned",
+      "category": "objective",
+      "objective": "sensors",
+      "nasa_source": "Mision InSight - deteccion de sismos marcianos",
+      "title": "Terremoto marciano sin aviso",
+      "description": "El suelo tiembla sin avisar. La base cruje y hay danios. Sin red de sensores no hubo tiempo de prepararse.",
+      "real_fact": "Sin una red de sismometros no se pueden anticipar los temblores.",
+      "mode": "vote",
+      "persistent": false,
+      "condition": { "min_sol": 8, "requires_not": "sensors-placed-by-20" },
+      "options": [
+        {
+          "id": "repair-damage",
+          "label": "Reparar los danios",
+          "role": null,
+          "nfc_tool": null,
+          "effects": { "integrity": -20, "energy": -10 },
+          "feedback": "El temblor os sorprendio. Costo mucho reparar la base."
+        }
+      ]
+    },
+
+    {
+      "id": "moxie-phase-1",
+      "category": "objective",
+      "objective": "moxie",
+      "nasa_source": "Instrumento MOXIE del rover Perseverance (2021)",
+      "title": "MOXIE: primera fase",
+      "description": "En Marte casi no hay oxigeno, pero el aire es casi todo CO2. MOXIE separa el oxigeno del carbono. Empezar a montarlo exige mucha energia.",
+      "real_fact": "MOXIE produjo oxigeno a partir del CO2 de la atmosfera marciana.",
+      "mode": "vote",
+      "persistent": false,
+      "condition": { "objective_active": "moxie" },
+      "earth_discard": "rush",
+      "options": [
+        {
+          "id": "rush",
+          "label": "Montaje a toda maquina",
+          "role": null,
+          "nfc_tool": null,
+          "effects": { "energy": -25 },
+          "progress": { "moxie": 33 },
+          "feedback": "Trabajasteis sin parar. La base se quedo casi a oscuras, pero el montaje avanza."
+        },
+        {
+          "id": "careful",
+          "label": "Montaje cuidadoso",
+          "role": "engineer",
+          "nfc_tool": null,
+          "effects": { "energy": -15 },
+          "progress": { "moxie": 33 },
+          "feedback": "El Ingeniero optimizo el consumo de cada herramienta."
+        },
+        {
+          "id": "greenhouse-parts",
+          "label": "Montar con piezas del invernadero",
+          "role": null,
+          "nfc_tool": null,
+          "effects": { "energy": -10, "oxygen": -10 },
+          "progress": { "moxie": 33 },
+          "feedback": "Funciona, pero las plantas se resienten."
+        }
+      ]
+    },
+
+    {
+      "id": "moxie-phase-2",
+      "category": "objective",
+      "objective": "moxie",
+      "nasa_source": "Compartir energia entre instrumentos es un problema real en las misiones",
+      "title": "MOXIE contra el invernadero",
+      "description": "MOXIE necesita la misma energia que las luces del invernadero. La Biologa teme que sus cultivos se estropeen si les quitais corriente. Hay que repartir sin que ninguno se apague.",
+      "real_fact": null,
+      "mode": "vote",
+      "persistent": false,
+      "condition": { "requires_done": "moxie-phase-1" },
+      "earth_discard": "prioritize-moxie",
+      "options": [
+        {
+          "id": "prioritize-moxie",
+          "label": "Priorizar a MOXIE",
+          "role": null,
+          "nfc_tool": null,
+          "effects": { "energy": -20, "health": -5 },
+          "progress": { "moxie": 33 },
+          "feedback": "MOXIE avanza, pero los cultivos de la Biologa se resienten."
+        },
+        {
+          "id": "shared-schedule",
+          "label": "Horarios compartidos",
+          "role": "biologist",
+          "nfc_tool": null,
+          "effects": { "energy": -10 },
+          "progress": { "moxie": 33 },
+          "feedback": "La Biologa diseno turnos: MOXIE de noche, plantas de dia. Todos felices."
+        },
+        {
+          "id": "blackout",
+          "label": "Apagar laboratorio e invernadero un Sol",
+          "role": "generalist",
+          "nfc_tool": null,
+          "effects": { "energy": -5, "health": -10 },
+          "progress": { "moxie": 33 },
+          "feedback": "Un sacrificio duro, pero nadie discute las ordenes de la Comandante."
+        }
+      ]
+    },
+
+    {
+      "id": "moxie-phase-3",
+      "category": "objective",
+      "objective": "moxie",
+      "nasa_source": "MOXIE usa un filtro de particulas para limpiar el aire antes de convertirlo",
+      "title": "MOXIE: fallo en el filtro",
+      "description": "El filtro de MOXIE se ha atascado con polvo marciano. Si no se limpia, la maquina se estropeara.",
+      "real_fact": null,
+      "mode": "vote",
+      "persistent": false,
+      "condition": { "requires_done": "moxie-phase-2" },
+      "earth_discard": "ignore",
+      "options": [
+        {
+          "id": "clean-by-hand",
+          "label": "Limpiarlo a mano",
+          "role": null,
+          "nfc_tool": null,
+          "effects": { "energy": -10, "oxygen": -5 },
+          "progress": { "moxie": 34 },
+          "feedback": "Cuesta aire, pero funciona."
+        },
+        {
+          "id": "replace-filter",
+          "label": "Cambiar el filtro por uno nuevo",
+          "role": "engineer",
+          "nfc_tool": null,
+          "effects": { "energy": -15 },
+          "progress": { "moxie": 34 },
+          "feedback": "Filtro nuevo, ninguna sorpresa."
+        },
+        {
+          "id": "ignore",
+          "label": "Ignorarlo",
+          "role": null,
+          "nfc_tool": null,
+          "effects": {},
+          "progress": { "moxie": -33 },
+          "feedback": "Se atasco del todo. Habra que rehacer el trabajo."
+        }
+      ]
+    },
+
+    {
+      "id": "moxie-done",
+      "category": "objective",
+      "objective": "moxie",
+      "nasa_source": "MOXIE llego a producir unos 12 gramos de oxigeno por hora",
+      "title": "MOXIE funciona",
+      "description": "El generador esta al 100%. Un pitido confirma que el primer oxigeno sale de la atmosfera marciana. A partir de ahora, la base ya no pierde aire cada dia.",
+      "real_fact": "12 gramos por hora equivalen a lo que respira un astronauta en unos minutos.",
+      "mode": "vote",
+      "persistent": false,
+      "condition": { "objective_progress": { "moxie": 100 } },
+      "options": [
+        {
+          "id": "continue",
+          "label": "Continuar",
+          "role": null,
+          "nfc_tool": null,
+          "effects": {},
+          "unlocks": { "passive_oxygen_loss": 0 },
+          "feedback": "MOXIE ha arrancado! El aire ya no es vuestro problema."
+        }
+      ]
+    }
+  ]
+}

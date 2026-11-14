@@ -15,7 +15,7 @@ func _on_start_button_pressed() -> void:
 	mainButtons.visible = false
 	
 func _on_start_exp_button_pressed() -> void:
-	Events.scene_change_requested.emit("gameplay")
+	Events.scene_change_requested.emit("intro")
 	await Events.scene_transition_finished
 
 
