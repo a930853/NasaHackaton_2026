@@ -1,8 +1,10 @@
 [gd_scene format=3 uid="uid://bj3rdjmiiuuhb"]
 
-[ext_resource type="Script" uid="uid://cjeuvnjh4f50g" path="res://Scripts/contenedor_escena.gd" id="1_ri44q"]
+[ext_resource type="Script" uid="uid://bs6yxoxmdolrs" path="res://Scripts/main.gd" id="1_idj7w"]
+[ext_resource type="Script" uid="uid://bm83gh6ysyu4q" path="res://Scenes/sfx.gd" id="2_idj7w"]
 
 [node name="Main" type="Node" unique_id=831378100]
+script = ExtResource("1_idj7w")
 
 [node name="SistemasGlobales" type="Node" parent="." unique_id=659710376]
 
@@ -11,7 +13,19 @@
 [node name="NasaApi" type="HTTPRequest" parent="SistemasGlobales" unique_id=1803634509]
 
 [node name="Musica_Ambiente" type="AudioStreamPlayer2D" parent="SistemasGlobales" unique_id=1373564122]
+bus = &"Music"
+
+[node name="SFX" type="Node" parent="SistemasGlobales" unique_id=30072511]
+script = ExtResource("2_idj7w")
 
 [node name="ContenedorEscena" type="Node" parent="." unique_id=485738805]
-unique_name_in_owner = true
-script = ExtResource("1_ri44q")
+
+[node name="CapaTransicion" type="CanvasLayer" parent="." unique_id=810822328]
+layer = 100
+
+[node name="FundidoNegro" type="ColorRect" parent="CapaTransicion" unique_id=2000350768]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

@@ -1,0 +1,9 @@
+[gd_resource type="LabelSettings" format=3 uid="uid://d4nqt6gbcthqp"]
+
+[ext_resource type="FontFile" uid="uid://c1hx8w1wkw5eb" path="res://TextFonts/jetbrains-mono/static/jetbrains-mono-greek-500-italic.ttf" id="1_w44w2"]
+
+[resource]
+font = ExtResource("1_w44w2")
+font_size = 29
+outline_size = 4
+outline_color = Color(0, 0, 0, 1)
