@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { WebSocketServer } from 'ws';
 import { parse, send, sendError } from './protocol.js';
+import { logMessage } from './log.js';
 import {
   rooms, createRoom, addPlayer, selectRole, findByResumeToken, publicPlayers, closeRoom,
 } from './rooms.js';
@@ -130,11 +131,14 @@ export function createApp() {
   // ---------- conexiones ----------
   wss.on('connection', (ws) => {
     const ctx = { kind: null, room: null, player: null };
+    ws.ctx = ctx; // para que el log sepa quién es (log.js)
     ws.isAlive = true;
     ws.on('pong', () => { ws.isAlive = true; });
 
     ws.on('message', (raw) => {
-      const { msg, error } = parse(raw.toString());
+      const text = raw.toString();
+      logMessage('in', ws, text);
+      const { msg, error } = parse(text);
       if (error) return sendError(ws, error, undefined);
       handlers[msg.type](ws, ctx, msg);
     });

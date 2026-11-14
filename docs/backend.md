@@ -21,6 +21,7 @@ backend/
     server.js     createApp(): Express + WebSocketServer, un handler por mensaje, heartbeat
     rooms.js      Room/Player en memoria, códigos y tokens, reglas de roles y aforo
     protocol.js   Constantes (ROLES, MAX_PLAYERS), validación de entrada, send/sendError
+    log.js        Log de mensajes en bruto (LOG_MESSAGES=1)
   test/
     server.test.js  Pruebas de integración con clientes WebSocket reales
   Dockerfile
@@ -36,6 +37,16 @@ npm test        # pruebas de integración
 ```
 
 Comprobación: `curl http://localhost:3000/api/health` → `{"ok":true,"rooms":0}`.
+
+**Log de mensajes:** con `LOG_MESSAGES=1` el backend imprime cada mensaje que recibe (`←`) y envía (`→`), tal cual viaja, junto a la conexión (`host K7MP`, `K7MP/p1` o `sin registrar` si aún no ha creado ni entrado en sala). `npm run dev` desde la raíz lo activa por defecto (`LOG_MESSAGES=0` para quitarlo). Muestra también los tokens: solo para desarrollo.
+
+```text
+← host K7MP     {"type":"start_game"}
+→ host K7MP     {"type":"game_started","players":[...]}
+→ K7MP/p1       {"type":"game_started","players":[...]}
+← K7MP/p1       {"type":"choose","actionId":"p1-x8f2","eventId":"storm#1","optionId":"shelter"}
+→ host K7MP     {"type":"choose","playerId":"p1","role":"engineer",...}
+```
 
 **Windows:** si arranca con `listen EACCES` en el 3000, Hyper-V/WSL tienen reservado un rango que lo incluye (`netsh interface ipv4 show excludedportrange protocol=tcp`). Usad otro puerto con `PORT=8787 npm run dev` y, en el mando, `BACKEND_PORT=8787 npm run dev`. Dentro de Docker no pasa: el contenedor es Linux.
 
