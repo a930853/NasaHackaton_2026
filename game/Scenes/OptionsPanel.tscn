@@ -1,6 +1,6 @@
 [gd_scene format=4 uid="uid://1vthq565lyjq"]
 
-[ext_resource type="Script" uid="uid://dd5xhe3vn4u0m" path="res://Scenes/options_panel.gd" id="1_pv2eo"]
+[ext_resource type="Script" uid="uid://dd5xhe3vn4u0m" path="res://Scripts/options_panel.gd" id="1_pv2eo"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pv2eo"]
 bg_color = Color(0.07284262, 0.072842635, 0.072842576, 1)
