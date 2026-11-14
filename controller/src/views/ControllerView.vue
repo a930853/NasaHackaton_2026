@@ -114,20 +114,17 @@ function restart() {
   router.replace({ name: route.name })
 }
 
-const footerText = computed(() => {
-  if (!s.code) return 'NASA · SIMULADOR DE MISIÓN'
-  return `SALA ${s.code}${s.name ? ` · ${s.name.toUpperCase()}` : ''}`
-})
 </script>
 
 <template>
   <main
     class="flex min-h-dvh flex-col overflow-x-hidden bg-navy"
-    :class="
+    :class="[
+      !showRoleScreen && s.phase === 'lobby' ? 'fixed-mobile-screen h-dvh min-h-0 overflow-hidden' : '',
       showRoleScreen
         ? 'bg-[radial-gradient(circle_at_85%_4%,rgba(52,97,143,.38),transparent_30%)]'
-        : 'bg-[radial-gradient(circle_at_85%_4%,rgba(32,75,120,.5),transparent_28%)]'
-    "
+        : 'bg-[radial-gradient(circle_at_85%_4%,rgba(32,75,120,.5),transparent_28%)]',
+    ]"
     :style="roleStyle(roleInfo)"
   >
     <p
@@ -139,7 +136,7 @@ const footerText = computed(() => {
     </p>
 
     <!-- Otro dispositivo ha recuperado esta misma sesión -->
-    <section v-if="s.connection === 'replaced'" class="screen-w flex flex-1 flex-col justify-center py-12">
+    <section v-if="s.connection === 'replaced'" class="screen-w flex min-h-0 flex-1 flex-col justify-center py-12">
       <StatusCard mark="⇄" eyebrow="SESIÓN EN OTRO DISPOSITIVO" title="Tu sesión se ha abierto en otro dispositivo.">
         <button class="btn-primary" type="button" @click="session.takeOver()">Usar este dispositivo</button>
       </StatusCard>
@@ -147,7 +144,7 @@ const footerText = computed(() => {
 
     <section
       v-else-if="s.phase === 'connecting' || s.phase === 'joining'"
-      class="screen-w flex flex-1 flex-col justify-center gap-[clamp(28px,6vh,56px)] py-12"
+      class="screen-w flex min-h-0 flex-1 flex-col justify-center gap-[clamp(20px,6vh,56px)] py-8 md:py-12"
     >
       <ScreenHeading>Únete a la <span class="text-amber">misión</span></ScreenHeading>
       <p class="notice" role="status">
@@ -165,7 +162,7 @@ const footerText = computed(() => {
       @join="join"
     />
 
-    <section v-else-if="s.phase === 'closed'" class="screen-w flex flex-1 flex-col justify-center py-12">
+    <section v-else-if="s.phase === 'closed'" class="screen-w flex min-h-0 flex-1 flex-col justify-center py-8 md:py-12">
       <StatusCard mark="■" eyebrow="SALA CERRADA" :title="closedText(s.closedReason)">
         <button class="btn-primary" type="button" @click="restart">Volver al inicio</button>
       </StatusCard>
@@ -179,7 +176,7 @@ const footerText = computed(() => {
       @pick="pickRole"
     />
 
-    <section v-else class="screen-w flex flex-1 flex-col" aria-labelledby="role-title">
+    <section v-else class="screen-w flex min-h-0 flex-1 flex-col overflow-hidden" aria-labelledby="role-title">
       <header class="flex items-center justify-between pt-[clamp(18px,4vh,38px)]">
         <div>
           <p class="eyebrow text-(--role-color)">TU MISIÓN</p>
@@ -246,14 +243,7 @@ const footerText = computed(() => {
       </template>
     </section>
 
-    <footer class="screen-w flex items-center gap-2 pt-[18px] pb-6 font-mono text-[10px] tracking-[.08em] text-dim">
-      <span
-        class="size-[7px] rounded-full"
-        :class="
-          s.connection === 'online' ? 'bg-ok shadow-[0_0_10px_var(--color-ok)]' : 'bg-danger shadow-[0_0_10px_var(--color-danger)]'
-        "
-        aria-hidden="true"
-      />
+    <footer class="screen-w flex items-center pt-[18px] pb-6 font-mono text-[10px] tracking-[.08em] text-dim">
       <span>{{ footerText }}</span>
     </footer>
   </main>

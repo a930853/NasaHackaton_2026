@@ -40,6 +40,13 @@
   }
 }
 
+@media (max-width: 767px) {
+  .fixed-mobile-screen {
+    height: 100dvh;
+    overflow: hidden;
+  }
+}
+
 /* Piezas repetidas en varias pantallas */
 @layer components {
   .screen-w {

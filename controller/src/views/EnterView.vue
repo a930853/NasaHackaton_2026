@@ -26,8 +26,8 @@ const input =
 </script>
 
 <template>
-  <section class="screen-w flex flex-1 flex-col" aria-labelledby="enter-title">
-    <div class="flex flex-1 flex-col justify-center gap-[clamp(28px,6vh,56px)] py-7 md:py-12">
+  <section class="screen-w flex min-h-0 flex-1 flex-col" aria-labelledby="enter-title">
+    <div class="flex min-h-0 flex-1 flex-col justify-center gap-[clamp(20px,6vh,56px)] py-5 md:py-12">
       <ScreenHeading id="enter-title">
         Únete a la <span class="text-amber">misión</span>
         <template #hint>
