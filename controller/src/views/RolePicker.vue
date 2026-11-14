@@ -20,8 +20,8 @@ const roleList = computed(() =>
 )
 
 const caption = (role) => {
-  if (role.mine) return 'Tu rol'
-  return role.available ? role.subtitle : `Ocupado por ${role.holder.name}`
+  if (role.mine) return 'Your role'
+  return role.available ? role.subtitle : `Taken by ${role.holder.name}`
 }
 </script>
 
@@ -29,13 +29,13 @@ const caption = (role) => {
   <section class="screen-w flex min-h-0 flex-1 flex-col overflow-hidden" aria-labelledby="picker-title">
     <div class="flex min-h-0 flex-1 flex-col justify-center gap-[clamp(20px,6vh,56px)] py-5 md:py-12">
       <ScreenHeading id="picker-title">
-        ¿Qué quieres ser <span class="text-amber">hoy?</span>
-        <template #hint>Selecciona tu especialidad para comenzar.</template>
+        Who do you want to be <span class="text-amber">today?</span>
+        <template #hint>Pick your job on the crew to start.</template>
       </ScreenHeading>
 
       <p v-if="message" class="notice-error" role="alert">{{ message }}</p>
 
-      <div class="grid w-full grid-cols-2 gap-2.5 md:gap-3.5" aria-label="Elige tu rol">
+      <div class="grid w-full grid-cols-2 gap-2.5 md:gap-3.5" aria-label="Pick your role">
         <button
           v-for="role in roleList"
           :key="role.id"

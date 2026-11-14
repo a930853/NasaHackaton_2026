@@ -8,7 +8,7 @@ defineProps({
 </script>
 
 <template>
-  <ul class="grid w-full max-w-[620px] gap-2" aria-label="Tripulación">
+  <ul class="grid w-full max-w-[620px] gap-2" aria-label="Crew">
     <li
       v-for="p in players"
       :key="p.id"
@@ -17,10 +17,10 @@ defineProps({
       :style="{ borderLeftColor: ROLES[p.role]?.color ?? 'var(--color-hull-dark)' }"
     >
       <span class="flex-1 text-ink">
-        {{ p.name }}<small v-if="p.id === playerId" class="text-muted"> (tú)</small>
+        {{ p.name }}<small v-if="p.id === playerId" class="text-muted"> (you)</small>
       </span>
       <span class="font-mono text-[11px] text-muted">
-        {{ ROLES[p.role]?.name ?? 'Sin rol' }}<template v-if="!p.connected"> · desconectado</template>
+        {{ ROLES[p.role]?.name ?? 'No role yet' }}<template v-if="!p.connected"> · offline</template>
       </span>
     </li>
   </ul>

@@ -21,14 +21,14 @@ const NEONS = ['var(--color-neon-red)', 'var(--color-neon-cyan)', 'var(--color-n
 <template>
   <div class="flex flex-col gap-6 py-[clamp(16px,3vh,32px)]">
     <div class="screen-panel px-6 py-5">
-      <p class="eyebrow text-(--role-color)">◆ DECISIÓN DE LA TRIPULACIÓN</p>
+      <p class="eyebrow text-(--role-color)">◆ CREW DECISION</p>
       <h2 class="text-[clamp(22px,3vw,34px)] leading-tight font-bold">{{ view.title }}</h2>
       <p v-if="view.prompt" class="mt-2 text-[15px] text-muted">{{ view.prompt }}</p>
     </div>
 
     <p v-if="rejected" class="notice-error" role="alert">{{ rejectionText(choice.reason) }}</p>
 
-    <div class="grid gap-4 sm:grid-cols-2" aria-label="Opciones de respuesta">
+    <div class="grid gap-4 sm:grid-cols-2" aria-label="Options">
       <button
         v-for="(option, index) in view.options ?? []"
         :key="option.id"
@@ -56,6 +56,6 @@ const NEONS = ['var(--color-neon-red)', 'var(--color-neon-cyan)', 'var(--color-n
       </button>
     </div>
 
-    <p v-if="sending" class="notice" role="status">Enviando…</p>
+    <p v-if="sending" class="notice" role="status">Sending…</p>
   </div>
 </template>

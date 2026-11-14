@@ -105,7 +105,7 @@ En Windows, Hyper-V/WSL pueden reservar el puerto 3000 (`listen EACCES`). Compro
 
 ## Convenciones
 
-- Código e identificadores en inglés; textos de interfaz y documentación en español.
+- Código e identificadores en inglés. Textos del juego y del mando en inglés sencillo (niños de 7 a 12 años). Documentación en español.
 - Commits con [Conventional Commits](https://www.conventionalcommits.org/es/): `tipo(ámbito): descripción`. Tipo en inglés (`feat`, `fix`, `refactor`, `docs`, `chore`, `style`, `test`, `build`), descripción en español, en minúscula y sin punto final. Ámbitos: `game`, `controller`, `backend`, `deploy`, `docs`. Ej.: `feat(backend): crear salas en memoria`.
 - Backend: Node ≥ 20, ES modules, dependencias de runtime `express` (HTTP) y `ws` (WebSocket); tests con `node:test` (`npm test`).
 - Mando: Vue 3 (`<script setup>`, JS) + `vue-router` + Tailwind 4, mobile-first. Estilos con utilidades de Tailwind; el color del rol va por variables CSS (`--role-color`…). Nada cargado de Internet (fuentes con `@fontsource`): la demo funciona en la LAN sin conexión exterior.

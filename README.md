@@ -113,6 +113,6 @@ Un botón real en un móvil cambia un texto en Godot exportado a web. Después, 
 
 ## Convenciones
 
-- Código en inglés; textos de interfaz y documentación en español.
+- Código en inglés. Textos del juego y del mando en inglés sencillo (niños de 7 a 12 años). Documentación en español.
 - Commits con [Conventional Commits](https://www.conventionalcommits.org/es/): `tipo(ámbito): descripción`. Ej.: `feat(backend): crear salas en memoria`.
 - Cualquier cambio de mensajes se acuerda primero en `docs/protocol.md`.

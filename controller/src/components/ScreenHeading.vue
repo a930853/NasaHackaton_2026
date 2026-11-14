@@ -7,7 +7,7 @@
   <div class="hull-plate">
     <p class="mb-1.5 flex items-center gap-2 font-mono text-[11px] font-medium tracking-[.14em] text-outline/75">
       <span class="hud-light" aria-hidden="true" />
-      NASA · CENTRO DE CONTROL
+      NASA · MISSION CONTROL
     </p>
     <h1 class="text-[clamp(32px,5vw,54px)] leading-[.98] font-bold tracking-[-.04em] [&_.text-amber]:text-[#b8560b]">
       <slot />

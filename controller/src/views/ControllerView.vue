@@ -81,7 +81,7 @@ watch(
     if (error.requestType === 'choose') return // lo muestra la pantalla de decisión
     if (error.requestType === 'select_role') {
       const name = ROLES[requestedRole]?.name
-      message.value = error.code === 'role_taken' && name ? `${name} ya está ocupado. Elige otro rol.` : errorText(error.code)
+      message.value = error.code === 'role_taken' && name ? `The ${name} role is taken. Pick another one.` : errorText(error.code)
       requestedRole = null
       goTo('home')
       return
@@ -106,8 +106,8 @@ function changeRole() {
 }
 
 const footerText = computed(() => {
-  if (!s.code) return 'NASA · SIMULADOR DE MISIÓN'
-  return `SALA ${s.code}${s.name ? ` · ${s.name.toUpperCase()}` : ''}`
+  if (!s.code) return 'NASA · MISSION SIMULATOR'
+  return `ROOM ${s.code}${s.name ? ` · ${s.name.toUpperCase()}` : ''}`
 })
 
 function restart() {
@@ -132,13 +132,13 @@ function restart() {
       class="sticky top-0 z-10 border-b-[3px] border-outline bg-amber px-4 py-2.5 text-center font-mono text-xs font-medium text-outline"
       role="status"
     >
-      Sin conexión con el centro de control. Reconectando…
+      No connection to Mission Control. Reconnecting…
     </p>
 
     <!-- Otro dispositivo ha recuperado esta misma sesión -->
     <section v-if="s.connection === 'replaced'" class="screen-w flex min-h-0 flex-1 flex-col justify-center py-12">
-      <StatusCard mark="⇄" eyebrow="SESIÓN EN OTRO DISPOSITIVO" title="Tu sesión se ha abierto en otro dispositivo.">
-        <button class="btn-primary" type="button" @click="session.takeOver()">Usar este dispositivo</button>
+      <StatusCard mark="⇄" eyebrow="OPENED ON ANOTHER DEVICE" title="Your session was opened on another device.">
+        <button class="btn-primary" type="button" @click="session.takeOver()">Use this device</button>
       </StatusCard>
     </section>
 
@@ -146,9 +146,9 @@ function restart() {
       v-else-if="s.phase === 'connecting' || s.phase === 'joining'"
       class="screen-w flex min-h-0 flex-1 flex-col justify-center gap-[clamp(20px,6vh,56px)] py-8 md:py-12"
     >
-      <ScreenHeading>Únete a la <span class="text-amber">misión</span></ScreenHeading>
+      <ScreenHeading>Join the <span class="text-amber">mission</span></ScreenHeading>
       <p class="notice text-outline" role="status">
-        Conectando con el centro de control<span class="tracking-[3px]">...</span>
+        Connecting to Mission Control<span class="tracking-[3px]">...</span>
       </p>
     </section>
 
@@ -163,10 +163,8 @@ function restart() {
     />
 
     <section v-else-if="s.phase === 'closed'" class="screen-w flex min-h-0 flex-1 flex-col justify-center py-8 md:py-12">
-      <StatusCard class="mission-status-card" mark="■" eyebrow="SALA CERRADA" :title="closedText(s.closedReason)">
-        <button class="role-change-button" type="button" @click="restart">
-          <span>Volver al inicio</span>
-        </button>
+      <StatusCard mark="■" eyebrow="ROOM CLOSED" :title="closedText(s.closedReason)">
+        <button class="btn-primary" type="button" @click="restart">Back to start</button>
       </StatusCard>
     </section>
 
@@ -187,7 +185,7 @@ function restart() {
             aria-hidden="true"
           />
           <div>
-            <p class="mb-0.5 font-mono text-[11px] font-medium tracking-[.14em] text-outline/75">TU MISIÓN</p>
+            <p class="mb-0.5 font-mono text-[11px] font-medium tracking-[.14em] text-outline/75">YOUR MISSION</p>
             <h1 id="role-title" class="text-[clamp(28px,4.5vw,50px)] leading-[.98] font-bold tracking-[-.04em]">
               {{ roleInfo.name }}
             </h1>
@@ -204,18 +202,18 @@ function restart() {
         <StatusCard
           v-if="s.role !== activeRole"
           mark="…"
-          eyebrow="RESERVANDO ROL"
-          title="Reservando tu puesto en la tripulación"
+          eyebrow="SAVING YOUR ROLE"
+          title="Saving your place on the crew"
         />
         <StatusCard
           v-else
           mark="✓"
-          eyebrow="ROL RESERVADO"
-          title="Esperando a que el centro de control inicie la misión"
-          text="Mira la pantalla principal: la misión empezará en cuanto esté lista la tripulación."
+          eyebrow="ROLE SAVED"
+          title="Waiting for Mission Control to start"
+          text="Look at the main screen: the mission starts when the whole crew is ready."
         >
           <CrewList class="mx-auto mt-6 text-left" :players="s.players" :player-id="s.playerId" />
-          <button class="btn-secondary" type="button" @click="changeRole">Cambiar de rol</button>
+          <button class="btn-secondary" type="button" @click="changeRole">Change role</button>
         </StatusCard>
       </div>
 
@@ -229,25 +227,25 @@ function restart() {
         <div v-else class="mt-[clamp(16px,3vh,32px)]">
           <StatusCard
             v-if="!s.view"
-            eyebrow="MISIÓN EN CURSO"
-            title="La misión está comenzando"
-            text="Atento a la pantalla principal."
+            eyebrow="MISSION RUNNING"
+            title="The mission is starting"
+            text="Watch the main screen."
           />
           <StatusCard
             v-else-if="decided"
             mark="✓"
-            eyebrow="DECISIÓN REGISTRADA"
-            title="Tu decisión ha llegado al centro de control."
-            text="Esperando al resto de la tripulación…"
+            eyebrow="CHOICE SAVED"
+            title="Your choice reached Mission Control."
+            text="Waiting for the rest of the crew…"
           />
           <StatusCard
             v-else-if="s.view.screen === 'result'"
             mark="★"
-            eyebrow="RESULTADO"
-            :title="s.view.title || 'Resultado'"
+            eyebrow="RESULT"
+            :title="s.view.title || 'Result'"
             :text="s.view.text"
           />
-          <StatusCard v-else eyebrow="EN ESPERA" :title="s.view.title || 'Esperando…'" :text="s.view.text" />
+          <StatusCard v-else eyebrow="PLEASE WAIT" :title="s.view.title || 'Waiting…'" :text="s.view.text" />
         </div>
       </template>
     </section>

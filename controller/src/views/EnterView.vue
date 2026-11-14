@@ -29,17 +29,17 @@ const input =
   <section class="screen-w flex min-h-0 flex-1 flex-col" aria-labelledby="enter-title">
     <div class="flex min-h-0 flex-1 flex-col justify-center gap-[clamp(20px,6vh,56px)] py-5 md:py-12">
       <ScreenHeading id="enter-title">
-        Únete a la <span class="text-amber">misión</span>
+        Join the <span class="text-amber">mission</span>
         <template #hint>
           <template v-if="role">
-            Entrarás como <strong :style="{ color: role.color }">{{ role.name }}</strong>.
+            You will join as the <strong :style="{ color: role.color }">{{ role.name }}</strong>.
           </template>
-          <template v-else>Introduce el código de sala y tu nombre para comenzar.</template>
+          <template v-else>Type the room code and your name to start.</template>
         </template>
       </ScreenHeading>
 
       <form class="screen-panel flex w-full max-w-[620px] flex-col gap-2.5 p-6" @submit.prevent="submit">
-        <label for="room-code" class="text-sm font-semibold text-soft">Código de sala</label>
+        <label for="room-code" class="text-sm font-semibold text-soft">Room code</label>
         <input
           id="room-code"
           v-model="code"
@@ -49,11 +49,11 @@ const input =
           autocomplete="off"
           autocapitalize="characters"
           spellcheck="false"
-          placeholder="Ej. K7MP"
+          placeholder="e.g. K7MP"
           maxlength="8"
           required
         >
-        <label for="player-name" class="mt-2 text-sm font-semibold text-soft">Tu nombre</label>
+        <label for="player-name" class="mt-2 text-sm font-semibold text-soft">Your name</label>
         <input
           id="player-name"
           v-model="name"
@@ -61,14 +61,14 @@ const input =
           type="text"
           name="name"
           autocomplete="nickname"
-          placeholder="Ej. Ana"
+          placeholder="e.g. Ana"
           maxlength="24"
           required
         >
         <button type="submit" class="btn-primary" :disabled="busy">
-          Entrar en la sala <span aria-hidden="true">→</span>
+          Join the room <span aria-hidden="true">→</span>
         </button>
-        <p class="notice">El código aparece en la pantalla principal.</p>
+        <p class="notice">The code is on the main screen.</p>
       </form>
 
       <p v-if="message" class="notice-error" role="alert">{{ message }}</p>
