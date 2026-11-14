@@ -25,12 +25,17 @@ const answerColors = ['#f5235c', '#14b9ef', '#ffae16', '#8d4de8']
         :key="option.id"
         type="button"
         class="answer-button flex min-h-24 cursor-pointer items-center justify-center p-[clamp(18px,2.5vw,32px)] text-center font-mono text-[clamp(13px,1.5vw,18px)] font-medium tracking-[.04em] transition duration-200 enabled:hover:-translate-y-[3px] focus-visible:outline-none disabled:cursor-wait"
-        :class="isSelected(option) ? 'answer-button-selected' : ''"
+        :class="[isSelected(option) ? 'answer-button-selected' : '', option.disabled ? 'answer-button-blocked' : '']"
         :style="{ '--answer-color': answerColors[index % answerColors.length] }"
-        :disabled="sending"
+        :disabled="sending || option.disabled === true"
         @click="emit('choose', option.id)"
       >
-        <span>{{ option.label }}</span>
+        <span class="flex flex-col gap-1.5">
+          <span>{{ option.label }}</span>
+          <!-- Campos opcionales del contrato: coste de la opción y por qué está bloqueada -->
+          <small v-if="option.detail" class="answer-detail">{{ option.detail }}</small>
+          <small v-if="option.disabled && option.reason" class="answer-reason">{{ option.reason }}</small>
+        </span>
       </button>
     </div>
 

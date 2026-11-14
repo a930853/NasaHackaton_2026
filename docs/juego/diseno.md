@@ -94,13 +94,14 @@ Como máximo puede haber **2 eventos pendientes** a la vez (`max_pending_events`
 
 ## Tripulación fuera de la base
 
-Algunas opciones obligan a alguien a salir (paseos espaciales, reparaciones exteriores). En `events.json` llevan `away_sols` (2 o 3 Sols).
+Cada opción deja ocupado a quien la hace durante 0, 1 o 2 Sols (`away_sols` en `events.json`). Las duraciones por opción están en [tiempos_fuera.md](tiempos_fuera.md).
 
-- **Quién sale:** el rol de la opción si es de un rol; si es «para todos», un voluntario al azar entre los que están en la base.
-- **Mientras está fuera** (haya salido bien o mal la tarea) el astronauta no puede participar: sus opciones de rol se bloquean y su móvil muestra «You are outside!». Una opción «para todos» que obliga a salir se bloquea solo si no queda nadie en la base.
-- **Vuelve** al empezar el Sol indicado, con un aviso en las noticias del amanecer.
-- **Si ninguna opción se puede elegir**, el problema espera hasta que vuelva alguien (sin repetir sus efectos de inicio).
-- **Avatares:** la franja inferior derecha de la cabina muestra a los 4 astronautas: verde y «READY» en la base, gris y «OUTSIDE» fuera.
+- **Opción de un rol:** ese astronauta queda ocupado `away_sols` Sols. Con 1 Sol no está disponible mañana y vuelve pasado mañana.
+- **Salida grupal («para todos» con `away_sols`):** toda la tripulación queda ocupada y la base se queda vacía. Solo se puede elegir si los 4 están en la base. «Dos salidas» no ocupa a nadie hoy, pero mañana deja a todos ocupados (`away_all` en el efecto diferido).
+- **Mientras está ocupado** (haya salido bien o mal la tarea) el astronauta no puede participar: sus opciones de rol se bloquean y su móvil muestra «You are busy!».
+- **Base vacía:** al empezar un Sol, si los 4 están ocupados no se genera ningún evento. Se aplica el consumo diario normal y se avisa con un mensaje; el día pasa al pulsar Continue.
+- **Vuelve** al empezar el Sol indicado, con un aviso en las noticias del amanecer y el sonido de la puerta.
+- **Avatares:** la franja inferior derecha de la cabina muestra a los 4 astronautas con su casco (amarillo, verde, rojo y blanco): con color y «READY» en la base, grises y «BUSY - N Sols» si están ocupados.
 
 ## Qué se ve dónde
 
@@ -109,13 +110,13 @@ Algunas opciones obligan a alguien a salir (paseos espaciales, reparaciones exte
 | Pantalla derecha de Godot | Información del evento: título, descripción, dato NASA, pista de la Tierra y resultado de la decisión. **No muestra las opciones.** |
 | Móvil de cada jugador | Las opciones de su rol y las de todos, con sus costes. Las bloqueadas salen apagadas con el motivo. |
 
-Hasta que haya móviles, `Phone (debug)` en la ventana de Marte abre un simulador con las mismas opciones. `TurnManager.controller_view_for(role)` prepara lo que recibirá cada mando y `submit_choice_from(role, eventId, optionId)` valida su elección. Las opciones llevan además de `id` y `label` los campos `detail` (costes), `disabled` y `reason`: **hay que añadirlos a `docs/protocol.md` antes de enviarlos**.
+Hasta que haya móviles, `Phone (debug)` en la ventana de Marte abre un simulador con las mismas opciones. `TurnManager.controller_view_for(role)` prepara lo que recibirá cada mando y `submit_choice_from(role, eventId, optionId)` valida su elección. Las opciones llevan además de `id` y `label` los campos opcionales `detail` (costes), `disabled` y `reason`, ya recogidos en `docs/protocol.md`. Con móviles reales, `PhoneBridge` envía esas vistas y valida las elecciones (ver [../godot/red.md](../godot/red.md)).
 
 ## Pedir ayuda a la Tierra
 
 Se basa en el retraso real de las comunicaciones: entre 4 y 24 minutos por mensaje entre Marte y la Tierra, según la distancia.
 
-- Se puede usar sobre cualquier evento sin resolver, **una vez por Sol**.
+- Se puede usar sobre cualquier evento sin resolver. **La radio se recarga cada 4 Sols** (`GameState.EARTH_HELP_COOLDOWN_SOLS`): tras pedir ayuda, hay que esperar 4 Sols para volver a pedirla (como mucho 5 ayudas en una partida de 20 Sols). Se eligió 4 y no 3 para que sea una pista valiosa y no un botón de uso diario; con el mensaje lento (2 Sols) la radio vuelve a estar lista 2 Sols después de recibir la respuesta.
 - El evento pasa a **«Esperando a la Tierra»** y la respuesta llega **entre 2 y 3 Sols** después. Mientras tanto, el evento sigue aplicando su castigo si lo tiene.
 - Según `events.json`, la respuesta **descarta una opción mala** del evento (`earth_discard` indica cuál).
 - Opciones previstas en el diseño:

@@ -1,43 +1,75 @@
 class_name StatIcon
 extends Control
-## Dibujo de una estadística que se llena como un medidor (de abajo hacia arriba).
-## Corazón = Salud, burbuja "O2" = Oxígeno, rayo = Energía, cúpula = Fuerza de la base.
-## Si queda poco (menos del 30%), el dibujo se pone rojo y parpadea.
-## Todo se dibuja por código, sin imágenes.
+## Logo de una estadística (las imágenes de res://Images/) que se llena como un medidor.
+##
+## Los logos son pixel art de línea negra sobre fondo transparente. Se dibujan tal cual,
+## con su borde negro, encima de un relleno de color (el botón tiene la cara clara para
+## que el borde se lea). El relleno usa un shader que recolorea la máscara del interior.
+## El interior de cada dibujo se calcula una vez rellenando desde fuera: lo que no se
+## alcanza desde el borde es "dentro", y esa zona se rellena de abajo hacia arriba según el nivel.
+## Si queda poco (menos del 30%), el relleno se pone rojo y parpadea.
 
-enum Kind { HEART, BUBBLE, BOLT, BASE }
+const SALUD: Texture2D = preload("res://Images/Salud.png")
+const OXIGENO: Texture2D = preload("res://Images/Oxigeno.png")
+const ENERGIA: Texture2D = preload("res://Images/Energia.png")
+const INTEGRIDAD: Texture2D = preload("res://Images/Integridad.png")
 
-const EMPTY_FILL: Color = Color(0.16, 0.2, 0.28)
-const DOOR_COLOR: Color = Color(0.05, 0.08, 0.14)
+const RECOLOR_SHADER: String = """
+shader_type canvas_item;
+uniform vec4 tint : source_color = vec4(1.0);
+void fragment() {
+	COLOR = vec4(tint.rgb, COLOR.a * tint.a);
+}
+"""
+const SOLID_ALPHA: float = 0.3        # a partir de aquí un píxel cuenta como línea del dibujo
+const EMPTY_ALPHA: float = 0.12       # opacidad de la parte vacía (apenas un tinte)
+const FILL_ALPHA: float = 1.0
 const LOW_LEVEL: float = 0.3
 const LOW_COLOR: Color = Color(1.0, 0.3, 0.3)
 const FILL_SECONDS: float = 0.5
-const ICON_SCALE: float = 0.9   # parte del botón que ocupa el dibujo
-const CIRCLE_POINTS: int = 36
+const ICON_SCALE: float = 0.92        # parte del botón que ocupa el logo
 
-var kind: int = Kind.HEART
 var accent: Color = Color.WHITE
-var level: float = 1.0:          # lo que se ve ahora (0..1); cambia suave hacia el valor real
+var level: float = 1.0:               # lo que se ve ahora (0..1); cambia suave hacia el valor real
 	set(value):
 		level = clampf(value, 0.0, 1.0)
 		set_process(level <= LOW_LEVEL)
+		_update_fill_tint()
 		queue_redraw()
 
+var _outline: TextureRect
+var _fill_texture: ImageTexture
+var _fill_material: ShaderMaterial
 var _tween: Tween = null
 
 
-func _init(icon_kind: int = Kind.HEART, icon_color: Color = Color.WHITE) -> void:
-	kind = icon_kind
+func _init(icon: Texture2D = SALUD, icon_color: Color = Color.WHITE) -> void:
 	accent = icon_color
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_preset(Control.PRESET_FULL_RECT)
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST   # los logos son de 64 px: se ven nítidos
+
+	_fill_texture = _make_fill_mask(icon)
+	_fill_material = _make_recolor_material(accent)
+	material = _fill_material   # recolorea lo que se dibuja con _draw (el relleno)
+
+	_outline = TextureRect.new()
+	_outline.texture = icon
+	_outline.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_outline.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_outline.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_outline.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	# Sin material: el contorno se ve como en la imagen original, en negro.
+	add_child(_outline)
+	resized.connect(_layout_outline)
 
 
 func _process(_delta: float) -> void:
-	queue_redraw()  # parpadeo cuando queda poco
+	_update_fill_tint()  # parpadeo cuando queda poco
+	queue_redraw()
 
 
-## Llena el dibujo hasta `value` (0..1), con animación o de golpe.
+## Llena el logo hasta `value` (0..1), con animación o de golpe.
 func set_level(value: float, animate: bool = true) -> void:
 	if _tween != null:
 		_tween.kill()
@@ -48,122 +80,89 @@ func set_level(value: float, animate: bool = true) -> void:
 	_tween.tween_property(self, "level", clampf(value, 0.0, 1.0), FILL_SECONDS)
 
 
-func _draw() -> void:
+## Cuadrado centrado donde se dibuja el logo (el mismo para el relleno y para el contorno).
+func _icon_box() -> Rect2:
 	var side: float = minf(size.x, size.y) * ICON_SCALE
-	var box := Rect2((size - Vector2(side, side)) * 0.5, Vector2(side, side))
-	var shapes: Array[PackedVector2Array] = _shapes(box)
+	return Rect2((size - Vector2(side, side)) * 0.5, Vector2(side, side))
 
+
+func _layout_outline() -> void:
+	var box: Rect2 = _icon_box()
+	_outline.position = box.position
+	_outline.size = box.size
+
+
+func _draw() -> void:
+	var box: Rect2 = _icon_box()
+	var tex_size: Vector2 = _fill_texture.get_size()
+
+	# Parte vacía (muy tenue) y parte llena, recortada por la altura del nivel
+	draw_texture_rect(_fill_texture, box, false, Color(1, 1, 1, EMPTY_ALPHA))
+	if level > 0.0:
+		var fill_height: float = box.size.y * level
+		var dest := Rect2(box.position.x, box.end.y - fill_height, box.size.x, fill_height)
+		var source := Rect2(0.0, tex_size.y * (1.0 - level), tex_size.x, tex_size.y * level)
+		draw_texture_rect_region(_fill_texture, dest, source, Color(1, 1, 1, FILL_ALPHA))
+
+
+func _update_fill_tint() -> void:
+	if _fill_material == null:
+		return
 	var color: Color = accent
-	var low: bool = level <= LOW_LEVEL
-	if low:
+	if level <= LOW_LEVEL:
 		color = LOW_COLOR
 		color.a = 0.65 + 0.35 * sin(Time.get_ticks_msec() / 130.0)
-
-	# 1) silueta vacía
-	for shape in shapes:
-		draw_colored_polygon(shape, EMPTY_FILL)
-
-	# 2) parte llena: la silueta recortada por una línea horizontal a la altura del nivel
-	var fill_top: float = box.end.y - box.size.y * level
-	var clip := PackedVector2Array([
-		Vector2(box.position.x - 3.0, fill_top), Vector2(box.end.x + 3.0, fill_top),
-		Vector2(box.end.x + 3.0, box.end.y + 3.0), Vector2(box.position.x - 3.0, box.end.y + 3.0)])
-	if level > 0.0:
-		for shape in shapes:
-			if level >= 0.999:
-				draw_colored_polygon(shape, color)
-				continue
-			for part in Geometry2D.intersect_polygons(shape, clip):
-				if part.size() >= 3:
-					draw_colored_polygon(part, color)
-
-	# 3) detalles y contorno
-	_draw_details(box)
-	for shape in shapes:
-		var outline: PackedVector2Array = shape.duplicate()
-		outline.append(shape[0])
-		draw_polyline(outline, Color(accent, 0.95), 2.0, true)
+	_fill_material.set_shader_parameter("tint", color)
 
 
-func _draw_details(box: Rect2) -> void:
-	match kind:
-		Kind.BUBBLE:
-			var font: Font = ThemeDB.fallback_font
-			var font_size: int = int(box.size.y * 0.36)
-			var base: Vector2 = box.position + Vector2(box.size.x * 0.06, box.size.y * 0.58 + font_size * 0.35)
-			draw_string(font, base, "O2", HORIZONTAL_ALIGNMENT_CENTER, box.size.x * 0.8, font_size, DOOR_COLOR)
-		Kind.BASE:
-			# Puerta de la base
-			draw_rect(Rect2(_at(box, Vector2(0.42, 0.72)), box.size * Vector2(0.16, 0.23)), DOOR_COLOR)
+func _make_recolor_material(color: Color) -> ShaderMaterial:
+	var shader := Shader.new()
+	shader.code = RECOLOR_SHADER
+	var recolor := ShaderMaterial.new()
+	recolor.shader = shader
+	recolor.set_shader_parameter("tint", color)
+	return recolor
 
 
-# ---------------------------------------------------------------------- Formas
+## Máscara del interior del dibujo (más la propia línea): blanco opaco dentro, transparente fuera.
+## Se calcula rellenando desde los bordes de la imagen: lo que no se alcanza está "dentro".
+func _make_fill_mask(icon: Texture2D) -> ImageTexture:
+	var source: Image = icon.get_image()
+	source.convert(Image.FORMAT_RGBA8)
+	var width: int = source.get_width()
+	var height: int = source.get_height()
 
-func _shapes(box: Rect2) -> Array[PackedVector2Array]:
-	var shapes: Array[PackedVector2Array] = []
-	match kind:
-		Kind.HEART:
-			shapes.append(_map(_heart_points(), box))
-		Kind.BUBBLE:
-			shapes.append(_map(_circle(Vector2(0.46, 0.6), 0.38), box))
-			shapes.append(_map(_circle(Vector2(0.84, 0.2), 0.11), box))
-			shapes.append(_map(_circle(Vector2(0.93, 0.42), 0.055), box))
-		Kind.BOLT:
-			shapes.append(_map(PackedVector2Array([
-				Vector2(0.60, 0.00), Vector2(0.20, 0.55), Vector2(0.45, 0.55), Vector2(0.30, 1.00),
-				Vector2(0.80, 0.40), Vector2(0.55, 0.40), Vector2(0.78, 0.00)]), box))
-		Kind.BASE:
-			shapes.append(_map(_dome_points(), box))
-	return shapes
+	var outside := PackedByteArray()
+	outside.resize(width * height)
+	var pending: Array[Vector2i] = []
+	for x in range(width):
+		pending.append(Vector2i(x, 0))
+		pending.append(Vector2i(x, height - 1))
+	for y in range(height):
+		pending.append(Vector2i(0, y))
+		pending.append(Vector2i(width - 1, y))
 
+	while not pending.is_empty():
+		var point: Vector2i = pending.pop_back()
+		if point.x < 0 or point.y < 0 or point.x >= width or point.y >= height:
+			continue
+		var index: int = point.y * width + point.x
+		if outside[index] == 1 or source.get_pixel(point.x, point.y).a >= SOLID_ALPHA:
+			continue
+		outside[index] = 1
+		pending.append(Vector2i(point.x + 1, point.y))
+		pending.append(Vector2i(point.x - 1, point.y))
+		pending.append(Vector2i(point.x, point.y + 1))
+		pending.append(Vector2i(point.x, point.y - 1))
 
-func _at(box: Rect2, unit: Vector2) -> Vector2:
-	return box.position + unit * box.size
-
-
-## Puntos en el cuadrado 0..1 -> píxeles del recuadro del dibujo.
-func _map(points: PackedVector2Array, box: Rect2) -> PackedVector2Array:
-	var result := PackedVector2Array()
-	for point in points:
-		result.append(_at(box, point))
-	return result
-
-
-func _circle(center: Vector2, radius: float) -> PackedVector2Array:
-	var points := PackedVector2Array()
-	for i in range(CIRCLE_POINTS):
-		var angle: float = TAU * float(i) / float(CIRCLE_POINTS)
-		points.append(center + Vector2(cos(angle), sin(angle)) * radius)
-	return points
-
-
-## Corazón con la curva clásica x = 16 sin³t, y = 13 cos t - 5 cos 2t - 2 cos 3t - cos 4t.
-func _heart_points() -> PackedVector2Array:
-	var raw := PackedVector2Array()
-	for i in range(48):
-		var t: float = TAU * float(i) / 48.0
-		raw.append(Vector2(
-			16.0 * pow(sin(t), 3.0),
-			-(13.0 * cos(t) - 5.0 * cos(2.0 * t) - 2.0 * cos(3.0 * t) - cos(4.0 * t))))
-	var min_p: Vector2 = raw[0]
-	var max_p: Vector2 = raw[0]
-	for point in raw:
-		min_p = min_p.min(point)
-		max_p = max_p.max(point)
-	var points := PackedVector2Array()
-	for point in raw:
-		points.append((point - min_p) / (max_p - min_p))
-	return points
-
-
-## Cúpula de la base: medio círculo con un rectángulo debajo.
-func _dome_points() -> PackedVector2Array:
-	var points := PackedVector2Array()
-	var center := Vector2(0.5, 0.62)
-	var radius: float = 0.46
-	for i in range(CIRCLE_POINTS / 2 + 1):
-		var angle: float = PI + PI * float(i) / float(CIRCLE_POINTS / 2)
-		points.append(center + Vector2(cos(angle), sin(angle)) * radius)
-	points.append(Vector2(0.96, 0.96))
-	points.append(Vector2(0.04, 0.96))
-	return points
+	var mask: Image = Image.create(width, height, false, Image.FORMAT_RGBA8)
+	var inside_pixels: int = 0
+	for y in range(height):
+		for x in range(width):
+			if outside[y * width + x] == 0:
+				mask.set_pixel(x, y, Color.WHITE)
+				inside_pixels += 1
+	# Si el dibujo no estuviera cerrado, el relleno "se escaparía": mejor rellenar toda la imagen.
+	if inside_pixels * 20 < width * height:
+		mask.fill(Color.WHITE)
+	return ImageTexture.create_from_image(mask)

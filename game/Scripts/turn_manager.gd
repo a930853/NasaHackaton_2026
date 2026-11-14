@@ -97,7 +97,6 @@ func _begin_sol() -> void:
 		_first_sol = false
 	else:
 		GameState.current_sol += 1
-		GameState.earth_help_used_this_sol = false
 		var returned: Array[String] = GameState.process_crew_return()
 		if not returned.is_empty():
 			Events.sfx_requested.emit("door", 0.0)  # alguien vuelve a entrar en la base
@@ -117,7 +116,34 @@ func _begin_sol() -> void:
 	if GameState.check_end().begins_with("defeat"):
 		_finish(false, GameState.check_end())
 		return
+	if GameState.base_is_empty():
+		_empty_base_day()
+		return
 	_select_event()
+
+
+## Regla de base vacía: si los 4 tripulantes están ocupados no hay nadie para gestionar
+## problemas, así que ese Sol no sale ningún evento. El consumo diario ya se ha aplicado
+## al amanecer; solo hay que avisar y dejar pasar el día.
+func _empty_base_day() -> void:
+	var back_sol: int = 1 << 30
+	for role in GameState.crew_away:
+		back_sol = mini(back_sol, int(GameState.crew_away[role]))
+	_event_counter += 1
+	current_event = {
+		"id": "empty-base",
+		"title": "The base is empty!",
+		"description": "The whole crew is busy outside, so nobody is home to handle problems today. Nothing new happens and the day just passes.",
+		"nasa_fact": "",
+		"terms": [],
+		"options": [],
+		"scene": {"effect": "none"},
+	}
+	current_event_uid = "empty-base#%d" % _event_counter
+	_set_phase(Phase.RESOLUTION)
+	earth_help_changed.emit()
+	event_presented.emit(current_event, "")
+	decision_resolved.emit({}, "No event today. The crew will be back on Sol %d." % back_sol, true)
 
 
 # ------------------------------------------------------- FASE_SELECCION_EVENTO
@@ -194,25 +220,36 @@ func _present_event(event: Dictionary, hint: String, fresh: bool) -> void:
 # ------------------------------------------- Tripulación fuera: opciones bloqueadas
 
 ## Por qué una opción no se puede elegir ahora ("" si se puede).
-## - Una opción de un rol no se puede elegir si ese tripulante está fuera de la base.
-## - Una opción "para todos" que obliga a salir necesita al menos a alguien en la base.
+## - Una opción de un rol no se puede elegir si ese tripulante está ocupado.
+## - Una salida grupal ("para todos" con ocupación) necesita a toda la tripulación en la base.
 func option_block_reason(option: Dictionary) -> String:
 	var role: Variant = option.get("role")
 	if role != null:
 		var role_id: String = str(role)
 		if GameState.is_away(role_id):
 			var sols_left: int = GameState.away_sols_left(role_id)
-			return "The %s is outside (back in %d Sol%s)." % [
+			return "The %s is busy (back in %d Sol%s)." % [
 				GameState.ROLE_NAMES[role_id], sols_left, "" if sols_left == 1 else "s"]
 		return ""
-	if int(option.get("away_sols", 0)) > 0 and GameState.available_crew().is_empty():
-		return "Everyone is outside right now."
+	if int(option.get("away_sols", 0)) > 0 and GameState.available_crew().size() < GameState.ROLES.size():
+		return "The whole crew must be at the base to go out together."
 	return ""
 
 
 func _has_available_option(event: Dictionary) -> bool:
 	for option in event.get("options", []):
-		if option_block_reason(option).is_empty():
+		if option_block_reason(option).is_empty() and _someone_can_pick(option):
+			return true
+	return false
+
+
+## Con móviles: ¿hay algún jugador presente y en la base que pueda elegir esta opción?
+## (Si el único jugador está ocupado fuera, el evento espera a que vuelva.)
+func _someone_can_pick(option: Dictionary) -> bool:
+	if present_roles.is_empty():
+		return true
+	for role in present_roles:
+		if not GameState.is_away(role) and _role_may_pick(option, role):
 			return true
 	return false
 
@@ -234,24 +271,41 @@ func _defer_until_crew_returns(event: Dictionary) -> void:
 	_stop_countdown()
 	_set_phase(Phase.RESOLUTION)
 	earth_help_changed.emit()
-	decision_resolved.emit({}, "Everyone who could help is outside! The problem waits until someone is back (Sol %d)." % return_sol, true)
+	decision_resolved.emit({}, "Everyone who could help is busy! The problem waits until someone is back (Sol %d)." % return_sol, true)
 
 
 # ---------------------------------------------------------- Opciones para los móviles
 
+## Roles que tienen jugador en la sala. Vacío = partida local en una sola pantalla (los 4 roles).
+## Con menos de 4 jugadores, las opciones de un rol ausente las puede elegir cualquiera de los presentes
+## (nunca se asigna una decisión obligatoria a un rol que no existe).
+var present_roles: Array[String] = []
+
+
+## ¿Puede `role` elegir esta opción? Las suyas, las de todos y las de roles que nadie lleva.
+func _role_may_pick(option: Dictionary, role: String) -> bool:
+	var option_role: Variant = option.get("role")
+	if option_role == null or str(option_role) == role:
+		return true
+	return not present_roles.is_empty() and not (str(option_role) in present_roles)
+
+
 ## Opciones que ve el jugador de `role` en el evento actual, con su estado.
-## `id` y `label` son los del contrato (docs/protocol.md). `detail` (costes), `disabled`
-## y `reason` son campos extra: hay que añadirlos a docs/protocol.md antes de enviarlos.
+## `id` y `label` son los del contrato (docs/protocol.md); `detail` (costes), `disabled`
+## y `reason` son campos opcionales del mismo contrato.
 func options_for_role(role: String) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for option in current_event.get("options", []):
-		var option_role: Variant = option.get("role")
-		if option_role != null and str(option_role) != role:
+		if not _role_may_pick(option, role):
 			continue
 		var reason: String = option_block_reason(option)
+		var label: String = str(option["label"])
+		var option_role: Variant = option.get("role")
+		if option_role != null and str(option_role) != role:
+			label = "(%s) %s" % [GameState.ROLE_NAMES[str(option_role)], label]  # cubres a un rol ausente
 		result.append({
 			"id": str(option["id"]),
-			"label": str(option["label"]),
+			"label": label,
 			"detail": OptionInfo.costs_text(option),
 			"disabled": not reason.is_empty(),
 			"reason": reason,
@@ -263,7 +317,7 @@ func options_for_role(role: String) -> Array[Dictionary]:
 func controller_view_for(role: String) -> Dictionary:
 	if GameState.is_away(role):
 		var sols_left: int = GameState.away_sols_left(role)
-		return {"screen": "waiting", "title": "You are outside!",
+		return {"screen": "waiting", "title": "You are busy!",
 			"text": "You are back in %d Sol%s." % [sols_left, "" if sols_left == 1 else "s"]}
 	if phase != Phase.DECISION:
 		return {"screen": "waiting", "title": "Waiting for the crew...", "text": "Look at the main screen."}
@@ -276,13 +330,22 @@ func controller_view_for(role: String) -> Dictionary:
 	}
 
 
+## Por qué no se acepta una elección de un móvil ("" si es válida). Los motivos son los de
+## `choice_result` del contrato: event_closed, not_eligible, invalid_option.
+func choice_reject_reason(role: String, event_uid: String, option_id: String) -> String:
+	if event_uid != current_event_uid or phase != Phase.DECISION:
+		return "event_closed"
+	if GameState.is_away(role):
+		return "not_eligible"
+	var option: Dictionary = _find_option(current_event, option_id)
+	if option.is_empty() or not _role_may_pick(option, role) or not option_block_reason(option).is_empty():
+		return "invalid_option"
+	return ""
+
+
 ## Elección que llega de un móvil: comprueba que el rol puede elegir esa opción ahora.
 func submit_choice_from(role: String, event_uid: String, option_id: String) -> bool:
-	if event_uid != current_event_uid or GameState.is_away(role):
-		return false
-	var option: Dictionary = _find_option(current_event, option_id)
-	var option_role: Variant = option.get("role")
-	if option.is_empty() or (option_role != null and str(option_role) != role):
+	if not choice_reject_reason(role, event_uid, option_id).is_empty():
 		return false
 	return submit_choice(option_id)
 
@@ -313,13 +376,18 @@ func submit_choice(option_id: String) -> bool:
 		if current_event.get("retry_on_fail", false):
 			EventManager.clear_seen(str(current_event["id"]))
 			lines.append("The problem is still there, so you can try again.")
-	# Quien hace la tarea sale de la base y tarda unos Soles en volver (haya salido bien o mal).
-	var away_sols: int = int(option.get("away_sols", 0))
-	if away_sols > 0:
-		var actor: String = str(option["role"]) if option.get("role") != null else GameState.pick_volunteer()
-		if not actor.is_empty():
-			GameState.send_away(actor, away_sols)
-			lines.append("The %s goes outside and will be back in %d Sols." % [GameState.ROLE_NAMES[actor], away_sols])
+	# La tarea deja ocupado a quien la hace (haya salido bien o mal): el rol de la opción o,
+	# si es una salida de todos, toda la tripulación. Ver docs/juego/tiempos_fuera.md.
+	var busy_sols: int = int(option.get("away_sols", 0))
+	if busy_sols > 0:
+		var plural: String = "" if busy_sols == 1 else "s"
+		if option.get("role") != null:
+			var worker: String = str(option["role"])
+			GameState.send_away(worker, busy_sols)
+			lines.append("The %s will be busy for %d Sol%s." % [GameState.ROLE_NAMES[worker], busy_sols, plural])
+		else:
+			GameState.send_all_away(busy_sols)
+			lines.append("The whole crew goes out together! The base will be empty for %d Sol%s." % [busy_sols, plural])
 	lines.append_array(_after_state_change())
 	Events.sfx_requested.emit("success" if success else "failure", 0.0)
 	decision_resolved.emit(option, "\n".join(PackedStringArray(lines)), success)
@@ -367,7 +435,7 @@ func _finish(victory: bool, reason: String) -> void:
 # ------------------------------------------------------------ Ayuda de la Tierra
 
 func can_request_earth_help() -> bool:
-	if phase != Phase.DECISION or GameState.earth_help_used_this_sol or GameState.earth_help_blocked():
+	if phase != Phase.DECISION or GameState.earth_help_cooldown_left() > 0 or GameState.earth_help_blocked():
 		return false
 	var kind: String = str(current_event.get("kind", ""))
 	if kind == "realtime" or kind == "auto" or current_event.has("timer_seconds"):
@@ -387,7 +455,7 @@ func request_earth_help(choice_id: String) -> bool:
 		return false
 
 	_stop_countdown()
-	GameState.earth_help_used_this_sol = true
+	GameState.earth_help_ready_sol = GameState.current_sol + GameState.EARTH_HELP_COOLDOWN_SOLS
 	GlossaryManager.unlock("minutos_luz")
 	if int(choice["energy_cost"]) > 0:
 		GameState.modify_stat("energy", -int(choice["energy_cost"]))

@@ -11,6 +11,9 @@ signal seismic_alert_activated
 signal crew_changed
 
 const MAX_SOLS: int = 20
+## La ayuda de la Tierra se recarga cada 4 Soles (con 20 Soles salen como mucho 5 ayudas:
+## es una pista valiosa, no un botón para cada día). Cuenta desde el Sol en que se pide.
+const EARTH_HELP_COOLDOWN_SOLS: int = 4
 const ROLES: Array[String] = ["engineer", "biologist", "doctor", "generalist"]
 const ROLE_NAMES: Dictionary = {
 	"engineer": "Engineer", "biologist": "Biologist", "doctor": "Doctor", "generalist": "Commander",
@@ -51,7 +54,7 @@ var rover_rescued: bool = false
 var quake_happened: bool = false
 var e2_pending: bool = false
 var health_always_above_goal: bool = true
-var earth_help_used_this_sol: bool = false
+var earth_help_ready_sol: int = 1   # primer Sol en que se puede volver a pedir ayuda a la Tierra
 
 ## Tripulantes que están fuera de la base: rol -> Sol en que vuelven (ya en la base).
 var crew_away: Dictionary = {}
@@ -78,7 +81,7 @@ func reset() -> void:
 	quake_happened = false
 	e2_pending = false
 	health_always_above_goal = true
-	earth_help_used_this_sol = false
+	earth_help_ready_sol = 1
 	active_conditions.clear()
 	unlocked_terms.clear()
 	delayed_queue.clear()
@@ -146,6 +149,9 @@ func apply_outcome(outcome: Dictionary) -> Array[String]:
 
 	if outcome.has("start_condition"):
 		start_condition(outcome["start_condition"])
+
+	if outcome.has("away_all"):
+		send_all_away(int(outcome["away_all"]), true)  # solo se usa en efectos diferidos (al amanecer)
 
 	_refresh_seismic_alert()
 	progress_changed.emit()
@@ -220,19 +226,27 @@ func available_crew() -> Array[String]:
 	return present
 
 
-## Quién sale cuando la opción es "para todos": un voluntario al azar entre los que están en la base.
-func pick_volunteer() -> String:
-	var present: Array[String] = available_crew()
-	return "" if present.is_empty() else present.pick_random()
-
-
-## Manda a un tripulante fuera: tarda `sols` Soles en volver. Con sols = 2 no está
-## en el Sol siguiente y vuelve al empezar el que va después.
-func send_away(role: String, sols: int) -> void:
+## Deja a un tripulante ocupado `sols` Soles (docs/juego/tiempos_fuera.md): no está disponible
+## durante los `sols` Soles siguientes y vuelve al empezar el que va después.
+## Con sols = 1: no está mañana y vuelve pasado mañana.
+## `starts_today` = true para efectos diferidos, que se aplican al amanecer: el tripulante
+## está ocupado ese mismo Sol (así "ocupa a todos mañana" deja la base vacía mañana).
+func send_away(role: String, sols: int, starts_today: bool = false) -> void:
 	if not (role in ROLES) or sols <= 0:
 		return
-	crew_away[role] = current_sol + sols
+	crew_away[role] = current_sol + sols + (0 if starts_today else 1)
 	crew_changed.emit()
+
+
+## Salida grupal (EVA): toda la tripulación queda ocupada y la base se queda vacía.
+func send_all_away(sols: int, starts_today: bool = false) -> void:
+	for role in ROLES:
+		send_away(role, sols, starts_today)
+
+
+## True si no queda nadie en la base (los 4 están ocupados).
+func base_is_empty() -> bool:
+	return available_crew().is_empty()
 
 
 ## Al empezar un Sol vuelven los que ya han cumplido su tiempo. Devuelve líneas de aviso.
@@ -268,6 +282,11 @@ func is_condition_active(condition_id: String) -> bool:
 		if condition["id"] == condition_id:
 			return true
 	return false
+
+
+## Soles que faltan para poder volver a pedir ayuda a la Tierra (0 = ya se puede).
+func earth_help_cooldown_left() -> int:
+	return maxi(0, earth_help_ready_sol - current_sol)
 
 
 func earth_help_blocked() -> bool:
@@ -357,5 +376,5 @@ func objectives_completed() -> int:
 
 ## Puntuación final: 200 por objetivo + media de las barras.
 func compute_score() -> int:
-	var average: int = (health + oxygen + energy + integrity) / 4
+	var average: int = int((health + oxygen + energy + integrity) / 4.0)
 	return objectives_completed() * 200 + average

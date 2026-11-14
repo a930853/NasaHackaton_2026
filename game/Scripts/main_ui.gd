@@ -33,10 +33,10 @@ const BUTTON_INSET: float = 2.0
 const STAT_LABELS: Dictionary = {
 	"health": "Health", "oxygen": "Oxygen", "energy": "Energy", "integrity": "Base strength",
 }
-## Dibujo de cada estadística: corazón, burbuja de aire, rayo y cúpula de la base.
-const STAT_ICON_KINDS: Dictionary = {
-	"health": StatIcon.Kind.HEART, "oxygen": StatIcon.Kind.BUBBLE,
-	"energy": StatIcon.Kind.BOLT, "integrity": StatIcon.Kind.BASE,
+## Logo de cada estadística (las imágenes de res://Images/).
+const STAT_ICON_TEXTURES: Dictionary = {
+	"health": StatIcon.SALUD, "oxygen": StatIcon.OXIGENO,
+	"energy": StatIcon.ENERGIA, "integrity": StatIcon.INTEGRIDAD,
 }
 ## Mismo color que el borde de cada botón del marco.
 const STAT_COLORS: Dictionary = {
@@ -56,9 +56,11 @@ const HISTORY_LINES: int = 6
 const ROLE_LABELS: Dictionary = {
 	"engineer": "Engineer", "biologist": "Biologist", "doctor": "Doctor", "generalist": "Commander",
 }
+## Colores de rol (los mismos que el albedo de los cascos): Ingeniero amarillo,
+## Bióloga verde, Médico rojo y Polivalente (Commander) blanco.
 const ROLE_COLORS: Dictionary = {
-	"engineer": Color(0.45, 0.65, 1.0), "biologist": Color(0.45, 0.9, 0.55),
-	"doctor": Color(1.0, 0.45, 0.45), "generalist": Color(1.0, 0.85, 0.35),
+	"engineer": Color(1.0, 0.85, 0.2), "biologist": Color(0.4, 0.9, 0.5),
+	"doctor": Color(1.0, 0.4, 0.4), "generalist": Color(1.0, 1.0, 1.0),
 }
 const GENERAL_LABEL: String = "Everyone"
 
@@ -120,6 +122,7 @@ const CONDITION_SCENES: Dictionary = {
 @onready var energy_button: Button = %EnergyButton
 @onready var integrity_button: Button = %IntegrityButton
 @onready var decide_button: Button = %DecideButton
+var _event_face: EventButtonFace   # dibujo del botón EVENT (lleva la exclamación)
 @onready var words_button: Button = %WordsButton
 
 var _stat_buttons: Dictionary = {}    # stat -> Button
@@ -172,8 +175,9 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	# Los botones parpadean para llamar la atención: decisión pendiente / palabra nueva.
 	var wave: float = 0.5 + 0.5 * sin(Time.get_ticks_msec() / 160.0)
-	var waiting: bool = TurnManager.phase == TurnManager.Phase.DECISION and _view != View.DECISIONS
-	decide_button.self_modulate = Color.WHITE.lerp(Color(1.0, 0.85, 0.35), wave) if waiting else Color.WHITE
+	# El botón EVENT es rojo y sencillo; solo un evento importante pendiente le pone una exclamación encima.
+	_event_face.alert = TurnManager.phase == TurnManager.Phase.DECISION \
+		and bool(TurnManager.current_event.get("important", false))
 	var has_new_word: bool = _new_words > 0 and _view != View.GLOSSARY
 	words_button.self_modulate = Color.WHITE.lerp(Color(1.0, 0.85, 0.35), wave) if has_new_word else Color.WHITE
 
@@ -213,17 +217,21 @@ func _build_buttons() -> void:
 
 	for stat in GameState.STAT_NAMES:
 		var button: Button = _stat_buttons[stat]
-		_style_hud_button(button, STAT_COLORS[stat], 10)
+		_style_hud_button(button, STAT_COLORS[stat], 10, true)
 		button.button_group = group
 		button.pressed.connect(_show_stat.bind(stat))
-		var icon := StatIcon.new(STAT_ICON_KINDS[stat], STAT_COLORS[stat])
+		var icon := StatIcon.new(STAT_ICON_TEXTURES[stat], STAT_COLORS[stat])
 		button.add_child(icon)
 		_stat_icons[stat] = icon
 
 	_style_hud_button(decide_button, Color(0.5, 0.85, 1.0), 64)
+	# El botón redondo se dibuja entero con EventButtonFace: sin estilos propios que tapen el dibujo.
+	for style_name in ["normal", "hover", "pressed", "hover_pressed"]:
+		decide_button.add_theme_stylebox_override(style_name, StyleBoxEmpty.new())
 	decide_button.button_group = group
 	decide_button.pressed.connect(_show_view.bind(View.DECISIONS))
-	_build_face(decide_button, "EVENT", 15, 0)
+	_event_face = EventButtonFace.new()
+	decide_button.add_child(_event_face)
 
 	_style_hud_button(words_button, Color(0.35, 0.7, 1.0), 8)
 	words_button.button_group = group
@@ -233,13 +241,17 @@ func _build_buttons() -> void:
 
 
 ## Estilo común: fondo oscuro de pantalla, borde de color al pasar el ratón y al estar elegido.
-func _style_hud_button(button: Button, accent: Color, radius: int) -> void:
+## `light` = true: cara clara (para los logos de borde negro de las estadísticas).
+func _style_hud_button(button: Button, accent: Color, radius: int, light: bool = false) -> void:
 	button.toggle_mode = true
 	button.focus_mode = Control.FOCUS_NONE
 	button.text = ""
-	var pressed_box: StyleBoxFlat = _make_box(Color(0.13, 0.2, 0.34), accent, radius, 3)
-	button.add_theme_stylebox_override("normal", _make_box(Color(0.05, 0.08, 0.14), Color(0, 0, 0, 0), radius, 0))
-	button.add_theme_stylebox_override("hover", _make_box(Color(0.1, 0.15, 0.26), accent, radius, 2))
+	var normal_fill: Color = Color(0.8, 0.86, 0.94) if light else Color(0.05, 0.08, 0.14)
+	var hover_fill: Color = Color(0.9, 0.95, 1.0) if light else Color(0.1, 0.15, 0.26)
+	var pressed_fill: Color = accent.lerp(Color.WHITE, 0.62) if light else Color(0.13, 0.2, 0.34)
+	var pressed_box: StyleBoxFlat = _make_box(pressed_fill, accent, radius, 3)
+	button.add_theme_stylebox_override("normal", _make_box(normal_fill, Color(0, 0, 0, 0), radius, 0))
+	button.add_theme_stylebox_override("hover", _make_box(hover_fill, accent, radius, 2))
 	button.add_theme_stylebox_override("pressed", pressed_box)
 	button.add_theme_stylebox_override("hover_pressed", pressed_box)
 	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
@@ -467,11 +479,14 @@ func _refresh_earth_help_button() -> void:
 	var available: bool = TurnManager.can_request_earth_help()
 	earth_help_button.disabled = not available
 	if available:
-		earth_help_button.tooltip_text = "Ask Earth for a hint. You can do it once per Sol."
+		earth_help_button.tooltip_text = "Ask Earth for a hint. The radio needs %d Sols to recharge after each message." % GameState.EARTH_HELP_COOLDOWN_SOLS
 	elif GameState.earth_help_blocked():
 		earth_help_button.tooltip_text = "The solar storm is blocking radio messages."
+	elif GameState.earth_help_cooldown_left() > 0:
+		var left: int = GameState.earth_help_cooldown_left()
+		earth_help_button.tooltip_text = "The radio is recharging. Ready in %d Sol%s." % [left, "" if left == 1 else "s"]
 	else:
-		earth_help_button.tooltip_text = "Not now. Earth cannot help with emergencies, and you can ask only once per Sol."
+		earth_help_button.tooltip_text = "Not now. Earth cannot help with emergencies."
 
 
 # -------------------------------------------------------- Señales del TurnManager
