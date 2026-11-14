@@ -298,13 +298,10 @@ Al resolver:
 
 ## Cómo probar
 
-1. Desde la raíz: `npm run dev:no-host` (backend + mando, **sin** el simulador de anfitrión, porque el anfitrión será Godot). Fijaos en el puerto que imprime el backend.
+1. Desde la raíz: `npm run dev` (backend + mando). Fijaos en el puerto que imprime el backend. En esa terminal se ven todos los mensajes que pasan por el backend (`←` recibidos, `→` enviados), útil para ver qué manda Godot y qué le llega.
 2. Lanzad el juego desde el editor apuntando a `ws://localhost:<puerto>/ws`.
 3. Abrid el mando en el móvil (`http://<IP-del-PC>:5173/controller/?room=<código>`) o en otra pestaña del PC.
 4. Sin móviles, también vale cualquier cliente WebSocket (p. ej. `npx wscat -c ws://localhost:<puerto>/ws`) enviando a mano `join_room`, `select_role` y `choose`.
-
-`scripts/host-sim.mjs` (lo que arranca `npm run dev`) es un anfitrión mínimo que sigue este documento: creación de sala, envío de vistas, validación de `choose` en el orden recomendado y resolución de votos. Sirve como referencia de comportamiento.
-
 ## Checklist de Godot
 
 - [ ] `Net` hace `poll()` cada frame y centraliza el socket.

@@ -25,8 +25,7 @@ backend/
   package.json
   Dockerfile
 deploy/nginx.conf  Sirve estáticos y hace proxy de /ws y /api al backend
-scripts/dev.mjs    `npm run dev`: arranca backend y mando con puertos libres
-scripts/host-sim.mjs  Simulador de Godot en terminal (sala, eventos, votos) para probar sin el juego
+scripts/dev.mjs    `npm run dev`: arranca backend y mando con puertos libres y log de mensajes
 dist/game/         Exportación web de Godot (generada)
 dist/controller/   Build del mando (generado, no se versiona)
 compose.yaml       Servicios `web` (Nginx) y `backend` (Node)
@@ -75,12 +74,11 @@ Los clientes construyen la URL del WebSocket a partir de `location` (`ws(s)://<h
 ```bash
 # Todo desde la raíz (Node ≥ 22)
 npm install                                   # instala también backend/ y controller/
-npm run dev                                   # backend + mando + simulador de Godot (scripts/host-sim.mjs)
-npm run dev:no-host                           # sin simulador, para el Godot real
+npm run dev                                   # backend + mando, con LOG_MESSAGES=1 (mensajes en bruto)
 npm test                                      # tests de backend y mando
 
 # Backend en local (sin Docker)
-cd backend && npm install && npm run dev      # :3000 (PORT para cambiarlo)
+cd backend && npm install && npm run dev      # :3000 (PORT para cambiarlo, LOG_MESSAGES=1 para ver mensajes)
 cd backend && npm test
 
 # Mando en local (necesita el backend)

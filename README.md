@@ -21,7 +21,7 @@ Juego cooperativo por salas para el NASA Hackathon 2026. Una **pantalla principa
 | [`controller/`](controller/) | Mando web (Vue 3 + Vite + Tailwind) | Implementado, con tests |
 | `landing/` | Página de inicio `/` | Pendiente |
 | `deploy/` | Configuración de Nginx | Pendiente |
-| [`scripts/`](scripts/) | `npm run dev` y simulador de Godot | Herramientas de desarrollo |
+| [`scripts/`](scripts/) | `npm run dev` (backend + mando) | Herramientas de desarrollo |
 | `dist/game/` | Exportación web de Godot | Se genera al exportar |
 | `dist/controller/` | Build del mando | Se genera con `npm run build` (no se versiona) |
 | [`docs/`](docs/) | Documentación | Ver abajo |
@@ -49,30 +49,20 @@ npm install      # instala también backend/ y controller/
 npm run dev
 ```
 
-Arranca el **backend**, el **mando** (Vite) y un **anfitrión simulado** que hace de Godot en la terminal. El simulador crea una sala e imprime las URL para abrir desde el móvil (misma Wi-Fi), por ejemplo:
+Arranca el **backend** y el **mando** (Vite). La sala la crea el anfitrión (Godot); después, el mando se abre desde el móvil (misma Wi-Fi) en `http://<IP-del-PC>:5173/controller/?room=<código>`.
+
+En la misma terminal se ven **todos los mensajes en bruto** que pasan por el backend (`←` recibidos, `→` enviados, y con quién):
 
 ```text
-[host]  Sala creada: K7MP
-[host]    Móvil (misma red): http://192.168.1.50:5173/controller/?room=K7MP
-[host]    Entrada por rol:   http://192.168.1.50:5173/controller/engineer  (también biologist, doctor, generalist)
+[backend]    ← host K7MP     {"type":"start_game"}
+[backend]    → K7MP/p1       {"type":"game_started","players":[...]}
 ```
 
-Después se escriben comandos en esa misma terminal:
-
-| Comando | Qué hace |
-|---|---|
-| `start` | Inicia la partida (todos los jugadores con rol) |
-| `ask` | Envía un evento con opciones a todos los móviles; se resuelve solo cuando votan todos |
-| `resolve` | Resuelve el evento actual con los votos recibidos |
-| `wait` | Envía una pantalla de espera |
-| `finish` | Termina la partida |
-| `new` | Crea una sala nueva |
-| `status` / `help` | Estado de la sala / ayuda |
+Para quitarlo: `LOG_MESSAGES=0 npm run dev`.
 
 Otras órdenes desde la raíz:
 
 ```bash
-npm run dev:no-host   # backend + mando, sin simulador (para probar con el Godot real)
 npm test              # tests del backend y del mando
 npm run build         # genera dist/controller/
 ```
@@ -82,9 +72,8 @@ Los puertos se eligen solos. Si el 3000 está ocupado o reservado (en Windows, H
 ### Cada parte por separado
 
 ```bash
-cd backend && npm run dev       # :3000 (PORT=<otro> para cambiarlo)
+cd backend && npm run dev       # :3000 (PORT=<otro> para cambiarlo, LOG_MESSAGES=1 para ver mensajes)
 cd controller && npm run dev    # :5173/controller/ (BACKEND_PORT=<puerto del backend>)
-npm run host                    # simulador contra un backend ya arrancado en :3000
 ```
 
 ### Godot

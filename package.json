@@ -9,8 +9,6 @@
   "scripts": {
     "postinstall": "npm install --prefix backend && npm install --prefix controller",
     "dev": "node scripts/dev.mjs",
-    "dev:no-host": "node scripts/dev.mjs --no-host",
-    "host": "node scripts/host-sim.mjs",
     "test": "npm test --prefix backend && npm test --prefix controller",
     "build": "npm run build --prefix controller"
   }
