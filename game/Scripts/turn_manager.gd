@@ -98,7 +98,10 @@ func _begin_sol() -> void:
 	else:
 		GameState.current_sol += 1
 		GameState.earth_help_used_this_sol = false
-		lines.append_array(GameState.process_crew_return())
+		var returned: Array[String] = GameState.process_crew_return()
+		if not returned.is_empty():
+			Events.sfx_requested.emit("door", 0.0)  # alguien vuelve a entrar en la base
+		lines.append_array(returned)
 		var loss: int = GameState.passive_oxygen_loss()
 		if loss > 0:
 			GameState.modify_stat("oxygen", -loss)
@@ -137,6 +140,8 @@ func _select_event() -> void:
 			event = entry["event"]
 			hint = str(entry["hint"])
 			fresh = entry.get("fresh", true)  # false: ya se aplicaron sus efectos de inicio
+			if not hint.is_empty():
+				Events.sfx_requested.emit("intercom", 0.0)  # llega la respuesta de la Tierra
 
 	if event.is_empty():
 		event = EventManager.pick_event()
@@ -316,6 +321,7 @@ func submit_choice(option_id: String) -> bool:
 			GameState.send_away(actor, away_sols)
 			lines.append("The %s goes outside and will be back in %d Sols." % [GameState.ROLE_NAMES[actor], away_sols])
 	lines.append_array(_after_state_change())
+	Events.sfx_requested.emit("success" if success else "failure", 0.0)
 	decision_resolved.emit(option, "\n".join(PackedStringArray(lines)), success)
 	return true
 
