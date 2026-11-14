@@ -22,6 +22,10 @@ buses/default_bus_layout="uid://c1bntj6aapk3m"
 [autoload]
 
 Events="*uid://chtahno0wqyim"
+GameState="*res://Scripts/game_state.gd"
+GlossaryManager="*res://Scripts/glossary_manager.gd"
+EventManager="*res://Scripts/event_manager.gd"
+TurnManager="*res://Scripts/turn_manager.gd"
 
 [display]
 

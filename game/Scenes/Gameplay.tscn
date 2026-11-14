@@ -1,10 +1,15 @@
 [gd_scene format=3 uid="uid://cb0fgqbl4efdi"]
 
-[node name="Gameplay" type="Node2D" unique_id=205904257]
+[ext_resource type="PackedScene" path="res://Scenes/MainUI.tscn" id="1_mainui"]
 
-[node name="Label" type="Label" parent="." unique_id=545980199]
-offset_left = 422.0
-offset_top = 219.0
-offset_right = 500.0
-offset_bottom = 242.0
-text = "Gameplay"
+[node name="Gameplay" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="MainUI" parent="." instance=ExtResource("1_mainui")]
+layout_mode = 1

@@ -2526,7 +2526,7 @@ value = 1.0
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
-text = "--- SOUND EFECTS ---"
+text = "--- SOUND EFFECTS ---"
 
 [node name="SfxSlider" type="HSlider" parent="MarginContainer/VBoxContainer" unique_id=2124752620]
 unique_name_in_owner = true
