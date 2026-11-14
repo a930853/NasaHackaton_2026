@@ -21,7 +21,7 @@ Fuente de verdad compartida entre **Godot**, el **mando web** y el **backend**. 
 | [`game_started`](#game_started) | Node → Godot y mandos | — |
 | [`controller_view`](#controller_view) | Godot → Node → Mando | Node (forma) |
 | [`choose`](#choose) | Mando → Node → Godot | Node (forma e identidad) · **Godot** (todo lo demás) |
-| [`choice_result`](#choice_result) | Godot → Node → Mando | Node (forma) |
+| [`choice_result`](#choice_result) | Godot → Node | Node (forma) |
 | [`resume_player`](#resume_player) | Mando → Node | Node |
 | [`finish_game`](#finish_game) | Godot → Node | Node |
 | [`room_closed`](#room_closed) | Node → Mandos | — |
@@ -169,18 +169,14 @@ Node → Godot (añade la identidad de la **conexión**):
 - **Todo lo demás lo decide Godot** y lo contesta con [`choice_result`](#choice_result).
 
 ### `choice_result`
-Godot → Node → Mando. Resultado de una elección.
+Godot → Node. Resultado de una elección. Node valida el jugador y la forma, pero no lo reenvía al mando: la pantalla principal de Godot muestra el resultado y envía al mando la siguiente [`controller_view`](#controller_view).
 
 Godot → Node:
 ```json
 { "type": "choice_result", "playerId": "p2", "actionId": "p2-action-17", "accepted": true }
 { "type": "choice_result", "playerId": "p2", "actionId": "p2-action-18", "accepted": false, "reason": "event_closed" }
 ```
-Node → Mando (sin `playerId`):
-```json
-{ "type": "choice_result", "actionId": "p2-action-17", "accepted": true }
-```
-Motivos de rechazo definidos (los fija Godot, Node los reenvía tal cual): `event_closed`, `not_eligible`, `invalid_option`, `already_decided`.
+Motivos de rechazo definidos por Godot: `event_closed`, `not_eligible`, `invalid_option`, `already_decided`. Node valida el mensaje, pero no entrega este resultado al mando.
 
 Un `actionId` repetido debe recibir **la misma respuesta** que la primera vez, sin repetir efectos (lo garantiza Godot, ver [godot.md](godot.md#validar-un-choose)).
 
@@ -273,8 +269,7 @@ Godot            Node                    Mando
   │<───────────────│                       │
   │ (valida, registra, aplica o espera)    │
   │ choice_result  │                       │
-  │───────────────>│ choice_result         │
-  │                │──────────────────────>│
+  │───────────────>│                       │
   │ controller_view(result / waiting)      │
   │───────────────>│──────────────────────>│
 ```
@@ -309,8 +304,8 @@ Implementación de referencia y detalles: [controller.md](controller.md).
 - Guardar `code` y `resumeToken` en `localStorage` al recibir `joined`; al cargar la página, si existen, enviar `resume_player` en lugar de pedir el código.
 - Si `resume_player` falla con `invalid_token` o `room_not_found`, borrar lo guardado y volver a la pantalla de entrada.
 - Si el WebSocket se cae, reintentar con *backoff* y volver a enviar `resume_player`.
-- Generar `actionId` al pulsar (p. ej. `<playerId>-action-<contador>`); reenviar **el mismo** si no llega `choice_result`.
-- Pulsar → «Enviando…» y botones desactivados. `choice_result.accepted` → «Decisión registrada». Rechazo → mostrar el motivo y restaurar la vista anterior.
+- Generar `actionId` al pulsar (p. ej. `<playerId>-action-<contador>`); reenviar **el mismo** si no llega una nueva `controller_view`.
+- Pulsar → «Enviando…» y botones desactivados. Godot muestra el resultado en la pantalla principal y envía al mando la siguiente vista (`result`, `waiting` o una nueva pregunta).
 - Tras `resume_player` llega `controller_view` con la vista guardada: pintarla tal cual.
 - Construir la URL con `location` (`(location.protocol === 'https:' ? 'wss' : 'ws') + '://' + location.host + '/ws'`). Sin IPs fijas.
 
