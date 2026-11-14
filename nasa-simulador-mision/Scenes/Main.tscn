@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://bj3rdjmiiuuhb"]
+
+[ext_resource type="Script" uid="uid://cjeuvnjh4f50g" path="res://Scripts/contenedor_escena.gd" id="1_ri44q"]
+
+[node name="Main" type="Node" unique_id=831378100]
+
+[node name="SistemasGlobales" type="Node" parent="." unique_id=659710376]
+
+[node name="ServidoresMoviles" type="Node" parent="SistemasGlobales" unique_id=1255304508]
+
+[node name="NasaApi" type="HTTPRequest" parent="SistemasGlobales" unique_id=1803634509]
+
+[node name="Musica_Ambiente" type="AudioStreamPlayer2D" parent="SistemasGlobales" unique_id=1373564122]
+
+[node name="ContenedorEscena" type="Node" parent="." unique_id=485738805]
+unique_name_in_owner = true
+script = ExtResource("1_ri44q")

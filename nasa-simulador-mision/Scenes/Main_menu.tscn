@@ -1,0 +1,41 @@
+[gd_scene format=3 uid="uid://bjuh4uls11g3o"]
+
+[ext_resource type="Texture2D" uid="uid://vsifle35h3wm" path="res://Images/MonsCloud_MarsExpress_1920.jpg" id="1_pc006"]
+[ext_resource type="FontFile" uid="uid://dty01at6didf0" path="res://TextFonts/sixtyfour/static/sixtyfour-math-400-normal.ttf" id="2_f7j37"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_gc6rr"]
+texture = ExtResource("1_pc006")
+
+[sub_resource type="LabelSettings" id="LabelSettings_i4s4l"]
+font = ExtResource("2_f7j37")
+font_size = 50
+
+[node name="MainMenu" type="Control" unique_id=1203072789]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="Panel" parent="." unique_id=1240011585]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_gc6rr")
+
+[node name="Label" type="Label" parent="." unique_id=1754066619]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 1.0
+offset_top = 38.0
+offset_right = 1.0
+offset_bottom = 89.0
+grow_horizontal = 2
+text = "Mars Mision"
+label_settings = SubResource("LabelSettings_i4s4l")
+horizontal_alignment = 1
