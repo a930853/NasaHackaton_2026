@@ -1,0 +1,79 @@
+@import 'tailwindcss';
+
+/* Paleta y tipografía del mando */
+@theme {
+  --font-sans: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, monospace;
+
+  --color-navy: #071321;
+  --color-panel: #10243a;
+  --color-line: #29415b;
+  --color-line-strong: #49627c;
+  --color-ink: #f4f7fb;
+  --color-soft: #d7e2ee;
+  --color-muted: #91a6be;
+  --color-dim: #70869f;
+  --color-amber: #f5b940;
+  --color-amber-light: #ffd574;
+  --color-danger: #f17474;
+  --color-ok: #57c98b;
+}
+
+@layer base {
+  :root {
+    /* Color del rol activo: lo sobrescribe roleStyle() (src/roles.js). Por defecto, ámbar. */
+    --role-color: var(--color-amber);
+    --role-pale: #fff3ce;
+    --role-dark: #7b5100;
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #app {
+    min-width: 320px;
+    min-height: 100%;
+  }
+
+  body {
+    @apply overflow-x-hidden bg-navy font-sans text-ink antialiased;
+  }
+}
+
+@media (max-width: 767px) {
+  .fixed-mobile-screen {
+    height: 100dvh;
+    overflow: hidden;
+  }
+}
+
+/* Piezas repetidas en varias pantallas */
+@layer components {
+  .screen-w {
+    @apply mx-auto w-[calc(100%-32px)] md:w-[min(1120px,calc(100%-64px))];
+  }
+
+  .eyebrow {
+    @apply mb-2 font-mono text-[10px] tracking-[.12em] text-muted;
+  }
+
+  .notice {
+    @apply font-mono text-xs text-muted;
+  }
+
+  .notice-error {
+    @apply font-mono text-xs text-danger;
+  }
+
+  .btn-primary {
+    @apply mt-2 min-h-13 cursor-pointer rounded-[5px] border border-amber bg-amber px-[18px] font-bold whitespace-nowrap text-navy;
+    @apply hover:bg-amber-light focus-visible:bg-amber-light focus-visible:outline-none;
+    @apply disabled:cursor-wait disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply mt-[18px] min-h-11 cursor-pointer rounded-[5px] border border-line-strong bg-transparent px-[18px] text-soft;
+    @apply hover:border-(--role-color) hover:text-(--role-color);
+    @apply focus-visible:border-(--role-color) focus-visible:text-(--role-color) focus-visible:outline-none;
+  }
+}
