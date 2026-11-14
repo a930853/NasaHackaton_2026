@@ -1,0 +1,15 @@
+{
+  "name": "nasa-hackaton-2026",
+  "private": true,
+  "type": "module",
+  "description": "Juego cooperativo por salas: pantalla en Godot, mandos web y backend Node",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "postinstall": "npm install --prefix backend && npm install --prefix controller",
+    "dev": "node scripts/dev.mjs",
+    "test": "npm test --prefix backend && npm test --prefix controller",
+    "build": "npm run build --prefix controller"
+  }
+}

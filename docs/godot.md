@@ -296,13 +296,12 @@ Al resolver:
 - `JavaScriptBridge` y `OS.has_feature("web")` solo funcionan en la exportación web. Protegedlo con `OS.has_feature("web")` para poder seguir probando desde el editor.
 - Todos los recursos (fuentes, audio, imágenes) deben ir dentro del `.pck`; la demo no puede depender de Internet. Ojo con la llamada a la API de NASA de `main.gd`: tiene que fallar con gracia si no hay conexión.
 
-## Cómo probar sin móviles
+## Cómo probar
 
-1. `cd backend && npm run dev`.
-2. Lanzad el juego desde el editor (apunta a `ws://localhost:3000/ws`).
-3. Simulad mandos con cualquier cliente WebSocket (p. ej. `npx wscat -c ws://localhost:3000/ws`) enviando a mano `join_room`, `select_role` y `choose`.
-4. Cuando exista, usad el mando real en `/controller/` desde un móvil de la misma red.
-
+1. Desde la raíz: `npm run dev` (backend + mando). Fijaos en el puerto que imprime el backend. En esa terminal se ven todos los mensajes que pasan por el backend (`←` recibidos, `→` enviados), útil para ver qué manda Godot y qué le llega.
+2. Lanzad el juego desde el editor apuntando a `ws://localhost:<puerto>/ws`.
+3. Abrid el mando en el móvil (`http://<IP-del-PC>:5173/controller/?room=<código>`) o en otra pestaña del PC.
+4. Sin móviles, también vale cualquier cliente WebSocket (p. ej. `npx wscat -c ws://localhost:<puerto>/ws`) enviando a mano `join_room`, `select_role` y `choose`.
 ## Checklist de Godot
 
 - [ ] `Net` hace `poll()` cada frame y centraliza el socket.

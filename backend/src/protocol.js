@@ -1,4 +1,5 @@
 // Tipos de mensaje y validación de entrada. Contrato: docs/protocol.md
+import { logMessage } from './log.js';
 
 export const ROLES = ['engineer', 'biologist', 'doctor', 'generalist'];
 export const MAX_PLAYERS = 4;
@@ -37,8 +38,12 @@ export function parse(raw) {
   return problem ? { error: problem } : { msg };
 }
 
+/** Envía un mensaje si la conexión está abierta (y lo registra si LOG_MESSAGES=1). */
 export const send = (ws, msg) => {
-  if (ws?.readyState === 1) ws.send(JSON.stringify(msg));
+  if (ws?.readyState !== 1) return;
+  const text = JSON.stringify(msg);
+  logMessage('out', ws, text);
+  ws.send(text);
 };
 
 export const sendError = (ws, code, requestType) =>

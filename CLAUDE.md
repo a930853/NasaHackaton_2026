@@ -13,6 +13,7 @@ Juego cooperativo por salas para el NASA Hackathon 2026: una **pantalla principa
 
 ```text
 game/              Proyecto Godot 4.7 (GDScript, GL Compatibility). Exporta a ../dist/game/
+game_debug/        Proyecto Godot aparte (GL Compatibility) para probar la conexión con info de depuración. Exporta a ../dist/game_debug/
 controller/        Mando web: Vue 3 + Vite + Tailwind 4 (JS). Compila a ../dist/controller/, se sirve en /controller/
   src/net/socket.js       Único punto que toca el WebSocket
   src/stores/session.js   Estado de la sesión e interpretación de mensajes
@@ -25,7 +26,9 @@ backend/
   package.json
   Dockerfile
 deploy/nginx.conf  Sirve estáticos y hace proxy de /ws y /api al backend
+scripts/dev.mjs    `npm run dev`: arranca backend y mando con puertos libres y log de mensajes
 dist/game/         Exportación web de Godot (generada)
+dist/game_debug/   Exportación web de game_debug (generada, se versiona)
 dist/controller/   Build del mando (generado, no se versiona)
 compose.yaml       Servicios `web` (Nginx) y `backend` (Node)
 docs/protocol.md   Contrato de mensajes: FUENTE DE VERDAD compartida
@@ -71,8 +74,13 @@ Los clientes construyen la URL del WebSocket a partir de `location` (`ws(s)://<h
 ## Comandos
 
 ```bash
+# Todo desde la raíz (Node ≥ 22)
+npm install                                   # instala también backend/ y controller/
+npm run dev                                   # backend + mando, con LOG_MESSAGES=1 (mensajes en bruto)
+npm test                                      # tests de backend y mando
+
 # Backend en local (sin Docker)
-cd backend && npm install && npm run dev      # :3000 (PORT para cambiarlo)
+cd backend && npm install && npm run dev      # :3000 (PORT para cambiarlo, LOG_MESSAGES=1 para ver mensajes)
 cd backend && npm test
 
 # Mando en local (necesita el backend)

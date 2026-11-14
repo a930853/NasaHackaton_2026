@@ -13,10 +13,6 @@ font_size = 50
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_gc6rr"]
 texture = ExtResource("1_pc006")
 
-[sub_resource type="GDScript" id="GDScript_787fc"]
-script/source = "extends Control
-"
-
 [node name="MainMenu" type="Control" unique_id=1203072789]
 layout_mode = 3
 anchors_preset = 15
@@ -93,7 +89,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-script = SubResource("GDScript_787fc")
 
 [node name="Panel" type="Panel" parent="Lobby" unique_id=1063036358]
 layout_mode = 1
