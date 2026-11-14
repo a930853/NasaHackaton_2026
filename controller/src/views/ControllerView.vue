@@ -7,6 +7,7 @@ import { ROLES, roleStyle } from '../roles.js'
 import { closedText, errorText } from '../messages.js'
 import ChoiceView from '../components/ChoiceView.vue'
 import CrewList from '../components/CrewList.vue'
+import ScreenHeading from '../components/ScreenHeading.vue'
 import StatusCard from '../components/StatusCard.vue'
 import EnterView from './EnterView.vue'
 import RolePicker from './RolePicker.vue'
@@ -120,28 +121,38 @@ const footerText = computed(() => {
 </script>
 
 <template>
-  <main class="app-shell" :class="{ 'role-mode': showRoleScreen }" :style="roleStyle(roleInfo)">
-    <p v-if="s.connection === 'offline' && s.phase !== 'connecting'" class="connection-banner" role="status">
+  <main
+    class="flex min-h-dvh flex-col overflow-x-hidden bg-navy"
+    :class="
+      showRoleScreen
+        ? 'bg-[radial-gradient(circle_at_85%_4%,rgba(52,97,143,.38),transparent_30%)]'
+        : 'bg-[radial-gradient(circle_at_85%_4%,rgba(32,75,120,.5),transparent_28%)]'
+    "
+    :style="roleStyle(roleInfo)"
+  >
+    <p
+      v-if="s.connection === 'offline' && s.phase !== 'connecting'"
+      class="sticky top-0 z-10 bg-amber px-4 py-2.5 text-center font-mono text-xs text-navy"
+      role="status"
+    >
       Sin conexión con el centro de control. Reconectando…
     </p>
 
     <!-- Otro dispositivo ha recuperado esta misma sesión -->
-    <section v-if="s.connection === 'replaced'" class="screen">
-      <div class="start-content">
-        <StatusCard mark="⇄" eyebrow="SESIÓN EN OTRO DISPOSITIVO" title="Tu sesión se ha abierto en otro dispositivo.">
-          <button class="primary-button" type="button" @click="session.takeOver()">Usar este dispositivo</button>
-        </StatusCard>
-      </div>
+    <section v-if="s.connection === 'replaced'" class="screen-w flex flex-1 flex-col justify-center py-12">
+      <StatusCard mark="⇄" eyebrow="SESIÓN EN OTRO DISPOSITIVO" title="Tu sesión se ha abierto en otro dispositivo.">
+        <button class="btn-primary" type="button" @click="session.takeOver()">Usar este dispositivo</button>
+      </StatusCard>
     </section>
 
-    <section v-else-if="s.phase === 'connecting' || s.phase === 'joining'" class="screen start-screen">
-      <div class="start-content">
-        <div class="welcome">
-          <p class="eyebrow">NASA · CENTRO DE CONTROL</p>
-          <h1>Únete a la <span>misión</span></h1>
-        </div>
-        <p class="server-message" role="status">Conectando con el centro de control<span class="loading-dots">...</span></p>
-      </div>
+    <section
+      v-else-if="s.phase === 'connecting' || s.phase === 'joining'"
+      class="screen-w flex flex-1 flex-col justify-center gap-[clamp(28px,6vh,56px)] py-12"
+    >
+      <ScreenHeading>Únete a la <span class="text-amber">misión</span></ScreenHeading>
+      <p class="notice" role="status">
+        Conectando con el centro de control<span class="tracking-[3px] text-amber">...</span>
+      </p>
     </section>
 
     <EnterView
@@ -154,12 +165,10 @@ const footerText = computed(() => {
       @join="join"
     />
 
-    <section v-else-if="s.phase === 'closed'" class="screen">
-      <div class="start-content">
-        <StatusCard mark="■" eyebrow="SALA CERRADA" :title="closedText(s.closedReason)">
-          <button class="primary-button" type="button" @click="restart">Volver al inicio</button>
-        </StatusCard>
-      </div>
+    <section v-else-if="s.phase === 'closed'" class="screen-w flex flex-1 flex-col justify-center py-12">
+      <StatusCard mark="■" eyebrow="SALA CERRADA" :title="closedText(s.closedReason)">
+        <button class="btn-primary" type="button" @click="restart">Volver al inicio</button>
+      </StatusCard>
     </section>
 
     <RolePicker
@@ -170,20 +179,22 @@ const footerText = computed(() => {
       @pick="pickRole"
     />
 
-    <section v-else class="screen role-screen" aria-labelledby="role-title">
-      <header class="role-header">
-        <div class="role-title">
-          <div>
-            <p class="eyebrow">TU MISIÓN</p>
-            <h1 id="role-title">{{ roleInfo.name }}</h1>
-          </div>
+    <section v-else class="screen-w flex flex-1 flex-col" aria-labelledby="role-title">
+      <header class="flex items-center justify-between pt-[clamp(18px,4vh,38px)]">
+        <div>
+          <p class="eyebrow text-(--role-color)">TU MISIÓN</p>
+          <h1 id="role-title" class="text-[clamp(34px,4.5vw,58px)] leading-[.98] font-bold tracking-[-.055em]">
+            {{ roleInfo.name }}
+          </h1>
         </div>
-        <span class="room-badge">{{ s.code }}</span>
+        <span class="rounded-[5px] border border-line px-2.5 py-1.5 font-mono text-xs tracking-[.15em] text-muted">
+          {{ s.code }}
+        </span>
       </header>
 
-      <p v-if="message" class="server-message error-message" role="alert">{{ message }}</p>
+      <p v-if="message" class="notice-error mt-4" role="alert">{{ message }}</p>
 
-      <template v-if="s.phase === 'lobby'">
+      <div v-if="s.phase === 'lobby'" class="mt-[clamp(16px,3vh,32px)]">
         <StatusCard
           v-if="s.role !== activeRole"
           mark="…"
@@ -197,39 +208,52 @@ const footerText = computed(() => {
           title="Esperando a que el centro de control inicie la misión"
           text="Mira la pantalla principal: la misión empezará en cuanto esté lista la tripulación."
         >
-          <CrewList :players="s.players" :player-id="s.playerId" />
-          <button class="secondary-button" type="button" @click="changeRole">Cambiar de rol</button>
+          <CrewList class="mx-auto mt-6 text-left" :players="s.players" :player-id="s.playerId" />
+          <button class="btn-secondary" type="button" @click="changeRole">Cambiar de rol</button>
         </StatusCard>
-      </template>
+      </div>
 
       <template v-else>
-        <StatusCard
-          v-if="!s.view"
-          eyebrow="MISIÓN EN CURSO"
-          title="La misión está comenzando"
-          text="Atento a la pantalla principal."
+        <ChoiceView
+          v-if="s.view?.screen === 'choice' && !decided"
+          :view="s.view"
+          :choice="s.choice"
+          @choose="session.choose"
         />
-        <StatusCard
-          v-else-if="decided"
-          mark="✓"
-          eyebrow="DECISIÓN REGISTRADA"
-          title="Tu decisión ha llegado al centro de control."
-          text="Esperando al resto de la tripulación…"
-        />
-        <ChoiceView v-else-if="s.view.screen === 'choice'" :view="s.view" :choice="s.choice" @choose="session.choose" />
-        <StatusCard
-          v-else-if="s.view.screen === 'result'"
-          mark="★"
-          eyebrow="RESULTADO"
-          :title="s.view.title || 'Resultado'"
-          :text="s.view.text"
-        />
-        <StatusCard v-else eyebrow="EN ESPERA" :title="s.view.title || 'Esperando…'" :text="s.view.text" />
+        <div v-else class="mt-[clamp(16px,3vh,32px)]">
+          <StatusCard
+            v-if="!s.view"
+            eyebrow="MISIÓN EN CURSO"
+            title="La misión está comenzando"
+            text="Atento a la pantalla principal."
+          />
+          <StatusCard
+            v-else-if="decided"
+            mark="✓"
+            eyebrow="DECISIÓN REGISTRADA"
+            title="Tu decisión ha llegado al centro de control."
+            text="Esperando al resto de la tripulación…"
+          />
+          <StatusCard
+            v-else-if="s.view.screen === 'result'"
+            mark="★"
+            eyebrow="RESULTADO"
+            :title="s.view.title || 'Resultado'"
+            :text="s.view.text"
+          />
+          <StatusCard v-else eyebrow="EN ESPERA" :title="s.view.title || 'Esperando…'" :text="s.view.text" />
+        </div>
       </template>
     </section>
 
-    <footer class="kid-footer screen-footer">
-      <span class="status-dot" :class="{ offline: s.connection !== 'online' }" aria-hidden="true" />
+    <footer class="screen-w flex items-center gap-2 pt-[18px] pb-6 font-mono text-[10px] tracking-[.08em] text-dim">
+      <span
+        class="size-[7px] rounded-full"
+        :class="
+          s.connection === 'online' ? 'bg-ok shadow-[0_0_10px_var(--color-ok)]' : 'bg-danger shadow-[0_0_10px_var(--color-danger)]'
+        "
+        aria-hidden="true"
+      />
       <span>{{ footerText }}</span>
     </footer>
   </main>

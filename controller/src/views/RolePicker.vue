@@ -3,6 +3,7 @@
 import { computed } from 'vue'
 import { ROLES } from '../roles.js'
 import CrewList from '../components/CrewList.vue'
+import ScreenHeading from '../components/ScreenHeading.vue'
 
 const props = defineProps({
   players: { type: Array, required: true },
@@ -26,33 +27,39 @@ const caption = (role) => {
 </script>
 
 <template>
-  <section class="screen start-screen" aria-labelledby="picker-title">
-    <div class="start-content">
-      <div class="welcome">
-        <p class="eyebrow">NASA · CENTRO DE CONTROL</p>
-        <h1 id="picker-title">¿Qué quieres ser <span>hoy?</span></h1>
-        <p class="hint">Selecciona tu especialidad para comenzar.</p>
-      </div>
+  <section class="screen-w flex flex-1 flex-col" aria-labelledby="picker-title">
+    <div class="flex flex-1 flex-col justify-center gap-[clamp(28px,6vh,56px)] py-7 md:py-12">
+      <ScreenHeading id="picker-title">
+        ¿Qué quieres ser <span class="text-amber">hoy?</span>
+        <template #hint>Selecciona tu especialidad para comenzar.</template>
+      </ScreenHeading>
 
-      <p v-if="message" class="server-message error-message" role="alert">{{ message }}</p>
+      <p v-if="message" class="notice-error" role="alert">{{ message }}</p>
 
-      <div class="role-grid" aria-label="Elige tu rol">
+      <div class="grid w-full grid-cols-2 gap-2.5 md:gap-3.5" aria-label="Elige tu rol">
         <button
           v-for="role in roleList"
           :key="role.id"
-          class="role-button"
-          :class="{ disabled: !role.available, mine: role.mine }"
+          type="button"
+          class="group flex cursor-pointer items-center gap-2.5 rounded-[5px] border border-l-[6px] p-3.5 text-left text-ink transition duration-200 md:gap-[18px] md:p-[clamp(18px,2.4vw,28px)] enabled:hover:-translate-y-[3px] enabled:hover:border-(--button-color) enabled:hover:bg-(--button-pale) enabled:hover:text-(--button-dark) focus-visible:outline-none disabled:cursor-not-allowed disabled:border-[#31445b] disabled:border-l-[#516276] disabled:bg-[rgba(15,32,52,.45)] disabled:text-[#6d7f94] disabled:opacity-70"
+          :class="role.mine ? 'border-(--button-color) bg-[rgb(15,32,52)]' : 'border-[#2d435b] border-l-(--button-color) bg-[rgba(15,32,52,.9)]'"
           :style="{ '--button-color': role.color, '--button-pale': role.pale, '--button-dark': role.dark }"
           :disabled="!role.available"
-          type="button"
           @click="emit('pick', role.id)"
         >
-          <span class="role-code" aria-hidden="true">{{ role.code }}</span>
-          <span class="role-button-copy">
-            <strong>{{ role.name }}</strong>
-            <small>{{ caption(role) }}</small>
+          <span
+            class="grid size-[42px] shrink-0 place-items-center rounded-full border border-(--button-color) font-mono text-[9px] font-medium tracking-[.04em] text-(--button-color) md:size-[54px] md:text-[11px] group-enabled:group-hover:text-(--button-dark) group-disabled:border-[#516276] group-disabled:text-[#6d7f94]"
+            aria-hidden="true"
+          >
+            {{ role.code }}
           </span>
-          <span class="button-go" aria-hidden="true">{{ role.available ? '→' : '—' }}</span>
+          <span class="flex flex-col gap-[7px]">
+            <strong class="text-[clamp(18px,2vw,23px)]">{{ role.name }}</strong>
+            <small class="text-[10px] text-muted md:text-xs group-enabled:group-hover:text-(--button-dark) group-disabled:text-[#718198]">
+              {{ caption(role) }}
+            </small>
+          </span>
+          <span class="ml-auto text-[25px] text-(--button-color)" aria-hidden="true">{{ role.available ? '→' : '—' }}</span>
         </button>
       </div>
 

@@ -1,10 +1,11 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import tailwindcss from '@tailwindcss/vite'
 
 // El mando se sirve en /controller/ (Nginx en producción, Vite en desarrollo).
 export default defineConfig({
   base: '/controller/',
-  plugins: [vue()],
+  plugins: [vue(), tailwindcss()],
   build: {
     outDir: '../dist/controller',
     emptyOutDir: true,
