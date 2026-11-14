@@ -1,49 +1,117 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Supervivencia en Marte</title>
+  <meta name="theme-color" content="#7d869c">
+  <title>Mars Survival</title>
   <style>
-    /* Página de inicio provisional: crear partida (pantalla) o entrar con código (móvil). */
-    :root { color-scheme: dark; }
+    /* Página de inicio: crear partida (pantalla principal) o entrar con código (móvil).
+       Mismo estilo que el mando y la cabina del juego (game/Images/hud_frame.png). */
+    :root {
+      color-scheme: dark;
+      --hull: #7d869c; --hull-light: #a9b1c3; --outline: #1a2030;
+      --navy: #0d1424; --panel: #172238; --line: #4d73b3;
+      --ink: #eef3ff; --muted: #9fb0cc;
+      --orange: #ffa826; --orange-light: #ffc463; --cyan: #4db8ff;
+    }
     * { box-sizing: border-box; }
     body {
-      margin: 0; min-height: 100vh; display: grid; place-items: center;
-      font-family: system-ui, sans-serif; background: #14161c; color: #eee; padding: 16px;
+      margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px 16px;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink);
+      background-color: var(--hull);
+      background-image:
+        linear-gradient(180deg, rgb(255 255 255 / .14), transparent 30%),
+        repeating-linear-gradient(180deg, transparent 0 159px, rgb(26 32 48 / .35) 159px 161px, rgb(255 255 255 / .12) 161px 162px);
     }
-    main { width: 100%; max-width: 420px; display: grid; gap: 24px; }
-    h1 { margin: 0; font-size: 1.8rem; }
-    section { background: #1e2129; border-radius: 12px; padding: 20px; display: grid; gap: 12px; }
-    h2 { margin: 0; font-size: 1.1rem; }
-    p { margin: 0; color: #aaa; }
-    a.button, button {
-      display: block; text-align: center; padding: 14px; border: 0; border-radius: 8px;
-      background: #c1440e; color: #fff; font-size: 1rem; font-weight: 600; text-decoration: none; cursor: pointer;
+    main { width: 100%; max-width: 440px; display: grid; gap: 22px; }
+
+    .plate {
+      border: 3px solid var(--outline); border-radius: 16px; background: var(--hull-light); color: var(--outline);
+      padding: 16px 18px; box-shadow: inset 0 -4px 0 rgb(26 32 48 / .18), inset 0 3px 0 rgb(255 255 255 / .35);
     }
+    .eyebrow {
+      display: flex; align-items: center; gap: 8px; margin: 0 0 6px;
+      font: 600 11px/1 ui-monospace, monospace; letter-spacing: .14em; opacity: .8;
+    }
+    .light {
+      width: 24px; height: 12px; border-radius: 99px; border: 2px solid var(--outline);
+      background: var(--orange); box-shadow: 0 0 10px var(--orange);
+    }
+    h1 { margin: 0; font-size: clamp(2rem, 9vw, 2.6rem); line-height: 1; letter-spacing: -.03em; }
+    h1 span { color: #b8560b; }
+    .plate p { margin: 8px 0 0; opacity: .8; }
+
+    /* Pantallas con bisel (sombras interiores: nada las recorta) */
+    section {
+      display: grid; gap: 12px; padding: 24px; border: 3px solid var(--outline); border-radius: 20px;
+      background: var(--navy);
+      box-shadow: inset 0 0 0 5px var(--hull-light), inset 0 0 0 8px var(--outline), inset 0 0 36px rgb(77 184 255 / .14);
+    }
+    h2 { margin: 0; display: flex; align-items: center; gap: 10px; font-size: 1.15rem; }
+    .step {
+      display: grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: 50%;
+      border: 2px solid var(--outline); background: var(--cyan); color: var(--outline); font: 700 .9rem ui-monospace, monospace;
+    }
+    section p { margin: 0; color: var(--muted); }
+
+    .button {
+      display: block; width: 100%; padding: 14px; border: 3px solid var(--outline); border-radius: 14px;
+      background: var(--orange); color: var(--outline); font: 700 1.05rem system-ui, sans-serif;
+      text-align: center; text-decoration: none; cursor: pointer;
+      box-shadow: 0 4px 0 var(--outline), 0 0 16px rgb(255 168 38 / .55); transition: background .15s, transform .15s;
+    }
+    .button:hover, .button:focus-visible { background: var(--orange-light); outline: none; }
+    .button:active { transform: translateY(4px); box-shadow: none; }
+
     input {
-      padding: 14px; border-radius: 8px; border: 1px solid #444; background: #14161c; color: #fff;
-      font-size: 1.4rem; letter-spacing: .3em; text-align: center; text-transform: uppercase;
+      width: 100%; padding: 14px; border-radius: 12px; border: 3px solid var(--line);
+      background: var(--panel); color: var(--ink); text-align: center; text-transform: uppercase;
+      font: 600 1.5rem ui-monospace, monospace; letter-spacing: .3em;
+    }
+    input::placeholder { color: rgb(159 176 204 / .5); letter-spacing: .15em; }
+    input:focus { border-color: var(--orange); outline: none; box-shadow: 0 0 14px rgb(255 168 38 / .5); }
+    form { display: grid; gap: 14px; }
+
+    .hint {
+      margin: 0; padding: 0 4px; color: var(--outline); font-size: .85rem; line-height: 1.45; opacity: .85;
     }
   </style>
 </head>
 <body>
   <main>
-    <h1>Supervivencia en Marte</h1>
+    <header class="plate">
+      <p class="eyebrow"><span class="light" aria-hidden="true"></span>NASA · MISSION CONTROL</p>
+      <h1>Mars <span>Survival</span></h1>
+      <p>A team game for up to 4 astronauts. Survive on Mars together!</p>
+    </header>
 
-    <section>
-      <h2>Pantalla principal</h2>
-      <p>Ábrela en el ordenador conectado al proyector.</p>
-      <a class="button" href="/game/">Crear partida</a>
+    <section aria-labelledby="host-title">
+      <h2 id="host-title"><span class="step" aria-hidden="true">1</span>Main screen</h2>
+      <p>Open it on the computer connected to the projector or the big screen.</p>
+      <a class="button" href="/game/">Create a game</a>
     </section>
 
-    <section>
-      <h2>Unirse desde el móvil</h2>
+    <section aria-labelledby="join-title">
+      <h2 id="join-title"><span class="step" aria-hidden="true">2</span>Join with your phone</h2>
+      <p>Type the room code you see on the main screen.</p>
       <form action="/controller/" method="get">
-        <input name="room" maxlength="8" placeholder="CÓDIGO" autocomplete="off" required>
-        <button type="submit" style="margin-top:12px; width:100%">Entrar</button>
+        <input id="room" name="room" maxlength="8" placeholder="CODE" aria-label="Room code"
+               autocomplete="off" autocapitalize="characters" spellcheck="false" required>
+        <button class="button" type="submit">Join the mission</button>
       </form>
     </section>
+
+    <p class="hint">
+      Tip: the phones and the main screen must be on the <strong>same Wi-Fi network</strong>.
+      Open this page on each phone with the same address you see in the browser bar.
+    </p>
   </main>
+
+  <script>
+    // El código viaja en mayúsculas y sin espacios (el mando lo normaliza igual).
+    const room = document.getElementById('room')
+    room.addEventListener('input', () => { room.value = room.value.toUpperCase().replace(/\s+/g, '') })
+  </script>
 </body>
 </html>
