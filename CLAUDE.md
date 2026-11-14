@@ -78,7 +78,7 @@ Exportar Godot: abrir `game/project.godot` → Proyecto → Exportar → preset 
 
 - Código e identificadores en inglés; textos de interfaz y documentación en español.
 - Commits con [Conventional Commits](https://www.conventionalcommits.org/es/): `tipo(ámbito): descripción`. Tipo en inglés (`feat`, `fix`, `refactor`, `docs`, `chore`, `style`, `test`, `build`), descripción en español, en minúscula y sin punto final. Ámbitos: `game`, `controller`, `backend`, `deploy`, `docs`. Ej.: `feat(backend): crear salas en memoria`.
-- Backend: Node ≥ 20, ES modules, única dependencia de runtime `ws`.
+- Backend: Node ≥ 20, ES modules, dependencias de runtime `express` (HTTP) y `ws` (WebSocket); tests con `node:test` (`npm test`).
 - Mando: JS vanilla, mobile-first, sin dependencias externas en runtime (la demo debe funcionar en la LAN sin Internet).
 - Godot: el autoload `Events` (`game/Scripts/events.gd`) es el bus de señales; la red irá en un autoload propio (p. ej. `Net`) que emita señales a `Events`.
 
