@@ -142,9 +142,19 @@ El contenido de `view` es libre para Node (solo exige un objeto); el contrato en
 
 | `screen` | Campos | Qué muestra el mando |
 |---|---|---|
-| `choice` | `eventId`, `title`, `prompt`, `options[{id,label}]` | Pregunta y botones. |
+| `choice` | `eventId`, `title`, `prompt`, `options[{id,label,detail?,disabled?,reason?}]` | Pregunta y botones. |
 | `waiting` | `title`, `text?` | Mensaje de espera, sin acciones. |
 | `result` | `title`, `text` | Consecuencias de la decisión. |
+
+Campos opcionales de cada opción (los pone Godot; el mando los pinta tal cual, sin calcular nada):
+
+| Campo | Tipo | Significado |
+|---|---|---|
+| `detail` | texto | Lo que cuesta la opción (p. ej. «Costs: Energy -5»). Se muestra bajo el `label`. |
+| `disabled` | booleano | `true` si ahora no se puede elegir (p. ej. el rol está ocupado fuera de la base). El botón sale apagado. |
+| `reason` | texto | Por qué está bloqueada. Se muestra en la opción apagada. |
+
+Si faltan, la opción es una opción normal `{id, label}`. Una opción con `disabled: true` que llegue en un `choose` la rechaza Godot igualmente (`invalid_option`).
 
 ### `choose`
 Mando → Node → Godot. El jugador pulsa una opción.

@@ -479,11 +479,14 @@ func _refresh_earth_help_button() -> void:
 	var available: bool = TurnManager.can_request_earth_help()
 	earth_help_button.disabled = not available
 	if available:
-		earth_help_button.tooltip_text = "Ask Earth for a hint. You can do it once per Sol."
+		earth_help_button.tooltip_text = "Ask Earth for a hint. The radio needs %d Sols to recharge after each message." % GameState.EARTH_HELP_COOLDOWN_SOLS
 	elif GameState.earth_help_blocked():
 		earth_help_button.tooltip_text = "The solar storm is blocking radio messages."
+	elif GameState.earth_help_cooldown_left() > 0:
+		var left: int = GameState.earth_help_cooldown_left()
+		earth_help_button.tooltip_text = "The radio is recharging. Ready in %d Sol%s." % [left, "" if left == 1 else "s"]
 	else:
-		earth_help_button.tooltip_text = "Not now. Earth cannot help with emergencies, and you can ask only once per Sol."
+		earth_help_button.tooltip_text = "Not now. Earth cannot help with emergencies."
 
 
 # -------------------------------------------------------- Señales del TurnManager

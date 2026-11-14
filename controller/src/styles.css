@@ -230,6 +230,27 @@
   filter: brightness(1.2);
 }
 
+/* Opción que ahora no se puede elegir (la marca Godot con `disabled`) */
+.answer-button-blocked {
+  cursor: not-allowed;
+  filter: grayscale(.85) brightness(.7);
+}
+
+.answer-button-blocked:hover {
+  transform: none;
+}
+
+.answer-detail {
+  font-size: .78em;
+  letter-spacing: .02em;
+  opacity: .8;
+}
+
+.answer-reason {
+  font-size: .78em;
+  color: #ffd27a;
+}
+
 .role-button {
   position: relative;
   overflow: hidden;

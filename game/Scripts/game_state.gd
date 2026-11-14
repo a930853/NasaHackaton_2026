@@ -11,6 +11,9 @@ signal seismic_alert_activated
 signal crew_changed
 
 const MAX_SOLS: int = 20
+## La ayuda de la Tierra se recarga cada 4 Soles (con 20 Soles salen como mucho 5 ayudas:
+## es una pista valiosa, no un botón para cada día). Cuenta desde el Sol en que se pide.
+const EARTH_HELP_COOLDOWN_SOLS: int = 4
 const ROLES: Array[String] = ["engineer", "biologist", "doctor", "generalist"]
 const ROLE_NAMES: Dictionary = {
 	"engineer": "Engineer", "biologist": "Biologist", "doctor": "Doctor", "generalist": "Commander",
@@ -51,7 +54,7 @@ var rover_rescued: bool = false
 var quake_happened: bool = false
 var e2_pending: bool = false
 var health_always_above_goal: bool = true
-var earth_help_used_this_sol: bool = false
+var earth_help_ready_sol: int = 1   # primer Sol en que se puede volver a pedir ayuda a la Tierra
 
 ## Tripulantes que están fuera de la base: rol -> Sol en que vuelven (ya en la base).
 var crew_away: Dictionary = {}
@@ -78,7 +81,7 @@ func reset() -> void:
 	quake_happened = false
 	e2_pending = false
 	health_always_above_goal = true
-	earth_help_used_this_sol = false
+	earth_help_ready_sol = 1
 	active_conditions.clear()
 	unlocked_terms.clear()
 	delayed_queue.clear()
@@ -279,6 +282,11 @@ func is_condition_active(condition_id: String) -> bool:
 		if condition["id"] == condition_id:
 			return true
 	return false
+
+
+## Soles que faltan para poder volver a pedir ayuda a la Tierra (0 = ya se puede).
+func earth_help_cooldown_left() -> int:
+	return maxi(0, earth_help_ready_sol - current_sol)
 
 
 func earth_help_blocked() -> bool:

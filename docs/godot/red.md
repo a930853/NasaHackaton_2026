@@ -2,6 +2,31 @@
 
 Cómo conectar `game/` con el backend siguiendo el [contrato de mensajes](../protocol.md). La organización del resto del juego (gestores, máquina de estados, `events.json`) está en [arquitectura.md](arquitectura.md). Los fragmentos son una propuesta de punto de partida (GDScript, Godot 4.x); adaptadlos al estilo del proyecto.
 
+## Estado de la implementación (`game/`)
+
+Ya está conectado el juego real con el backend y el mando web. Piezas:
+
+| Pieza | Fichero | Qué hace |
+|---|---|---|
+| `Net` (autoload) | `game/Scripts/net.gd` | Único sitio que toca el WebSocket. Emite las señales de red en `Events` y expone `create_room()`, `start_game()`, `send_view()`, `send_result()`, `finish_game()`. |
+| `PhoneBridge` (autoload) | `game/Scripts/phone_bridge.gd` | Une `TurnManager` con los móviles: envía a cada jugador su `controller_view`, **valida** cada `choose` (evento vigente, jugador, opción, duplicados por `actionId`) y responde siempre con `choice_result`. |
+| Lobby | `game/Scripts/main_menu.gd` (nodo `Lobby` de `Main_menu.tscn`) | «Start Game» conecta, crea la sala y enseña código, dirección del mando y jugadores con su rol. «Start expedition» se activa cuando hay ≥1 jugador y todos tienen rol. «Play on this screen only» juega sin móviles. |
+| Señales | `game/Scripts/events.gd` | `net_connected`, `net_disconnected`, `net_connection_failed`, `room_created`, `lobby_updated`, `game_started`, `player_choice_received`, `room_closed`, `net_error`. |
+
+Flujo de una partida: menú → lobby (sala creada, móviles entran y eligen rol) → `start_game` → intro → partida. En cada evento, `TurnManager` emite `event_presented` y `PhoneBridge` manda a cada móvil las opciones de **su rol** (`TurnManager.controller_view_for(role)`: con `detail` = costes, y `disabled` + `reason` si el rol está ocupado fuera de la base). Al resolverse, todos reciben una vista `result` con las consecuencias. Al volver al menú se cierra la sala (`finish_game`).
+
+Decisiones tomadas:
+
+- **Dirección del servidor:** en web, `location` (nunca IP fija). En el editor, `ws://localhost:3000/ws`; se puede cambiar con el argumento `--ws-url=ws://localhost:3100/ws` o la variable de entorno `NASA_WS_URL`.
+- **Dirección del mando que se enseña:** en web, `location.origin`; en el editor, `http://localhost:5173` (Vite). Si contiene `localhost` el lobby avisa de que los móviles no podrán usarla.
+- **QR:** pendiente. Godot no trae generador y de momento se muestran el **código en texto** y la dirección completa (plan B del contrato). La landing (`/`) también permite entrar escribiendo el código.
+- **Menos de 4 jugadores:** `TurnManager.present_roles` guarda los roles con jugador. Las opciones de un rol **ausente** las ven todos los presentes con el prefijo `(Rol)`, así nunca hay una decisión que nadie pueda tomar. Si todos los presentes están ocupados fuera, el evento espera a que vuelva alguien.
+- **Quién decide:** la primera elección válida resuelve el evento (no hay votación todavía). Las que llegan después reciben `event_closed`.
+- **Rechazos:** `choice_result` con `event_closed`, `not_eligible` o `invalid_option`. El backend no reenvía `choice_result` al mando; el mando se entera por la siguiente `controller_view`.
+- **Si cae el backend:** `PhoneBridge` se desactiva y la partida sigue en la pantalla principal (con el panel `Phone (debug)`).
+
+Probarlo: `npm run dev` (backend en `:3000`), abrir `game/` en Godot y pulsar F5; abrir `http://localhost:5173/controller/?room=<código>` en el navegador. Para el despliegue completo, exportar a web (`dist/game/`) y `npm run docker:prod`.
+
 ## Qué le toca a Godot
 
 Godot es **la autoridad sobre el juego** y, además, el cliente *anfitrión* de la sala:

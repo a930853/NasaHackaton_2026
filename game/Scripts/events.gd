@@ -17,3 +17,14 @@ signal system_alert_triggered(system_name: String, severity: String)
 
 # --- Audio ---
 signal sfx_requested(sfx_key: String, pitch_variance: float)
+
+# --- Network (backend Node: lobby y móviles). Los emite el autoload Net ---
+signal net_connected
+signal net_disconnected
+signal net_connection_failed
+signal room_created(code: String)
+signal lobby_updated(players: Array, status: String)
+signal game_started(players: Array)
+signal player_choice_received(player_id: String, role: String, action_id: String, event_id: String, option_id: String)
+signal room_closed(reason: String)
+signal net_error(code: String, request_type: String)

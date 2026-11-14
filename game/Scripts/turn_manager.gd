@@ -97,7 +97,6 @@ func _begin_sol() -> void:
 		_first_sol = false
 	else:
 		GameState.current_sol += 1
-		GameState.earth_help_used_this_sol = false
 		var returned: Array[String] = GameState.process_crew_return()
 		if not returned.is_empty():
 			Events.sfx_requested.emit("door", 0.0)  # alguien vuelve a entrar en la base
@@ -239,7 +238,18 @@ func option_block_reason(option: Dictionary) -> String:
 
 func _has_available_option(event: Dictionary) -> bool:
 	for option in event.get("options", []):
-		if option_block_reason(option).is_empty():
+		if option_block_reason(option).is_empty() and _someone_can_pick(option):
+			return true
+	return false
+
+
+## Con móviles: ¿hay algún jugador presente y en la base que pueda elegir esta opción?
+## (Si el único jugador está ocupado fuera, el evento espera a que vuelva.)
+func _someone_can_pick(option: Dictionary) -> bool:
+	if present_roles.is_empty():
+		return true
+	for role in present_roles:
+		if not GameState.is_away(role) and _role_may_pick(option, role):
 			return true
 	return false
 
@@ -266,19 +276,36 @@ func _defer_until_crew_returns(event: Dictionary) -> void:
 
 # ---------------------------------------------------------- Opciones para los móviles
 
+## Roles que tienen jugador en la sala. Vacío = partida local en una sola pantalla (los 4 roles).
+## Con menos de 4 jugadores, las opciones de un rol ausente las puede elegir cualquiera de los presentes
+## (nunca se asigna una decisión obligatoria a un rol que no existe).
+var present_roles: Array[String] = []
+
+
+## ¿Puede `role` elegir esta opción? Las suyas, las de todos y las de roles que nadie lleva.
+func _role_may_pick(option: Dictionary, role: String) -> bool:
+	var option_role: Variant = option.get("role")
+	if option_role == null or str(option_role) == role:
+		return true
+	return not present_roles.is_empty() and not (str(option_role) in present_roles)
+
+
 ## Opciones que ve el jugador de `role` en el evento actual, con su estado.
-## `id` y `label` son los del contrato (docs/protocol.md). `detail` (costes), `disabled`
-## y `reason` son campos extra: hay que añadirlos a docs/protocol.md antes de enviarlos.
+## `id` y `label` son los del contrato (docs/protocol.md); `detail` (costes), `disabled`
+## y `reason` son campos opcionales del mismo contrato.
 func options_for_role(role: String) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for option in current_event.get("options", []):
-		var option_role: Variant = option.get("role")
-		if option_role != null and str(option_role) != role:
+		if not _role_may_pick(option, role):
 			continue
 		var reason: String = option_block_reason(option)
+		var label: String = str(option["label"])
+		var option_role: Variant = option.get("role")
+		if option_role != null and str(option_role) != role:
+			label = "(%s) %s" % [GameState.ROLE_NAMES[str(option_role)], label]  # cubres a un rol ausente
 		result.append({
 			"id": str(option["id"]),
-			"label": str(option["label"]),
+			"label": label,
 			"detail": OptionInfo.costs_text(option),
 			"disabled": not reason.is_empty(),
 			"reason": reason,
@@ -303,13 +330,22 @@ func controller_view_for(role: String) -> Dictionary:
 	}
 
 
+## Por qué no se acepta una elección de un móvil ("" si es válida). Los motivos son los de
+## `choice_result` del contrato: event_closed, not_eligible, invalid_option.
+func choice_reject_reason(role: String, event_uid: String, option_id: String) -> String:
+	if event_uid != current_event_uid or phase != Phase.DECISION:
+		return "event_closed"
+	if GameState.is_away(role):
+		return "not_eligible"
+	var option: Dictionary = _find_option(current_event, option_id)
+	if option.is_empty() or not _role_may_pick(option, role) or not option_block_reason(option).is_empty():
+		return "invalid_option"
+	return ""
+
+
 ## Elección que llega de un móvil: comprueba que el rol puede elegir esa opción ahora.
 func submit_choice_from(role: String, event_uid: String, option_id: String) -> bool:
-	if event_uid != current_event_uid or GameState.is_away(role):
-		return false
-	var option: Dictionary = _find_option(current_event, option_id)
-	var option_role: Variant = option.get("role")
-	if option.is_empty() or (option_role != null and str(option_role) != role):
+	if not choice_reject_reason(role, event_uid, option_id).is_empty():
 		return false
 	return submit_choice(option_id)
 
@@ -399,7 +435,7 @@ func _finish(victory: bool, reason: String) -> void:
 # ------------------------------------------------------------ Ayuda de la Tierra
 
 func can_request_earth_help() -> bool:
-	if phase != Phase.DECISION or GameState.earth_help_used_this_sol or GameState.earth_help_blocked():
+	if phase != Phase.DECISION or GameState.earth_help_cooldown_left() > 0 or GameState.earth_help_blocked():
 		return false
 	var kind: String = str(current_event.get("kind", ""))
 	if kind == "realtime" or kind == "auto" or current_event.has("timer_seconds"):
@@ -419,7 +455,7 @@ func request_earth_help(choice_id: String) -> bool:
 		return false
 
 	_stop_countdown()
-	GameState.earth_help_used_this_sol = true
+	GameState.earth_help_ready_sol = GameState.current_sol + GameState.EARTH_HELP_COOLDOWN_SOLS
 	GlossaryManager.unlock("minutos_luz")
 	if int(choice["energy_cost"]) > 0:
 		GameState.modify_stat("energy", -int(choice["energy_cost"]))

@@ -8,6 +8,7 @@ extends Control
 const ART_NORMAL: String = "res://Images/Evento.png"
 const ART_PRESSED: String = "res://Images/Evento_pulsado.png"
 const ART_PIXELS: float = 32.0              # lado del pixel art original
+const GROW: float = 1.3                     # cuánto más grande que el botón se dibuja
 const HOVER_TINT: Color = Color(1.15, 1.1, 1.1)
 const LABEL: String = "EVENT"
 const LABEL_COLOR: Color = Color(1.0, 0.95, 0.9)
@@ -55,9 +56,9 @@ func _draw() -> void:
 	var pressed: bool = _button != null and _button.button_pressed
 	var hovering: bool = _button != null and _button.is_hovered()
 
-	# Un solo cuadrado centrado, con escala entera para que los píxeles no se deformen
-	var wanted: float = minf(size.x, size.y)
-	var side: float = floorf(wanted / ART_PIXELS) * ART_PIXELS if wanted >= ART_PIXELS else wanted
+	# Un solo cuadrado centrado. Es más grande que el hueco del botón (GROW): el pixel art
+	# puede sobresalir un poco del marco, y se escala con vecino más cercano para no suavizarlo.
+	var side: float = minf(size.x, size.y) * GROW
 	var box := Rect2((size - Vector2(side, side)) * 0.5, Vector2(side, side))
 	var unit: float = side / ART_PIXELS
 
@@ -70,9 +71,10 @@ func _draw() -> void:
 
 	# Etiqueta sobre la tapa del botón
 	var font: Font = ThemeDB.fallback_font
-	var label_y: float = box.position.y + (17.0 if pressed else 15.0) * unit + 5.0
-	draw_string(font, Vector2(1.0, label_y + 1.0), LABEL, HORIZONTAL_ALIGNMENT_CENTER, size.x, 11, LABEL_SHADOW)
-	draw_string(font, Vector2(0.0, label_y), LABEL, HORIZONTAL_ALIGNMENT_CENTER, size.x, 11, LABEL_COLOR)
+	var font_size: int = clampi(int(side * 0.16), 11, 28)
+	var label_y: float = box.position.y + (17.0 if pressed else 15.0) * unit + float(font_size) * 0.4
+	draw_string(font, Vector2(1.0, label_y + 1.0), LABEL, HORIZONTAL_ALIGNMENT_CENTER, size.x, font_size, LABEL_SHADOW)
+	draw_string(font, Vector2(0.0, label_y), LABEL, HORIZONTAL_ALIGNMENT_CENTER, size.x, font_size, LABEL_COLOR)
 
 	if alert:
 		_draw_exclamation(box, unit)
@@ -80,7 +82,7 @@ func _draw() -> void:
 
 ## Exclamación amarilla con borde negro, encima del botón y dando saltitos (en pasos de un píxel).
 func _draw_exclamation(box: Rect2, unit: float) -> void:
-	var pixel: float = maxf(1.0, floorf(unit * 0.5))
+	var pixel: float = maxf(2.0, floorf(unit * 0.5))
 	var cols: int = (BANG_ROWS[0] as String).length()
 	var width: float = float(cols) * pixel
 	var height: float = float(BANG_ROWS.size()) * pixel

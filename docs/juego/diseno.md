@@ -110,13 +110,13 @@ Cada opción deja ocupado a quien la hace durante 0, 1 o 2 Sols (`away_sols` en 
 | Pantalla derecha de Godot | Información del evento: título, descripción, dato NASA, pista de la Tierra y resultado de la decisión. **No muestra las opciones.** |
 | Móvil de cada jugador | Las opciones de su rol y las de todos, con sus costes. Las bloqueadas salen apagadas con el motivo. |
 
-Hasta que haya móviles, `Phone (debug)` en la ventana de Marte abre un simulador con las mismas opciones. `TurnManager.controller_view_for(role)` prepara lo que recibirá cada mando y `submit_choice_from(role, eventId, optionId)` valida su elección. Las opciones llevan además de `id` y `label` los campos `detail` (costes), `disabled` y `reason`: **hay que añadirlos a `docs/protocol.md` antes de enviarlos**.
+Hasta que haya móviles, `Phone (debug)` en la ventana de Marte abre un simulador con las mismas opciones. `TurnManager.controller_view_for(role)` prepara lo que recibirá cada mando y `submit_choice_from(role, eventId, optionId)` valida su elección. Las opciones llevan además de `id` y `label` los campos opcionales `detail` (costes), `disabled` y `reason`, ya recogidos en `docs/protocol.md`. Con móviles reales, `PhoneBridge` envía esas vistas y valida las elecciones (ver [../godot/red.md](../godot/red.md)).
 
 ## Pedir ayuda a la Tierra
 
 Se basa en el retraso real de las comunicaciones: entre 4 y 24 minutos por mensaje entre Marte y la Tierra, según la distancia.
 
-- Se puede usar sobre cualquier evento sin resolver, **una vez por Sol**.
+- Se puede usar sobre cualquier evento sin resolver. **La radio se recarga cada 4 Sols** (`GameState.EARTH_HELP_COOLDOWN_SOLS`): tras pedir ayuda, hay que esperar 4 Sols para volver a pedirla (como mucho 5 ayudas en una partida de 20 Sols). Se eligió 4 y no 3 para que sea una pista valiosa y no un botón de uso diario; con el mensaje lento (2 Sols) la radio vuelve a estar lista 2 Sols después de recibir la respuesta.
 - El evento pasa a **«Esperando a la Tierra»** y la respuesta llega **entre 2 y 3 Sols** después. Mientras tanto, el evento sigue aplicando su castigo si lo tiene.
 - Según `events.json`, la respuesta **descarta una opción mala** del evento (`earth_discard` indica cuál).
 - Opciones previstas en el diseño:
