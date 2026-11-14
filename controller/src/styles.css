@@ -1,0 +1,202 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+  font-family: 'Space Grotesk', sans-serif;
+  color: #f4f7fb;
+  background: #071321;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* { box-sizing: border-box; }
+html, body, #app { min-width: 320px; min-height: 100%; margin: 0; }
+body { overflow-x: hidden; }
+button { font: inherit; }
+
+.app-shell {
+  --navy: #071321;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background:
+    radial-gradient(circle at 85% 4%, rgba(32, 75, 120, .5), transparent 28%),
+    #071321;
+}
+.screen {
+  width: min(1120px, calc(100% - 64px));
+  min-height: 100dvh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+.brand, .kid-footer, .role-header, .role-title, .question-note {
+  display: flex;
+  align-items: center;
+}
+.brand {
+  gap: 12px;
+  padding-top: clamp(18px, 4vh, 38px);
+  color: #90a5bd;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .12em;
+}
+.brand-rocket { color: #f5b940; font-size: 17px; }
+.start-content { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: clamp(28px, 6vh, 56px); padding: 48px 0; }
+.welcome { display: block; }
+.eyebrow {
+  margin: 0 0 9px;
+  color: #91a6be;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .12em;
+}
+h1 { margin: 0; color: #f4f7fb; font-size: clamp(42px, 6vw, 72px); line-height: .98; letter-spacing: -.055em; }
+.start-screen h1 { font-size: clamp(36px, 5vw, 58px); }
+h1 span { color: #f5b940; }
+.hint { margin: 16px 0 0; color: #9aacc0; font-size: clamp(15px, 1.8vw, 18px); }
+.room-help, .server-message { margin: 0; color: #91a6be; font-family: 'DM Mono', monospace; font-size: 12px; }
+.room-help code { color: #f5b940; }
+.error-message { color: #f17474; }
+.room-form { display: flex; flex-direction: column; gap: 10px; }
+.room-form > label { color: #d7e2ee; font-size: 14px; font-weight: 600; }
+.room-form-row { display: flex; gap: 10px; max-width: 620px; }
+.room-form input {
+  min-width: 0;
+  flex: 1;
+  padding: 15px 16px;
+  border: 1px solid #49627c;
+  border-radius: 5px;
+  color: #f4f7fb;
+  background: #10243a;
+  font-family: 'DM Mono', monospace;
+  font-size: 16px;
+  text-transform: uppercase;
+}
+.room-form input:focus { border-color: #f5b940; outline: 2px solid rgba(245, 185, 64, .25); }
+.room-form button {
+  padding: 0 18px;
+  border: 1px solid #f5b940;
+  border-radius: 5px;
+  color: #071321;
+  background: #f5b940;
+  cursor: pointer;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.room-form button:hover, .room-form button:focus-visible { background: #ffd574; outline: none; }
+.role-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.role-button {
+  padding: clamp(18px, 2.4vw, 28px);
+  border: 1px solid #2d435b;
+  border-left: 6px solid var(--button-color);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  color: #f4f7fb;
+  background: rgba(15, 32, 52, .9);
+  cursor: pointer;
+  text-align: left;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+.role-button:hover, .role-button:focus-visible { background: var(--button-pale); border-color: var(--button-color); color: var(--button-dark); transform: translateY(-3px); outline: none; }
+.role-button.disabled, .role-button:disabled { border-color: #31445b; border-left-color: #516276; color: #6d7f94; background: rgba(15, 32, 52, .45); cursor: not-allowed; opacity: .7; transform: none; }
+.role-button.disabled .role-code, .role-button:disabled .role-code { border-color: #516276; color: #6d7f94; }
+.role-button.disabled .role-button-copy small, .role-button:disabled .role-button-copy small { color: #718198; }
+.role-code {
+  width: 54px;
+  height: 54px;
+  flex: 0 0 54px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--button-color);
+  border-radius: 50%;
+  color: var(--button-color);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .04em;
+}
+.role-button:hover .role-code, .role-button:focus-visible .role-code { color: var(--button-dark); }
+.role-button-copy { display: flex; flex-direction: column; gap: 7px; }
+.role-button-copy strong { font-size: clamp(18px, 2vw, 23px); }
+.role-button-copy small { color: #91a6be; font-size: 12px; }
+.role-button:hover small, .role-button:focus-visible small { color: var(--button-dark); opacity: .8; }
+.button-go { margin-left: auto; color: var(--button-color); font-size: 25px; }
+.kid-footer {
+  gap: 9px;
+  padding: 18px 0 24px;
+  color: #70869f;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .08em;
+}
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: #57c98b; box-shadow: 0 0 10px #57c98b; }
+
+.role-mode { background: radial-gradient(circle at 85% 4%, rgba(52, 97, 143, .38), transparent 30%), #071321; }
+.role-header { justify-content: space-between; padding-top: clamp(18px, 4vh, 38px); }
+.role-title { gap: 0; }
+.role-title h1 { font-size: clamp(34px, 4.5vw, 58px); }
+.role-title .eyebrow { color: var(--role-color); }
+.answer-area { display: flex; flex-direction: column; gap: 24px; margin: 0; padding: clamp(16px, 3vh, 32px) 0; }
+.question-note { align-self: flex-start; gap: 16px; color: #d7e2ee; }
+.question-note > span { color: var(--role-color); font-family: 'DM Mono', monospace; font-size: 17px; }
+.question-note div { display: flex; flex-direction: column; gap: 5px; }
+.question-note strong { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .1em; }
+.question-note div span { color: #91a6be; font-size: 13px; }
+.answer-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.answer-button {
+  padding: clamp(10px, 1.5vw, 18px);
+  border: 1px solid #314a64;
+  border-top: 5px solid var(--role-color);
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 5px;
+  color: #f4f7fb;
+  background: #10243a;
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  font-size: clamp(11px, 1.3vw, 14px);
+  letter-spacing: .06em;
+  text-align: left;
+  transition: background .18s ease, transform .18s ease;
+}
+.answer-button:hover, .answer-button:focus-visible { color: var(--role-dark); background: var(--role-pale); transform: translateY(-3px); outline: none; }
+.answer-number { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; color: #071321; background: var(--role-color); font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; }
+.answer-check { align-self: flex-end; color: var(--role-color); font-size: 22px; }
+.waiting-screen { margin: 0; padding: clamp(28px, 6vh, 55px) 20px; border: 1px solid #29415b; text-align: center; }
+.waiting-mark { width: 58px; height: 58px; margin: 0 auto 20px; display: grid; place-items: center; border: 1px solid var(--role-color); border-radius: 50%; color: var(--role-color); font-size: 27px; }
+.waiting-screen .eyebrow { color: var(--role-color); }
+.waiting-screen h2 { margin: 0 0 12px; color: #f4f7fb; font-size: clamp(24px, 3vw, 36px); }
+.waiting-screen > p:last-child { margin: 0; color: #91a6be; font-size: 15px; }
+.loading-dots { color: var(--role-color); letter-spacing: 3px; }
+
+@media (max-width: 700px) {
+  .screen { width: calc(100% - 32px); }
+  .start-content { padding: 28px 0; }
+  .room-form-row { flex-direction: column; }
+  .room-form button { min-height: 48px; }
+  .role-grid { gap: 10px; }
+  .role-button { padding: 14px; gap: 10px; }
+  .role-code { width: 42px; height: 42px; flex-basis: 42px; font-size: 9px; }
+  .role-button-copy small { font-size: 10px; }
+  .answer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-height: 560px) and (orientation: landscape) {
+  .screen { min-height: 100%; }
+  .brand { padding-top: 12px; }
+  .start-content { gap: 20px; padding: 22px 0; }
+  .kid-footer { padding: 10px 0 12px; }
+  .role-header { padding-top: 12px; }
+  .answer-area { gap: 10px; padding: 10px 0; }
+}
