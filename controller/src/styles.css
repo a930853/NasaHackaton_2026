@@ -13,17 +13,25 @@ button { font: inherit; }
 
 .app-shell {
   --navy: #071321;
+  /* Color por defecto cuando aún no hay rol */
+  --role-color: #f5b940;
+  --role-pale: #fff3ce;
+  --role-dark: #7b5100;
   min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
   overflow-x: hidden;
   overflow-y: auto;
   background:
     radial-gradient(circle at 85% 4%, rgba(32, 75, 120, .5), transparent 28%),
     #071321;
 }
-.screen {
+.screen, .screen-footer {
   width: min(1120px, calc(100% - 64px));
-  min-height: 100dvh;
   margin: 0 auto;
+}
+.screen {
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
@@ -56,12 +64,11 @@ h1 span { color: #f5b940; }
 .room-help, .server-message { margin: 0; color: #91a6be; font-family: 'DM Mono', monospace; font-size: 12px; }
 .room-help code { color: #f5b940; }
 .error-message { color: #f17474; }
-.room-form { display: flex; flex-direction: column; gap: 10px; }
+.room-form { display: flex; flex-direction: column; gap: 10px; max-width: 620px; }
 .room-form > label { color: #d7e2ee; font-size: 14px; font-weight: 600; }
-.room-form-row { display: flex; gap: 10px; max-width: 620px; }
+.room-form > label:not(:first-child) { margin-top: 8px; }
 .room-form input {
   min-width: 0;
-  flex: 1;
   padding: 15px 16px;
   border: 1px solid #49627c;
   border-radius: 5px;
@@ -69,10 +76,12 @@ h1 span { color: #f5b940; }
   background: #10243a;
   font-family: 'DM Mono', monospace;
   font-size: 16px;
-  text-transform: uppercase;
 }
+.room-form input.code-input { text-transform: uppercase; letter-spacing: .2em; }
 .room-form input:focus { border-color: #f5b940; outline: 2px solid rgba(245, 185, 64, .25); }
-.room-form button {
+.room-form button, .primary-button {
+  min-height: 52px;
+  margin-top: 8px;
   padding: 0 18px;
   border: 1px solid #f5b940;
   border-radius: 5px;
@@ -82,7 +91,20 @@ h1 span { color: #f5b940; }
   font-weight: 700;
   white-space: nowrap;
 }
-.room-form button:hover, .room-form button:focus-visible { background: #ffd574; outline: none; }
+.room-form button:hover, .room-form button:focus-visible,
+.primary-button:hover, .primary-button:focus-visible { background: #ffd574; outline: none; }
+.room-form button:disabled { opacity: .5; cursor: wait; }
+.secondary-button {
+  min-height: 44px;
+  margin-top: 18px;
+  padding: 0 18px;
+  border: 1px solid #49627c;
+  border-radius: 5px;
+  color: #d7e2ee;
+  background: transparent;
+  cursor: pointer;
+}
+.secondary-button:hover, .secondary-button:focus-visible { border-color: var(--role-color); color: var(--role-color); outline: none; }
 .role-grid {
   width: 100%;
   display: grid;
@@ -135,7 +157,48 @@ h1 span { color: #f5b940; }
   font-size: 10px;
   letter-spacing: .08em;
 }
+.role-button.mine { border-color: var(--button-color); background: rgba(15, 32, 52, 1); }
 .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #57c98b; box-shadow: 0 0 10px #57c98b; }
+.status-dot.offline { background: #f17474; box-shadow: 0 0 10px #f17474; }
+.connection-banner {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin: 0;
+  padding: 10px 16px;
+  color: #071321;
+  background: #f5b940;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  text-align: center;
+}
+.room-badge {
+  padding: 6px 10px;
+  border: 1px solid #29415b;
+  border-radius: 5px;
+  color: #91a6be;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: .15em;
+}
+.crew-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; max-width: 620px; }
+.waiting-screen .crew-list { margin: 22px auto 0; text-align: left; }
+.crew-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #22384f;
+  border-radius: 5px;
+  background: rgba(15, 32, 52, .6);
+  font-size: 14px;
+}
+.crew-list li.offline { opacity: .5; }
+.crew-list li.me { border-color: #49627c; }
+.crew-dot { width: 9px; height: 9px; flex: 0 0 9px; border-radius: 50%; }
+.crew-name { flex: 1; color: #f4f7fb; }
+.crew-name small { color: #91a6be; }
+.crew-role { color: #91a6be; font-family: 'DM Mono', monospace; font-size: 11px; }
 
 .role-mode { background: radial-gradient(circle at 85% 4%, rgba(52, 97, 143, .38), transparent 30%), #071321; }
 .role-header { justify-content: space-between; padding-top: clamp(18px, 4vh, 38px); }
@@ -168,21 +231,22 @@ h1 span { color: #f5b940; }
   text-align: left;
   transition: background .18s ease, transform .18s ease;
 }
-.answer-button:hover, .answer-button:focus-visible { color: var(--role-dark); background: var(--role-pale); transform: translateY(-3px); outline: none; }
+.answer-button:hover:not(:disabled), .answer-button:focus-visible { color: var(--role-dark); background: var(--role-pale); transform: translateY(-3px); outline: none; }
+.answer-button:disabled { cursor: wait; opacity: .45; }
+.answer-button.selected { opacity: 1; color: var(--role-dark); background: var(--role-pale); }
 .answer-number { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; color: #071321; background: var(--role-color); font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; }
 .answer-check { align-self: flex-end; color: var(--role-color); font-size: 22px; }
 .waiting-screen { margin: 0; padding: clamp(28px, 6vh, 55px) 20px; border: 1px solid #29415b; text-align: center; }
 .waiting-mark { width: 58px; height: 58px; margin: 0 auto 20px; display: grid; place-items: center; border: 1px solid var(--role-color); border-radius: 50%; color: var(--role-color); font-size: 27px; }
 .waiting-screen .eyebrow { color: var(--role-color); }
 .waiting-screen h2 { margin: 0 0 12px; color: #f4f7fb; font-size: clamp(24px, 3vw, 36px); }
-.waiting-screen > p:last-child { margin: 0; color: #91a6be; font-size: 15px; }
+.waiting-screen .status-text { margin: 0; color: #91a6be; font-size: 15px; }
+.role-screen .waiting-screen { margin-top: clamp(16px, 3vh, 32px); }
 .loading-dots { color: var(--role-color); letter-spacing: 3px; }
 
 @media (max-width: 700px) {
-  .screen { width: calc(100% - 32px); }
+  .screen, .screen-footer { width: calc(100% - 32px); }
   .start-content { padding: 28px 0; }
-  .room-form-row { flex-direction: column; }
-  .room-form button { min-height: 48px; }
   .role-grid { gap: 10px; }
   .role-button { padding: 14px; gap: 10px; }
   .role-code { width: 42px; height: 42px; flex-basis: 42px; font-size: 9px; }
@@ -191,7 +255,6 @@ h1 span { color: #f5b940; }
 }
 
 @media (max-height: 560px) and (orientation: landscape) {
-  .screen { min-height: 100%; }
   .brand { padding-top: 12px; }
   .start-content { gap: 20px; padding: 22px 0; }
   .kid-footer { padding: 10px 0 12px; }
