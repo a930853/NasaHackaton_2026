@@ -4,6 +4,10 @@ App **Vue 3 + Vite + Tailwind CSS 4** (JavaScript) que usa cada jugador en su m�
 
 ## Ejecutar
 
+La forma rápida, desde la raíz del repo: `npm install && npm run dev`. Levanta backend, mando y un anfitrión simulado que crea la sala e imprime la URL para el móvil (ver el [README](../README.md#probarlo-todo-con-un-comando)).
+
+Por separado:
+
 ```bash
 # 1. Backend
 cd backend && npm install && npm run dev        # :3000

@@ -21,6 +21,7 @@ Juego cooperativo por salas para el NASA Hackathon 2026. Una **pantalla principa
 | [`controller/`](controller/) | Mando web (Vue 3 + Vite + Tailwind) | Implementado, con tests |
 | `landing/` | Página de inicio `/` | Pendiente |
 | `deploy/` | Configuración de Nginx | Pendiente |
+| [`scripts/`](scripts/) | `npm run dev` y simulador de Godot | Herramientas de desarrollo |
 | `dist/game/` | Exportación web de Godot | Se genera al exportar |
 | `dist/controller/` | Build del mando | Se genera con `npm run build` (no se versiona) |
 | [`docs/`](docs/) | Documentación | Ver abajo |
@@ -39,26 +40,52 @@ Juego cooperativo por salas para el NASA Hackathon 2026. Una **pantalla principa
 
 ## Empezar
 
-### Backend
+Requisito: Node ≥ 22.
+
+### Probarlo todo con un comando
 
 ```bash
-cd backend
-npm install
-npm run dev      # http://localhost:3000/api/health
-npm test         # pruebas de integración
+npm install      # instala también backend/ y controller/
+npm run dev
 ```
 
-### Mando (con el backend en marcha)
+Arranca el **backend**, el **mando** (Vite) y un **anfitrión simulado** que hace de Godot en la terminal. El simulador crea una sala e imprime las URL para abrir desde el móvil (misma Wi-Fi), por ejemplo:
+
+```text
+[host]  Sala creada: K7MP
+[host]    Móvil (misma red): http://192.168.1.50:5173/controller/?room=K7MP
+[host]    Entrada por rol:   http://192.168.1.50:5173/controller/engineer  (también biologist, doctor, generalist)
+```
+
+Después se escriben comandos en esa misma terminal:
+
+| Comando | Qué hace |
+|---|---|
+| `start` | Inicia la partida (todos los jugadores con rol) |
+| `ask` | Envía un evento con opciones a todos los móviles; se resuelve solo cuando votan todos |
+| `resolve` | Resuelve el evento actual con los votos recibidos |
+| `wait` | Envía una pantalla de espera |
+| `finish` | Termina la partida |
+| `new` | Crea una sala nueva |
+| `status` / `help` | Estado de la sala / ayuda |
+
+Otras órdenes desde la raíz:
 
 ```bash
-cd controller
-npm install
-npm run dev      # http://localhost:5173/controller/ (también desde el móvil por la IP de la LAN)
-npm test
-npm run build    # genera dist/controller/
+npm run dev:no-host   # backend + mando, sin simulador (para probar con el Godot real)
+npm test              # tests del backend y del mando
+npm run build         # genera dist/controller/
 ```
 
-> **Windows:** si el backend falla con `listen EACCES` en el 3000, ese puerto está reservado por Hyper-V/WSL. Usad otro: `PORT=8787 npm run dev` en `backend/` y `BACKEND_PORT=8787 npm run dev` en `controller/`.
+Los puertos se eligen solos. Si el 3000 está ocupado o reservado (en Windows, Hyper-V/WSL a veces lo reservan), el backend usa otro y el mando se configura con él. Si el móvil no carga, revisad que esté en la misma red y que el cortafuegos de Windows permita Node en redes privadas.
+
+### Cada parte por separado
+
+```bash
+cd backend && npm run dev       # :3000 (PORT=<otro> para cambiarlo)
+cd controller && npm run dev    # :5173/controller/ (BACKEND_PORT=<puerto del backend>)
+npm run host                    # simulador contra un backend ya arrancado en :3000
+```
 
 ### Godot
 
