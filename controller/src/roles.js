@@ -1,36 +1,38 @@
 // Roles del contrato (docs/protocol.md). La clave es también la ruta: /controller/<rol>.
+// Colores y nombres iguales que en el juego (game/Scripts/main_ui.gd: ROLE_COLORS, ROLE_LABELS):
+// los cascos de los astronautas son de estos colores.
 export const ROLES = {
   engineer: {
     name: 'Ingeniero',
     subtitle: 'Sistemas y tecnología',
     code: 'ENG',
-    color: '#f5b940',
-    pale: '#fff3ce',
-    dark: '#7b5100',
+    color: '#ffd933',
+    pale: '#fff6c9',
+    dark: '#6b5600',
   },
   biologist: {
-    name: 'Biólogo',
+    name: 'Bióloga',
     subtitle: 'Vida y ecosistemas',
     code: 'BIO',
-    color: '#57c98b',
-    pale: '#dcf8e9',
-    dark: '#17603d',
+    color: '#66e680',
+    pale: '#dcf9e2',
+    dark: '#1a6a2b',
   },
   doctor: {
     name: 'Médico',
     subtitle: 'Salud y bienestar',
     code: 'MED',
-    color: '#f17474',
+    color: '#ff6666',
     pale: '#ffe1e1',
-    dark: '#812d2d',
+    dark: '#7d2222',
   },
   generalist: {
-    name: 'Polivalente',
+    name: 'Comandante',
     subtitle: 'Misión y coordinación',
-    code: 'OPS',
+    code: 'CMD',
     color: '#ffffff',
-    pale: '#dfedff',
-    dark: '#235185',
+    pale: '#eef3ff',
+    dark: '#1a2030',
   },
 }
 

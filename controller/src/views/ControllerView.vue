@@ -105,6 +105,11 @@ function changeRole() {
   goTo('home', { push: true })
 }
 
+const footerText = computed(() => {
+  if (!s.code) return 'NASA · SIMULADOR DE MISIÓN'
+  return `SALA ${s.code}${s.name ? ` · ${s.name.toUpperCase()}` : ''}`
+})
+
 function restart() {
   message.value = ''
   requestedRole = null
@@ -118,28 +123,13 @@ function restart() {
 
 <template>
   <main
-    class="mission-screen relative flex min-h-dvh flex-col overflow-x-hidden"
-    :class="[
-      !showRoleScreen && s.phase === 'lobby' ? 'fixed-mobile-screen h-dvh min-h-0 overflow-hidden' : '',
-      s.phase === 'enter' ? 'enter-layout' : '',
-      showRoleScreen
-        ? 'bg-[radial-gradient(circle_at_85%_4%,rgba(52,97,143,.38),transparent_30%)]'
-        : 'bg-[radial-gradient(circle_at_85%_4%,rgba(32,75,120,.5),transparent_28%)]',
-    ]"
+    class="flex min-h-dvh flex-col overflow-x-hidden"
+    :class="!showRoleScreen && s.phase === 'lobby' ? 'fixed-mobile-screen h-dvh min-h-0 overflow-hidden' : ''"
     :style="roleStyle(roleInfo)"
   >
-    <div v-if="s.phase !== 'enter' && !(s.phase === 'lobby' && !showRoleScreen)" class="mission-brand" aria-label="NASA">
-      <svg viewBox="0 0 100 100" role="img" aria-hidden="true">
-        <circle cx="50" cy="50" r="44" fill="#1262a8" />
-        <path d="M12 61C34 48 59 38 88 17C64 45 39 62 13 73" fill="none" stroke="#ef3340" stroke-width="4" />
-        <path d="M20 71C42 37 60 22 82 18C58 32 42 51 28 78" fill="none" stroke="#fff" stroke-width="1.5" />
-        <text x="50" y="59" fill="#fff" font-family="Georgia, serif" font-size="21" font-weight="700" text-anchor="middle">NASA</text>
-      </svg>
-    </div>
-
     <p
       v-if="s.connection === 'offline' && s.phase !== 'connecting'"
-      class="sticky top-0 z-10 bg-amber px-4 py-2.5 text-center font-mono text-xs text-navy"
+      class="sticky top-0 z-10 border-b-[3px] border-outline bg-amber px-4 py-2.5 text-center font-mono text-xs font-medium text-outline"
       role="status"
     >
       Sin conexión con el centro de control. Reconectando…
@@ -157,8 +147,8 @@ function restart() {
       class="screen-w flex min-h-0 flex-1 flex-col justify-center gap-[clamp(20px,6vh,56px)] py-8 md:py-12"
     >
       <ScreenHeading>Únete a la <span class="text-amber">misión</span></ScreenHeading>
-      <p class="notice" role="status">
-        Conectando con el centro de control<span class="tracking-[3px] text-amber">...</span>
+      <p class="notice text-outline" role="status">
+        Conectando con el centro de control<span class="tracking-[3px]">...</span>
       </p>
     </section>
 
@@ -189,14 +179,21 @@ function restart() {
     />
 
     <section v-else class="screen-w flex min-h-0 flex-1 flex-col overflow-hidden" aria-labelledby="role-title">
-      <header class="mission-header flex items-center justify-between">
-        <div>
-          <p class="eyebrow text-(--role-color)">TU MISIÓN</p>
-          <h1 id="role-title" class="text-[clamp(34px,4.5vw,58px)] leading-[.98] font-bold tracking-[-.055em]">
-            {{ roleInfo.name }}
-          </h1>
+      <header class="hull-plate mt-[clamp(14px,3vh,30px)] flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <!-- Casco del color del rol, como los astronautas del juego -->
+          <span
+            class="size-10 shrink-0 rounded-full border-[3px] border-outline bg-(--role-color) shadow-[inset_-5px_-5px_0_rgb(26_32_48/.25)]"
+            aria-hidden="true"
+          />
+          <div>
+            <p class="mb-0.5 font-mono text-[11px] font-medium tracking-[.14em] text-outline/75">TU MISIÓN</p>
+            <h1 id="role-title" class="text-[clamp(28px,4.5vw,50px)] leading-[.98] font-bold tracking-[-.04em]">
+              {{ roleInfo.name }}
+            </h1>
+          </div>
         </div>
-        <span class="rounded-[5px] border border-line px-2.5 py-1.5 font-mono text-xs tracking-[.15em] text-muted">
+        <span class="rounded-[10px] border-[3px] border-outline bg-navy px-2.5 py-1.5 font-mono text-xs tracking-[.15em] text-neon-cyan">
           {{ s.code }}
         </span>
       </header>
@@ -212,15 +209,13 @@ function restart() {
         />
         <StatusCard
           v-else
-          class="role-status-card"
-          mark=""
+          mark="✓"
           eyebrow="ROL RESERVADO"
           title="Esperando a que el centro de control inicie la misión"
+          text="Mira la pantalla principal: la misión empezará en cuanto esté lista la tripulación."
         >
           <CrewList class="mx-auto mt-6 text-left" :players="s.players" :player-id="s.playerId" />
-          <button class="btn-secondary role-change-button" type="button" @click="changeRole">
-            <span>Cambiar de rol</span>
-          </button>
+          <button class="btn-secondary" type="button" @click="changeRole">Cambiar de rol</button>
         </StatusCard>
       </div>
 
@@ -234,14 +229,12 @@ function restart() {
         <div v-else class="mt-[clamp(16px,3vh,32px)]">
           <StatusCard
             v-if="!s.view"
-            class="mission-status-card"
             eyebrow="MISIÓN EN CURSO"
             title="La misión está comenzando"
             text="Atento a la pantalla principal."
           />
           <StatusCard
             v-else-if="decided"
-            class="mission-status-card"
             mark="✓"
             eyebrow="DECISIÓN REGISTRADA"
             title="Tu decisión ha llegado al centro de control."
@@ -249,24 +242,18 @@ function restart() {
           />
           <StatusCard
             v-else-if="s.view.screen === 'result'"
-            class="mission-status-card"
             mark="★"
             eyebrow="RESULTADO"
             :title="s.view.title || 'Resultado'"
             :text="s.view.text"
           />
-          <StatusCard
-            v-else
-            class="mission-status-card"
-            eyebrow="EN ESPERA"
-            :title="s.view.title || 'Esperando…'"
-            :text="s.view.text"
-          />
+          <StatusCard v-else eyebrow="EN ESPERA" :title="s.view.title || 'Esperando…'" :text="s.view.text" />
         </div>
       </template>
     </section>
 
-    <footer class="screen-w flex items-center pt-1.5 pb-2 font-mono text-[9px] tracking-[.08em] text-dim">
+    <footer class="screen-w flex items-center gap-2 pt-[18px] pb-6 font-mono text-[10px] font-medium tracking-[.08em] text-dim">
+      <span class="hud-light h-2.5 w-2.5" aria-hidden="true" />
       <span>{{ footerText }}</span>
     </footer>
   </main>

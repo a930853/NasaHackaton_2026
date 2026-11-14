@@ -1,30 +1,50 @@
 @import 'tailwindcss';
 
-/* Paleta y tipografía del mando */
+/*
+ * Estilo de la cabina del juego (game/Images/hud_frame.png): casco metálico gris azulado con
+ * contorno oscuro grueso, pantallas azul marino con bisel, botones con borde de neón y pilotos
+ * naranjas. Los colores salen de game/Scripts/main_ui.gd y option_card.gd.
+ */
 @theme {
   --font-sans: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'DM Mono', ui-monospace, monospace;
 
-  --color-navy: #071321;
-  --color-panel: #10243a;
-  --color-line: #29415b;
-  --color-line-strong: #49627c;
-  --color-ink: #f4f7fb;
-  --color-soft: #d7e2ee;
-  --color-muted: #91a6be;
-  --color-dim: #70869f;
-  --color-amber: #f5b940;
-  --color-amber-light: #ffd574;
-  --color-danger: #f17474;
-  --color-ok: #57c98b;
+  /* Casco de la nave */
+  --color-hull: #7d869c;
+  --color-hull-light: #a9b1c3;
+  --color-hull-dark: #555e75;
+  --color-outline: #1a2030;
+
+  /* Pantallas (fondo de los botones del HUD y de las tarjetas de opción) */
+  --color-navy: #0d1424;
+  --color-panel: #172238;
+  --color-panel-hover: #24385f;
+  --color-line: #4d73b3;
+  --color-line-strong: #7fa6e6;
+
+  /* Texto */
+  --color-ink: #eef3ff;
+  --color-soft: #d3def2;
+  --color-muted: #9fb0cc;
+  --color-dim: #2a3348;
+
+  /* Neón de los botones del marco y pilotos */
+  --color-neon-red: #f2455c;
+  --color-neon-cyan: #4db8ff;
+  --color-neon-orange: #ffa826;
+  --color-neon-purple: #b86bff;
+  --color-amber: #ffa826;
+  --color-amber-light: #ffc463;
+  --color-danger: #ff7b7b;
+  --color-ok: #73ff8c;
 }
 
 @layer base {
   :root {
-    /* Color del rol activo: lo sobrescribe roleStyle() (src/roles.js). Por defecto, ámbar. */
-    --role-color: var(--color-amber);
-    --role-pale: #fff3ce;
-    --role-dark: #7b5100;
+    /* Color del rol activo: lo sobrescribe roleStyle() (src/roles.js). Por defecto, cian. */
+    --role-color: var(--color-neon-cyan);
+    --role-pale: #dff2ff;
+    --role-dark: #0d4a73;
     color-scheme: dark;
   }
 
@@ -36,7 +56,11 @@
   }
 
   body {
-    @apply overflow-x-hidden bg-navy font-sans text-ink antialiased;
+    @apply overflow-x-hidden bg-hull font-sans text-ink antialiased;
+    /* Planchas del casco: juntas horizontales suaves y un brillo arriba */
+    background-image:
+      linear-gradient(180deg, rgb(255 255 255 / .14), transparent 30%),
+      repeating-linear-gradient(180deg, transparent 0 159px, rgb(26 32 48 / .35) 159px 161px, rgb(255 255 255 / .12) 161px 162px);
   }
 }
 
@@ -47,375 +71,53 @@
   }
 }
 
-.mission-screen {
-  background: #a7adbf !important;
-  color: #08090d;
-}
-
-.mission-brand {
-  position: absolute;
-  top: 12px;
-  left: 14px;
-  z-index: 3;
-  width: clamp(58px, 8vw, 92px);
-  height: clamp(58px, 8vw, 92px);
-}
-
-.mission-brand svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.mission-header {
-  padding-top: clamp(14px, 3vh, 28px);
-  padding-left: clamp(72px, 10vw, 112px);
-}
-
-.enter-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: clamp(10px, 2vw, 24px);
-  width: 100%;
-}
-
-.enter-header .mission-brand {
-  position: static;
-  flex: 0 0 clamp(58px, 8vw, 92px);
-  width: clamp(58px, 8vw, 92px);
-  height: clamp(58px, 8vw, 92px);
-}
-
-.enter-header .screen-heading {
-  min-width: 0;
-  flex: 0 1 auto;
-}
-
-.picker-header {
-  display: flex;
-  align-items: flex-start;
-  gap: clamp(10px, 2vw, 24px);
-  width: 100%;
-}
-
-.picker-header .mission-brand {
-  position: static;
-  flex: 0 0 clamp(58px, 8vw, 92px);
-  width: clamp(58px, 8vw, 92px);
-  height: clamp(58px, 8vw, 92px);
-}
-
-.picker-header .screen-heading {
-  min-width: 0;
-  flex: 0 1 auto;
-}
-
-.enter-screen form {
-  gap: clamp(6px, 1.2vh, 10px);
-}
-
-.entry-control,
-.entry-submit {
-  position: relative;
-  overflow: hidden;
-  border: 0;
-  clip-path: polygon(2% 0, 98% 0, 100% 16%, 100% 84%, 98% 100%, 2% 100%, 0 84%, 0 16%);
-}
-
-.entry-control {
-  min-height: clamp(54px, 8vh, 68px);
-  border: 4px solid #35d07f;
-  border-radius: 0;
-  background: #050505;
-}
-
-.entry-code:focus {
-  border-color: #35d07f;
-}
-
-.entry-name {
-  border-color: #f5235c;
-}
-
-.entry-name:focus {
-  border-color: #f5235c;
-}
-
-.entry-submit {
-  min-height: clamp(58px, 9vh, 76px);
-  margin-top: 8px;
-  background: #ffcf33;
-  color: #08090d;
-  font-size: clamp(15px, 2vw, 18px);
-  font-weight: 700;
-}
-
-.entry-submit::before {
-  position: absolute;
-  inset: 7px;
-  z-index: 0;
-  background: #050505;
-  content: '';
-  clip-path: polygon(2% 0, 98% 0, 100% 16%, 100% 84%, 98% 100%, 2% 100%, 0 84%, 0 16%);
-}
-
-.entry-submit > span {
-  position: relative;
-  z-index: 1;
-  color: #f5f5f5;
-}
-
-.entry-submit:hover,
-.entry-submit:focus-visible {
-  background: #ffcf33;
-  outline: 3px solid rgba(255, 207, 51, .45);
-  outline-offset: 3px;
-}
-
-.mission-screen .eyebrow,
-.mission-screen .text-muted,
-.mission-screen .notice {
-  color: #303849 !important;
-}
-
-.mission-screen .screen-heading > p {
-  color: #303849 !important;
-}
-
-.answer-panel {
-  width: 100%;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-}
-
-.answer-grid {
-  gap: clamp(8px, 1.2vw, 14px);
-}
-
-.answer-button {
-  position: relative;
-  overflow: hidden;
-  min-height: clamp(96px, 16vh, 140px);
-  border: 0;
-  border-radius: 0;
-  color: #f5f5f5;
-  background: var(--answer-color);
-  clip-path: polygon(3% 0, 97% 0, 100% 16%, 100% 84%, 97% 100%, 3% 100%, 0 84%, 0 16%);
-}
-
-.answer-button::before {
-  position: absolute;
-  inset: 7px;
-  z-index: 0;
-  background: #050505;
-  content: '';
-  clip-path: polygon(3% 0, 97% 0, 100% 16%, 100% 84%, 97% 100%, 3% 100%, 0 84%, 0 16%);
-}
-
-.answer-button > span {
-  position: relative;
-  z-index: 1;
-}
-
-.answer-button:hover,
-.answer-button:focus-visible {
-  color: #ffffff;
-  background: var(--answer-color);
-  outline: 3px solid rgba(255, 255, 255, .45);
-  outline-offset: 3px;
-}
-
-.answer-button-selected {
-  filter: brightness(1.2);
-}
-
-/* Opción que ahora no se puede elegir (la marca Godot con `disabled`) */
-.answer-button-blocked {
-  cursor: not-allowed;
-  filter: grayscale(.85) brightness(.7);
-}
-
-.answer-button-blocked:hover {
-  transform: none;
-}
-
-.answer-detail {
-  font-size: .78em;
-  letter-spacing: .02em;
-  opacity: .8;
-}
-
-.answer-reason {
-  font-size: .78em;
-  color: #ffd27a;
-}
-
-.role-button {
-  position: relative;
-  overflow: hidden;
-  min-height: clamp(104px, 16vh, 150px);
-  border: 0;
-  background: var(--button-color) !important;
-  clip-path: polygon(3% 0, 97% 0, 100% 16%, 100% 84%, 97% 100%, 3% 100%, 0 84%, 0 16%);
-}
-
-.role-button::before {
-  position: absolute;
-  inset: 7px;
-  z-index: 0;
-  background: #050505;
-  content: '';
-  clip-path: polygon(3% 0, 97% 0, 100% 16%, 100% 84%, 97% 100%, 3% 100%, 0 84%, 0 16%);
-}
-
-.role-button > span {
-  position: relative;
-  z-index: 1;
-}
-
-.role-button:hover,
-.role-button:focus-visible {
-  background: var(--button-color) !important;
-  outline: 3px solid color-mix(in srgb, var(--button-color) 45%, transparent);
-  outline-offset: 3px;
-}
-
-.role-button-selected {
-  filter: brightness(1.2);
-}
-
-.role-status-card,
-.mission-status-card {
-  position: relative;
-  overflow: hidden;
-  border: 0 !important;
-  background: var(--role-color) !important;
-  clip-path: polygon(1% 0, 99% 0, 100% 7%, 100% 93%, 99% 100%, 1% 100%, 0 93%, 0 7%);
-  padding-top: clamp(18px, 3vh, 30px) !important;
-  padding-bottom: clamp(18px, 3vh, 30px) !important;
-}
-
-.role-status-card::before,
-.mission-status-card::before {
-  position: absolute;
-  inset: 7px;
-  z-index: 0;
-  background: #050505;
-  content: '';
-  clip-path: polygon(1% 0, 99% 0, 100% 7%, 100% 93%, 99% 100%, 1% 100%, 0 93%, 0 7%);
-}
-
-.role-status-card > *,
-.mission-status-card > * {
-  position: relative;
-  z-index: 1;
-}
-
-.role-status-card h2,
-.mission-status-card h2 {
-  color: #f5f5f5;
-}
-
-.role-status-card .eyebrow,
-.mission-status-card .eyebrow {
-  color: var(--role-color) !important;
-}
-
-.role-status-card .text-muted,
-.mission-status-card .text-muted {
-  color: #d7e2ee !important;
-}
-
-.role-change-button {
-  position: relative;
-  overflow: hidden;
-  display: inline-flex;
-  min-height: 48px;
-  margin-top: 18px;
-  cursor: pointer;
-  align-items: center;
-  justify-content: center;
-  padding: 0 22px;
-  border: 0 !important;
-  border-radius: 0;
-  background: #14b9ef !important;
-  color: #f5f5f5 !important;
-  clip-path: polygon(8% 0, 92% 0, 100% 20%, 100% 80%, 92% 100%, 8% 100%, 0 80%, 0 20%);
-}
-
-.role-change-button::before {
-  position: absolute;
-  inset: 5px;
-  z-index: 0;
-  background: #050505;
-  content: '';
-  clip-path: polygon(8% 0, 92% 0, 100% 20%, 100% 80%, 92% 100%, 8% 100%, 0 80%, 0 20%);
-}
-
-.role-change-button > span {
-  position: relative;
-  z-index: 1;
-}
-
-.role-change-button:hover,
-.role-change-button:focus-visible {
-  background: #14b9ef !important;
-  outline: 3px solid rgba(20, 185, 239, .45);
-  outline-offset: 3px;
-}
-
-.crew-member {
-  position: relative;
-  overflow: hidden;
-  border: 0 !important;
-  border-radius: 0;
-  background: var(--crew-color) !important;
-  clip-path: polygon(3% 0, 97% 0, 100% 16%, 100% 84%, 97% 100%, 3% 100%, 0 84%, 0 16%);
-}
-
-.crew-member::before {
-  position: absolute;
-  inset: 5px;
-  z-index: 0;
-  background: #050505;
-  content: '';
-  clip-path: polygon(3% 0, 97% 0, 100% 16%, 100% 84%, 97% 100%, 3% 100%, 0 84%, 0 16%);
-}
-
-.crew-member > * {
-  position: relative;
-  z-index: 1;
-}
-
-.crew-member .text-muted {
-  color: #d7e2ee !important;
-}
-
-@media (max-width: 767px) {
-  .mission-brand {
-    top: 8px;
-    left: 8px;
-  }
-
-  .answer-button {
-    min-height: clamp(96px, 17vh, 140px);
-    padding: 16px;
-  }
-
-  .role-button {
-    min-height: clamp(96px, 18vh, 132px);
-  }
-}
-
 /* Piezas repetidas en varias pantallas */
 @layer components {
   .screen-w {
     @apply mx-auto w-[calc(100%-32px)] md:w-[min(1120px,calc(100%-64px))];
   }
 
+  /* Pantalla del HUD: contorno oscuro, bisel metálico claro y cristal marino dentro.
+     El bisel va con sombras interiores para que ningún contenedor lo recorte. */
+  .screen-panel {
+    @apply rounded-[20px] border-[3px] border-outline bg-navy;
+    box-shadow:
+      inset 0 0 0 5px var(--color-hull-light),
+      inset 0 0 0 8px var(--color-outline),
+      inset 0 0 36px rgb(77 184 255 / .14);
+  }
+
+  /* Placa metálica para los títulos sobre el casco */
+  .hull-plate {
+    @apply rounded-[14px] border-[3px] border-outline bg-hull-light px-4 py-3 text-outline;
+    box-shadow: inset 0 -4px 0 rgb(26 32 48 / .18), inset 0 3px 0 rgb(255 255 255 / .35);
+  }
+
+  /* Botón de neón como los del marco: fondo oscuro y borde de color (--neon) */
+  .neon-button {
+    --neon: var(--role-color);
+    @apply cursor-pointer rounded-[14px] border-[3px] border-(--neon) bg-navy text-ink transition duration-150;
+    box-shadow: inset 0 0 0 2px var(--color-outline), inset 0 0 14px color-mix(in srgb, var(--neon) 18%, transparent), 0 0 10px color-mix(in srgb, var(--neon) 40%, transparent);
+  }
+
+  .neon-button:enabled:hover,
+  .neon-button:focus-visible {
+    @apply -translate-y-0.5 bg-panel-hover;
+    box-shadow: inset 0 0 0 2px var(--color-outline), inset 0 0 18px color-mix(in srgb, var(--neon) 30%, transparent), 0 0 16px color-mix(in srgb, var(--neon) 65%, transparent);
+  }
+
+  .neon-button:disabled {
+    @apply cursor-not-allowed opacity-45 grayscale-[.7];
+  }
+
+  /* Piloto naranja del marco */
+  .hud-light {
+    @apply inline-block h-3 w-6 rounded-full border-2 border-outline bg-neon-orange;
+    box-shadow: 0 0 10px var(--color-neon-orange);
+  }
+
   .eyebrow {
-    @apply mb-2 font-mono text-[10px] tracking-[.12em] text-muted;
+    @apply mb-2 font-mono text-[11px] font-medium tracking-[.14em] text-muted;
   }
 
   .notice {
@@ -423,17 +125,18 @@
   }
 
   .notice-error {
-    @apply font-mono text-xs text-danger;
+    @apply rounded-[10px] border-2 border-outline bg-navy px-3 py-2 font-mono text-xs text-danger;
   }
 
   .btn-primary {
-    @apply mt-2 min-h-13 cursor-pointer rounded-[5px] border border-amber bg-amber px-[18px] font-bold whitespace-nowrap text-navy;
-    @apply hover:bg-amber-light focus-visible:bg-amber-light focus-visible:outline-none;
-    @apply disabled:cursor-wait disabled:opacity-50;
+    @apply mt-2 min-h-13 cursor-pointer rounded-[14px] border-[3px] border-outline bg-amber px-[18px] font-bold whitespace-nowrap text-outline;
+    box-shadow: 0 4px 0 var(--color-outline), 0 0 16px rgb(255 168 38 / .55);
+    @apply transition duration-150 hover:bg-amber-light focus-visible:bg-amber-light focus-visible:outline-none;
+    @apply active:translate-y-1 active:shadow-none disabled:cursor-wait disabled:opacity-50;
   }
 
   .btn-secondary {
-    @apply mt-[18px] min-h-11 cursor-pointer rounded-[5px] border border-line-strong bg-transparent px-[18px] text-soft;
+    @apply mt-[18px] min-h-11 cursor-pointer rounded-[12px] border-[3px] border-line bg-panel px-[18px] text-soft transition duration-150;
     @apply hover:border-(--role-color) hover:text-(--role-color);
     @apply focus-visible:border-(--role-color) focus-visible:text-(--role-color) focus-visible:outline-none;
   }
