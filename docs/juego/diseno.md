@@ -86,13 +86,14 @@ Como máximo puede haber **2 eventos pendientes** a la vez (`max_pending_events`
 
 ## Tripulación fuera de la base
 
-Algunas opciones obligan a alguien a salir (paseos espaciales, reparaciones exteriores). En `events.json` llevan `away_sols` (2 o 3 Sols).
+Cada opción deja ocupado a quien la hace durante 0, 1 o 2 Sols (`away_sols` en `events.json`). Las duraciones por opción están en [tiempos_fuera.md](tiempos_fuera.md).
 
-- **Quién sale:** el rol de la opción si es de un rol; si es «para todos», un voluntario al azar entre los que están en la base.
-- **Mientras está fuera** (haya salido bien o mal la tarea) el astronauta no puede participar: sus opciones de rol se bloquean y su móvil muestra «You are outside!». Una opción «para todos» que obliga a salir se bloquea solo si no queda nadie en la base.
-- **Vuelve** al empezar el Sol indicado, con un aviso en las noticias del amanecer.
-- **Si ninguna opción se puede elegir**, el problema espera hasta que vuelva alguien (sin repetir sus efectos de inicio).
-- **Avatares:** la franja inferior derecha de la cabina muestra a los 4 astronautas: verde y «READY» en la base, gris y «OUTSIDE» fuera.
+- **Opción de un rol:** ese astronauta queda ocupado `away_sols` Sols. Con 1 Sol no está disponible mañana y vuelve pasado mañana.
+- **Salida grupal («para todos» con `away_sols`):** toda la tripulación queda ocupada y la base se queda vacía. Solo se puede elegir si los 4 están en la base. «Dos salidas» no ocupa a nadie hoy, pero mañana deja a todos ocupados (`away_all` en el efecto diferido).
+- **Mientras está ocupado** (haya salido bien o mal la tarea) el astronauta no puede participar: sus opciones de rol se bloquean y su móvil muestra «You are busy!».
+- **Base vacía:** al empezar un Sol, si los 4 están ocupados no se genera ningún evento. Se aplica el consumo diario normal y se avisa con un mensaje; el día pasa al pulsar Continue.
+- **Vuelve** al empezar el Sol indicado, con un aviso en las noticias del amanecer y el sonido de la puerta.
+- **Avatares:** la franja inferior derecha de la cabina muestra a los 4 astronautas con su casco (amarillo, verde, rojo y blanco): con color y «READY» en la base, grises y «BUSY - N Sols» si están ocupados.
 
 ## Qué se ve dónde
 

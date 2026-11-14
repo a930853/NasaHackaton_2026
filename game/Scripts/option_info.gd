@@ -19,6 +19,10 @@ static func costs_text(option: Dictionary) -> String:
 		if not later.is_empty():
 			var after: int = int(delayed.get("after_sols", 1))
 			text += "  +  Later: %s (in %d Sol%s)" % [", ".join(PackedStringArray(later)), after, "" if after == 1 else "s"]
+		if int(delayed.get("away_all", 0)) > 0:
+			var after_all: int = int(delayed.get("after_sols", 1))
+			text += "  +  In %d Sol%s the whole crew is busy for %d Sol%s" % [
+				after_all, "" if after_all == 1 else "s", int(delayed["away_all"]), "" if int(delayed["away_all"]) == 1 else "s"]
 
 	var condition: Dictionary = option.get("start_condition", {})
 	if condition.has("sequence"):
@@ -34,7 +38,9 @@ static func costs_text(option: Dictionary) -> String:
 
 	var away: int = int(option.get("away_sols", 0))
 	if away > 0:
-		text += "  +  Someone is away for %d Sol%s" % [away, "" if away == 1 else "s"]
+		var role: Variant = option.get("role")
+		var who: String = "The whole crew" if role == null else "The %s" % GameState.ROLE_NAMES[str(role)]
+		text += "  +  %s is busy for %d Sol%s" % [who, away, "" if away == 1 else "s"]
 	return text
 
 
