@@ -109,7 +109,7 @@ phase = playing
 - Si `resume_player` falla (`invalid_token`, `room_not_found`) se borra lo guardado y se vuelve a la entrada.
 - Al pulsar una opción se crea un `actionId` (`<playerId>-<aleatorio>`, con `crypto.getRandomValues`, que funciona en http) y se guarda como **pendiente**. Los botones se bloquean y se muestra «Enviando…».
 - Si se recarga o se corta la red antes del `choice_result`, al recuperar la sesión llega la misma vista y se **reenvía el mismo `actionId`**. Godot responde igual sin repetir efectos.
-- `choice_result` aceptado → «Decisión registrada» (también se guarda, para mantenerla tras recargar). Rechazado → motivo y opciones disponibles de nuevo.
+- El mando no recibe `choice_result`: permanece enviando hasta que Godot mande una nueva `controller_view`, que puede ser de resultado, espera o una nueva pregunta.
 - Llegar a una vista que no es la de la elección pendiente descarta la elección pendiente.
 - `room_closed` borra las credenciales. «Volver al inicio» abre una conexión nueva (la anterior queda asociada a la sala cerrada).
 - Si otro dispositivo recupera la misma sesión, Node cierra esta conexión con el código `4000`: el mando no reconecta solo y ofrece «Usar este dispositivo».
