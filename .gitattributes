@@ -1,0 +1,30 @@
+# Finales de línea iguales para todo el equipo, tenga cada uno Git configurado
+# como sea (Windows, Linux, Mac).
+#
+# - Todo lo que Git reconozca como texto se guarda y se descarga con LF.
+#   Godot escribe LF (.import, .tscn, .gd…) y los scripts de shell que corren
+#   en Docker necesitan LF.
+# - Los binarios se marcan explícitamente para que Git no los toque nunca.
+
+* text=auto eol=lf
+
+# Imágenes
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.webp  binary
+
+# Audio
+*.mp3   binary
+*.ogg   binary
+*.wav   binary
+
+# Fuentes
+*.ttf   binary
+*.otf   binary
+*.woff  binary
+*.woff2 binary
+
+# Exportación web de Godot
+*.wasm  binary
+*.pck   binary
