@@ -23,7 +23,7 @@ Juego cooperativo por salas para el NASA Hackathon 2026. Una **pantalla principa
 | [`landing/`](landing/) | Página de inicio `/` | Provisional |
 | [`deploy/`](deploy/) | Imagen de Nginx (HTTPS y proxy) | Implementado |
 | [`scripts/`](scripts/) | `npm run dev` (backend + mando) | Herramientas de desarrollo |
-| `dist/game/` | Exportación web de Godot | Se genera al exportar |
+| `dist/game/` | Exportación web de Godot | Se genera al exportar (se versiona: hay que volver a exportar y subirla tras cambiar `game/`) |
 | `dist/game_debug/` | Exportación web de `game_debug` | Se genera al exportar (se versiona) |
 | `dist/controller/` | Build del mando | Se genera con `npm run build` (no se versiona) |
 | [`docs/`](docs/) | Documentación | Ver abajo |

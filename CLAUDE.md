@@ -29,7 +29,7 @@ deploy/web.Dockerfile     Imagen web: compila el mando y copia landing/ y dist/<
 deploy/nginx/default.conf HTTPS para todo (Godot web lo exige), estáticos y proxy de /ws y /api
 deploy/nginx/15-cert.sh   Certificado autofirmado al arrancar (volumen `certs`)
 scripts/dev.mjs    `npm run dev`: arranca backend y mando con puertos libres y log de mensajes
-dist/game/         Exportación web de Godot (generada)
+dist/game/         Exportación web de Godot (generada, se versiona: re-exportar tras cambiar game/)
 dist/game_debug/   Exportación web de game_debug (generada, se versiona)
 dist/controller/   Build del mando (generado, no se versiona)
 compose.yaml       Servicios `web` (Nginx) y `backend` (Node). Producción: sirve dist/game
