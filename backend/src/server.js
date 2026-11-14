@@ -118,11 +118,6 @@ export function createApp() {
       if (ctx.kind !== 'host') return sendError(ws, 'not_host', 'choice_result');
       const player = ctx.room.players.get(msg.playerId);
       if (!player) return sendError(ws, 'unknown_player', 'choice_result');
-      if (player.connected) {
-        send(player.connection, {
-          type: 'choice_result', actionId: msg.actionId, accepted: msg.accepted, reason: msg.reason,
-        });
-      }
     },
 
     finish_game(ws, ctx) {

@@ -132,7 +132,7 @@ test('un móvil no puede suplantar a otro con playerId', async () => {
   assert.equal(got.playerId, p2.joined.playerId);
 });
 
-test('el flujo host → móvil: controller_view y choice_result', async () => {
+test('el flujo host → móvil: controller_view sin reenviar choice_result', async () => {
   const { h, code } = await host();
   const { p, joined } = await player(code, 'A', 'engineer');
   h.send({ type: 'start_game' });
@@ -140,8 +140,7 @@ test('el flujo host → móvil: controller_view y choice_result', async () => {
   h.send({ type: 'controller_view', playerId: joined.playerId, view: { screen: 'choice', eventId: 'e1', options: [] } });
   assert.equal((await p.next('controller_view')).view.eventId, 'e1');
   h.send({ type: 'choice_result', playerId: joined.playerId, actionId: 'a1', accepted: true });
-  const res = await p.next('choice_result');
-  assert.deepEqual([res.actionId, res.accepted], ['a1', true]);
+  await p.none('choice_result');
 });
 
 test('un móvil no puede iniciar la partida ni enviar vistas', async () => {

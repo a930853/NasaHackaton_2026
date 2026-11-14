@@ -121,6 +121,10 @@ export function createSession({ url, storage = browserStorage(), WebSocketImpl, 
         sendChoose(pending)
         return
       }
+      if (pending && pending.eventId !== view.eventId) {
+        saved.pending = null
+        persist()
+      }
       const decided = saved?.decided
       if (decided && decided.eventId === view.eventId) {
         state.choice = { status: 'registered', ...decided, reason: null }

@@ -246,7 +246,7 @@ func _on_choice(player_id: String, role: String, action_id: String, event_id: St
 Puntos clave:
 
 - **Idempotencia**: guardad `actionId → resultado` y respondedlo igual las veces que haga falta. Una doble pulsación o un reenvío tras reconexión **no** puede aplicar la consecuencia dos veces. Los rechazos también se memorizan.
-- Responded **siempre** con un `choice_result`; el mando se queda en «Enviando…» hasta recibirlo.
+- Responded **siempre** con un `choice_result` para que Node pueda validar el flujo; el mando no lo recibe. Enviad después una nueva `controller_view` para mostrar el resultado, espera o siguiente pregunta.
 - La identidad (`player_id`, `role`) viene de Node y es fiable; no la leáis del contenido que mande el móvil.
 - `already_decided` con un **`actionId` distinto**: el jugador ya votó y pulsó otra cosa. Con el mismo `actionId` es un duplicado (paso 1) y no un error.
 

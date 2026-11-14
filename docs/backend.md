@@ -71,6 +71,7 @@ Un mensaje enviado por el tipo equivocado devuelve `not_host` / `not_player`. La
 - **Inicio:** exige 1–4 jugadores, todos con rol; pasa a `playing` y envía `game_started`.
 - **Vistas:** `controller_view` guarda `lastView` y la entrega si el jugador está conectado.
 - **Elección:** `choose` se reenvía al anfitrión añadiendo `playerId` y `role`. Node **no** mira `eventId` ni `optionId`.
+- **Resultado:** `choice_result` se valida para el anfitrión, pero no se reenvía al mando; Godot comunica el resultado mediante la siguiente `controller_view`.
 - **Reconexión:** `resume_player` busca el token en la sala, sustituye la conexión (cierra la antigua con `4000 replaced`), reenvía `joined`, `lobby_state` y `lastView`.
 - **Desconexión de un móvil:** `connected = false`, se mantiene el rol, se difunde `lobby_state`. Solo si la conexión que se cierra es la vigente (evita que el cierre de una conexión sustituida marque al jugador como desconectado).
 - **Desconexión del anfitrión:** se envía `room_closed (host_disconnected)` y se borra la sala.

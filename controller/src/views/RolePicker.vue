@@ -2,7 +2,6 @@
 // Selección de rol en el lobby. La disponibilidad sale de lobby_state.
 import { computed } from 'vue'
 import { ROLES } from '../roles.js'
-import CrewList from '../components/CrewList.vue'
 import ScreenHeading from '../components/ScreenHeading.vue'
 
 const props = defineProps({
@@ -27,8 +26,8 @@ const caption = (role) => {
 </script>
 
 <template>
-  <section class="screen-w flex flex-1 flex-col" aria-labelledby="picker-title">
-    <div class="flex flex-1 flex-col justify-center gap-[clamp(28px,6vh,56px)] py-7 md:py-12">
+  <section class="screen-w flex min-h-0 flex-1 flex-col overflow-hidden" aria-labelledby="picker-title">
+    <div class="flex min-h-0 flex-1 flex-col justify-center gap-[clamp(20px,6vh,56px)] py-5 md:py-12">
       <ScreenHeading id="picker-title">
         ¿Qué quieres ser <span class="text-amber">hoy?</span>
         <template #hint>Selecciona tu especialidad para comenzar.</template>
@@ -63,7 +62,6 @@ const caption = (role) => {
         </button>
       </div>
 
-      <CrewList v-if="players.length" :players="players" :player-id="playerId" />
     </div>
   </section>
 </template>
