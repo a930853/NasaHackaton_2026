@@ -6,10 +6,19 @@ const BUS_SFX := &"SFX"
 # Precarga tus archivos desde res://Sounds/SFX/
 const SOUNDS: Dictionary = {
 	"rocket_landing": preload("res://Sound/SFX/Landing_SFX.mp3"),
+	"success": preload("res://Sound/SFX/Succes_SFX.mp3"),
+	"failure": preload("res://Sound/SFX/Failure_SFX.mp3"),
+	"door": preload("res://Sound/SFX/Door_SFX.mp3"),
+	"intercom": preload("res://Sound/SFX/IntercomsMessage_SFX.mp3"),
 	#"click": preload("res://Sounds/SFX/click.ogg"),
 	#"alert": preload("res://Sounds/SFX/alert.ogg"),
 	#"nfc_scan": preload("res://Sounds/SFX/nfc_scan.ogg"),
 	#"success": preload("res://Sounds/SFX/success.ogg")
+}
+
+# Volumen (dB) de los sonidos que no deben sonar a tope. El mensaje de la Tierra suena "de fondo".
+const VOLUME_DB: Dictionary = {
+	"intercom": -8.0,
 }
 
 var _players: Array[AudioStreamPlayer] = []
@@ -34,6 +43,7 @@ func play_sfx(sfx_key: String, pitch_variance: float = 0.0) -> void:
 	
 	var player := _get_available_player()
 	player.stream = SOUNDS[sfx_key]
+	player.volume_db = VOLUME_DB.get(sfx_key, 0.0)  # se reinicia siempre: el reproductor se recicla
 	
 	# Variación ligera de tono opcional para evitar repetición robótica en clics
 	if pitch_variance > 0.0:
