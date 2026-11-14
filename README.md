@@ -31,13 +31,17 @@ Juego cooperativo por salas para el NASA Hackathon 2026. Una **pantalla principa
 
 ## Documentación
 
+Índice completo y qué leer según tu papel: [`docs/README.md`](docs/README.md).
+
 | Documento | Para quién | Qué cuenta |
 |---|---|---|
 | [`docs/protocol.md`](docs/protocol.md) | **Todos** | Contrato de mensajes, errores, secuencias y criterios de aceptación. **Fuente de verdad**: se cambia aquí primero. |
-| [`docs/godot.md`](docs/godot.md) | Equipo Godot | Cómo implementar el contrato: autoload `Net`, lobby, QR, eventos, idempotencia y votaciones. |
+| [`docs/juego/diseno.md`](docs/juego/diseno.md) | **Todos** | Reglas del juego: bucle de un Sol, roles, recursos, objetivos, APIs de la NASA y **decisiones pendientes**. |
+| [`docs/juego/eventos.md`](docs/juego/eventos.md) | Diseño / Godot | Catálogo de eventos con opciones, efectos y fuentes de la NASA. Las cifras salen de `game/Data/events.json`. |
+| [`docs/godot/arquitectura.md`](docs/godot/arquitectura.md) | Equipo Godot | Gestores, máquina de estados del Sol, modelos y formato de `events.json`. |
+| [`docs/godot/red.md`](docs/godot/red.md) | Equipo Godot | Cómo implementar el contrato: autoload `Net`, lobby, QR, eventos, idempotencia y votaciones. |
 | [`docs/controller.md`](docs/controller.md) | Mando web | Arquitectura Vue, rutas de rol (NFC), estados, recuperación de sesión, estilos y despliegue. |
 | [`docs/backend.md`](docs/backend.md) | Backend / despliegue | Tecnologías, estructura, modelo de sala, reconexión y límites del MVP. |
-| [`docs/Clases Godot.pdf`](docs/Clases%20Godot.pdf), [`docs/Eventos _ Games.pdf`](docs/Eventos%20_%20Games.pdf) | Diseño del juego | Material de diseño del equipo. |
 | [`CLAUDE.md`](CLAUDE.md) | Claude Code | Contexto y convenciones del proyecto para el asistente. |
 
 ## Empezar

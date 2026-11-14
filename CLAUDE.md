@@ -32,7 +32,10 @@ dist/game_debug/   Exportación web de game_debug (generada, se versiona)
 dist/controller/   Build del mando (generado, no se versiona)
 compose.yaml       Servicios `web` (Nginx) y `backend` (Node)
 docs/protocol.md   Contrato de mensajes: FUENTE DE VERDAD compartida
-docs/godot.md, docs/controller.md, docs/backend.md   Guías por componente
+docs/controller.md, docs/backend.md   Guías por componente
+docs/godot/        arquitectura.md (gestores, FSM, events.json) y red.md (autoload Net)
+docs/juego/        diseno.md (reglas y decisiones pendientes) y eventos.md (catálogo)
+game/Data/events.json  Cifras de eventos y reglas: fuente de verdad del diseño numérico
 ```
 
 El lobby y las pantallas por rol son **estados internos del mando**, no aplicaciones separadas. Las rutas de rol (`/controller/<rol>`) solo expresan la intención de rol (botón o etiqueta NFC del tablero físico); el rol real lo confirma el backend.
