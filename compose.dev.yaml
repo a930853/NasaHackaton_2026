@@ -1,0 +1,11 @@
+#   docker compose -f compose.yaml -f compose.dev.yaml up --build
+
+services:
+  backend:
+    environment:
+      LOG_MESSAGES: "1" # mensajes en bruto en `docker compose logs -f backend`
+
+  web:
+    build:
+      args:
+        GAME_EXPORT: game_debug # pantalla de depuración en lugar del juego
