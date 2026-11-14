@@ -7,21 +7,21 @@ const NEXT_SCENE := "gameplay"
 const FALLBACK_IMAGE: Texture2D = preload("res://Images/MonsCloud_MarsExpress_1920.jpg")
 const PAGE_FADE := 0.25
 
-const CREDIT_FALLBACK := "Image: ESA Mars Express (local file)"
+const CREDIT_FALLBACK := "Image: ESA Mars Express (saved on this computer)"
 const CREDIT_NASA := "Image: NASA Image and Video Library"
 
 const PAGES: Array[Dictionary] = [
 	{
-		"title": "Jezero Crater, Mars",
-		"body": "After months of travel, [b]you have finally reached Mars[/b]. Your base stands in Jezero Crater, an ancient lake where NASA searches for signs of past life.\n\nFrom now on you are on your own: Earth is minutes away by radio, and any help takes [b]2 to 3 Sols[/b] to arrive. (A Sol is one Martian day.)\n\nYour mission is to survive and build a stable colony.",
+		"title": "Welcome to Mars!",
+		"body": "You made it! After months in space, your team has landed in [b]Jezero Crater[/b] on Mars. Long ago there was a lake here. NASA scientists want to find out if tiny life lived in it.\n\nYou are very far from home. A radio message to Earth takes minutes, and help takes [b]2 to 3 Sols[/b] to arrive. A Sol is one day on Mars.\n\nYour job: [b]stay alive for 20 Sols[/b] and build a safe home on Mars!",
 	},
 	{
-		"title": "Every decision has a price",
-		"body": "[b]Nothing is free.[/b] Every action or decision you make carries a cost for the future: saving today may cost you tomorrow.\n\nEach of you has a [b]role[/b] with different skills: Engineer, Biologist, Doctor and Generalist. An expert in a task does it better and spends fewer resources.\n\nTo complete the objectives, [b]missions[/b], or rather [b]events[/b], will appear. They directly affect your stats, both [b]individual[/b] and for the [b]whole group[/b].\n\n[b]Real-time events[/b] may also happen, simulating what is really going on on Mars. You will have to solve them together.",
+		"title": "Every choice has a price",
+		"body": "[b]Nothing is free![/b] Every choice uses something, like energy or air. You can see the costs on each button before you choose.\n\nSome jobs can [b]fail[/b], just like in real space missions. If a job fails, you still pay the costs, but you do not get the reward. Then you can try again!\n\nEach of you has a job: [b]Engineer, Biologist, Doctor[/b] or [b]Commander[/b]. Experts are better at their own tasks, so they have a bigger chance to succeed.\n\nEach Sol brings a new event. Sometimes a real event from space happens too, and you must solve it together!",
 	},
 	{
-		"title": "Mission objectives",
-		"body": "[b]1. Healthy crew.[/b] Keep everyone's health above 50% at all times.\n\n[b]2. Stable colony.[/b] Successfully grow 3 harvests of roots and probiotics.\n\n[b]3. Stuck rover.[/b] In 2009 the Spirit rover got trapped in soft sand, and NASA spent months trying to free it. Your challenge: free the rover stuck in the dunes of Jezero.\n\n[b]4. Seismic sensor network (InSight).[/b] Build and place 3 sensors outside. If they are all in place before Sol 20, the network will warn you 1 turn ahead of any collapse.\n\n[b]5. MOXIE oxygen generator.[/b] Building it costs a lot of energy, but once complete it removes the passive oxygen drain and makes you self-sufficient, without taking resources away from the Biologist.",
+		"title": "Your goals",
+		"body": "[b]1. Stay healthy.[/b] Keep everyone's Health above 50 all the time.\n\n[b]2. Grow food.[/b] Grow 3 harvests of roots and good bacteria.\n\n[b]3. Free the rover.[/b] In 2009, the Spirit rover got stuck in soft sand and NASA spent months trying to free it. Now a rover is stuck in the dunes of Jezero!\n\n[b]4. Earthquake sensors.[/b] Build and place 3 sensors outside. Place all 3 before Sol 13 and you will get a warning before a Marsquake!\n\n[b]5. Oxygen machine.[/b] Build MOXIE. It costs lots of energy, but when it is done, the base stops losing oxygen every day.",
 	},
 ]
 

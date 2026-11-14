@@ -1,0 +1,94 @@
+{
+  "terms": {
+    "sol": {
+      "title": "Sol",
+      "definition": "A Sol is one day on Mars. It is a little longer than a day on Earth: about 24 hours and 39 minutes.",
+      "nasa_fact": "Teams that drive NASA rovers sometimes change their work hours to match Mars time."
+    },
+    "moxie": {
+      "title": "MOXIE",
+      "definition": "MOXIE is a small oxygen factory. It takes air from Mars, which is mostly carbon dioxide, and splits out the oxygen so people can breathe.",
+      "nasa_fact": "MOXIE traveled on the Perseverance rover and made about 122 grams of oxygen on Mars."
+    },
+    "electrolisis_co2": {
+      "title": "Splitting CO₂",
+      "definition": "Carbon dioxide (CO₂) is the gas we breathe out. Using electricity, you can break it apart into oxygen and carbon monoxide.",
+      "nasa_fact": "MOXIE does this at a super hot 800 °C to get oxygen from the air of Mars."
+    },
+    "crater_jezero": {
+      "title": "Jezero Crater",
+      "definition": "A huge bowl in the ground on Mars. Billions of years ago it was a lake with a river delta.",
+      "nasa_fact": "The Perseverance rover landed here in February 2021 to look for signs of ancient life."
+    },
+    "crater_gale": {
+      "title": "Gale Crater",
+      "definition": "A crater on Mars with a tall mountain in the middle, called Mount Sharp. The mountain is made of layers of rock.",
+      "nasa_fact": "The Curiosity rover landed in Gale Crater in 2012 and found clay that formed with water."
+    },
+    "regolito": {
+      "title": "Regolith",
+      "definition": "Regolith is the loose dust and tiny pieces of rock that cover the ground on Mars.",
+      "nasa_fact": "Mars regolith has a salt in it called perchlorate that is bad for people, so astronauts would need to clean it first."
+    },
+    "cme": {
+      "title": "Coronal Mass Ejection (CME)",
+      "definition": "A giant cloud of tiny particles that the Sun throws into space. If it hits a planet, it can damage machines and bother people.",
+      "nasa_fact": "NASA's DONKI system keeps track of these clouds and warns when one is heading toward a planet."
+    },
+    "fulguracion_solar": {
+      "title": "Solar Flare",
+      "definition": "A giant burst of light and energy from the Sun. Flares have letters: A, B, C, M and X. X is the strongest.",
+      "nasa_fact": "Big M and X flares can cause radio blackouts and dangerous radiation for astronauts."
+    },
+    "probioticos": {
+      "title": "Probiotics",
+      "definition": "Probiotics are good bacteria that live in your tummy and help keep you healthy.",
+      "nasa_fact": "A NASA study found that a probiotic called Lacticaseibacillus rhamnosus GG helps the gut cope with space radiation."
+    },
+    "radiacion_cosmica": {
+      "title": "Space Radiation",
+      "definition": "Tiny, super-fast particles that come from the Sun and from far-away stars. On Mars, nothing like Earth's magnetic shield protects you from them.",
+      "nasa_fact": "A tool on the Curiosity rover called RAD measures radiation on Mars so we know how to protect astronauts."
+    },
+    "osdr": {
+      "title": "OSDR",
+      "definition": "OSDR is NASA's free online library of results from science experiments done in space.",
+      "nasa_fact": "Anyone can read it. Studies about astronauts' tummies and brains come from this data."
+    },
+    "perseverance": {
+      "title": "Perseverance",
+      "definition": "A car-sized NASA robot that explores Mars. It collects rock samples to bring to Earth someday.",
+      "nasa_fact": "It landed in Jezero Crater in 2021 and carries the MOXIE machine."
+    },
+    "opportunity": {
+      "title": "Opportunity",
+      "definition": "A NASA robot that landed on Mars in 2004. It was only supposed to work for 90 Sols.",
+      "nasa_fact": "It worked for almost 14 years, until a giant dust storm in 2018 covered its solar panels."
+    },
+    "tormenta_polvo": {
+      "title": "Dust Storm",
+      "definition": "Wind that lifts up dust on Mars. It can cover solar panels and block sunlight for days or weeks.",
+      "nasa_fact": "Some Martian dust storms grow big enough to cover the whole planet."
+    },
+    "sismometro_seis": {
+      "title": "SEIS Seismometer",
+      "definition": "A super-sensitive tool that feels the shaking of the ground on Mars. It is like a stethoscope for a planet.",
+      "nasa_fact": "SEIS flew on the InSight lander and recorded more than 1,300 Marsquakes."
+    },
+    "insight": {
+      "title": "InSight",
+      "definition": "A NASA lander that stayed in one spot on Mars to listen to what is inside the planet.",
+      "nasa_fact": "It landed in 2018 and finished its mission in December 2022."
+    },
+    "martemoto": {
+      "title": "Marsquake",
+      "definition": "An earthquake on Mars. It happens when the rocky crust of the planet cracks or moves.",
+      "nasa_fact": "Thanks to Marsquakes, InSight could measure how thick Mars's crust is and how big its core is."
+    },
+    "minutos_luz": {
+      "title": "Light-minutes",
+      "definition": "The time it takes a radio signal to travel from one place to another. Between Earth and Mars it takes 3 to 22 minutes, depending on where each planet is.",
+      "nasa_fact": "Because of this delay, you cannot chat live with Mars. Every question and answer takes a long time."
+    }
+  }
+}

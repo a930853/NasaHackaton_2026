@@ -13,10 +13,6 @@ font_size = 50
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_gc6rr"]
 texture = ExtResource("1_pc006")
 
-[sub_resource type="GDScript" id="GDScript_787fc"]
-script/source = "extends Control
-"
-
 [node name="MainMenu" type="Control" unique_id=1203072789]
 layout_mode = 3
 anchors_preset = 15
@@ -36,7 +32,7 @@ offset_top = 33.0
 offset_right = 3.0
 offset_bottom = 84.0
 grow_horizontal = 2
-text = "Mars Mision"
+text = "Mars Mission"
 label_settings = SubResource("LabelSettings_i4s4l")
 horizontal_alignment = 1
 
@@ -93,7 +89,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-script = SubResource("GDScript_787fc")
 
 [node name="Panel" type="Panel" parent="Lobby" unique_id=1063036358]
 layout_mode = 1
@@ -135,7 +130,7 @@ offset_top = 18.0
 offset_right = 54.5
 offset_bottom = 41.0
 grow_horizontal = 2
-text = "Mision Details"
+text = "Mission Details"
 label_settings = ExtResource("3_f7j37")
 
 [node name="MembersPanel" type="Panel" parent="Lobby/Panel" unique_id=1546070008]
@@ -177,7 +172,7 @@ offset_right = 466.5
 offset_bottom = 142.0
 grow_horizontal = 2
 grow_vertical = 2
-text = "Descripcion de la mision"
+text = "Mission description"
 
 [node name="Button" type="Button" parent="Lobby" unique_id=92977294]
 layout_mode = 1
