@@ -17,6 +17,8 @@ signal decision_resolved(option: Dictionary, feedback: String, success: bool)
 signal timer_updated(seconds_left: int)
 signal earth_help_changed
 signal game_ended(victory: bool, report: Dictionary)
+## Cambió el recuento de la votación de los móviles (alguien votó, empate, se fue un votante…).
+signal votes_changed
 
 const FLARE_URL: String = "https://api.nasa.gov/DONKI/FLR?startDate=%s&api_key=%s"
 const API_KEY: String = "DEMO_KEY"  # límite bajo: usar una key gratuita de api.nasa.gov en la demo
@@ -78,6 +80,7 @@ func start_game() -> void:
 	GameState.reset()
 	EventManager.reset()
 	_event_counter = 0
+	_clear_votes()
 	_paused_events.clear()
 	_interrupted_event = {}
 	_flare_triggered = false
@@ -196,6 +199,7 @@ func _present_event(event: Dictionary, hint: String, fresh: bool) -> void:
 			shown["description"], _flare_info.get("classType", "M/X"),
 			str(_flare_info.get("beginTime", "?")).substr(0, 10)]
 	current_event = shown
+	_clear_votes()
 	_event_counter += 1
 	current_event_uid = "%s#%d" % [event["id"], _event_counter]
 
@@ -280,6 +284,113 @@ func _defer_until_crew_returns(event: Dictionary) -> void:
 ## Con menos de 4 jugadores, las opciones de un rol ausente las puede elegir cualquiera de los presentes
 ## (nunca se asigna una decisión obligatoria a un rol que no existe).
 var present_roles: Array[String] = []
+## Roles con el móvil conectado ahora mismo. Solo votan estos (un móvil caído no bloquea la votación).
+var connected_roles: Array[String] = []
+
+# Votación de los móviles (docs/juego/diseno.md, docs/godot/red.md):
+# cada jugador presente vota una opción; cuando han votado todos los que pueden, gana la más votada.
+# Empate -> segunda votación solo entre las empatadas; si vuelve a empatar, se sortea entre ellas.
+var _votes: Dictionary = {}               # role -> option_id
+var _tie_options: Array[String] = []      # en el desempate, las únicas opciones que se pueden votar
+
+
+## Roles que tienen que votar en el evento actual: conectados, en la base y con alguna opción libre.
+func voters() -> Array[String]:
+	var result: Array[String] = []
+	if phase != Phase.DECISION:
+		return result
+	for role in connected_roles:
+		if GameState.is_away(role):
+			continue
+		for option in options_for_role(role):
+			if not bool(option["disabled"]):
+				result.append(role)
+				break
+	return result
+
+
+func votes() -> Dictionary:
+	return _votes
+
+
+## Opciones empatadas que se están desempatando ([] si no hay empate).
+func tie_options() -> Array[String]:
+	return _tie_options
+
+
+## La sala avisa de quién tiene el móvil conectado. Si se va alguien que faltaba por votar,
+## puede que ya hayan votado todos los demás.
+func set_connected_roles(roles: Array[String]) -> void:
+	connected_roles = roles
+	if phase == Phase.DECISION and not _votes.is_empty() and not _try_resolve_votes():
+		votes_changed.emit()
+
+
+## Voto de un móvil. Devuelve "" si se acepta o el motivo del rechazo (choice_result).
+## Con el último voto que faltaba se resuelve el evento (o empieza el desempate).
+func cast_vote(role: String, event_uid: String, option_id: String) -> String:
+	var reason: String = choice_reject_reason(role, event_uid, option_id)
+	if not reason.is_empty():
+		return reason
+	_votes[role] = option_id
+	if not _try_resolve_votes():
+		votes_changed.emit()
+	return ""
+
+
+func _clear_votes() -> void:
+	_votes.clear()
+	_tie_options.clear()
+
+
+## true si la votación terminó (resuelta o empieza el desempate): ya se avisó a todos.
+func _try_resolve_votes() -> bool:
+	if phase != Phase.DECISION:
+		return false
+	var needed: Array[String] = voters()
+	if needed.is_empty():
+		return false
+	for role in needed:
+		if not _votes.has(role):
+			return false
+	var winners: Array[String] = _most_voted()
+	if winners.size() == 1:
+		submit_choice(winners[0])
+	elif _tie_options.is_empty():
+		_start_tiebreak(winners)
+	else:
+		# Segundo empate: se sortea entre las empatadas.
+		submit_choice(winners.pick_random(), "It was a tie again, so luck decided!")
+	return true
+
+
+## Opciones con más votos, en el orden del evento.
+func _most_voted() -> Array[String]:
+	var counts: Dictionary = {}
+	for option_id in _votes.values():
+		counts[option_id] = int(counts.get(option_id, 0)) + 1
+	var best: int = 0
+	for count in counts.values():
+		best = maxi(best, int(count))
+	var result: Array[String] = []
+	for option in current_event.get("options", []):
+		if int(counts.get(option["id"], 0)) == best and best > 0:
+			result.append(str(option["id"]))
+	return result
+
+
+## Primer empate: se vota otra vez solo entre las empatadas. El evento no cambia, pero sí su
+## eventId, para que un voto de la ronda anterior que llegue tarde se rechace (event_closed).
+func _start_tiebreak(tied: Array[String]) -> void:
+	_votes.clear()
+	_tie_options = tied
+	current_event_uid = "%s#%d-tie" % [current_event["id"], _event_counter]
+	var labels: PackedStringArray = []
+	for option_id in tied:
+		labels.append(str(_find_option(current_event, option_id).get("label", option_id)))
+	Events.sfx_requested.emit("intercom", 0.0)
+	event_presented.emit(current_event, "It's a tie! Vote again between: %s." % ", ".join(labels))
+	votes_changed.emit()
 
 
 ## ¿Puede `role` elegir esta opción? Las suyas, las de todos y las de roles que nadie lleva.
@@ -297,6 +408,8 @@ func options_for_role(role: String) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for option in current_event.get("options", []):
 		if not _role_may_pick(option, role):
+			continue
+		if not _tie_options.is_empty() and not (str(option["id"]) in _tie_options):
 			continue
 		var reason: String = option_block_reason(option)
 		var label: String = str(option["label"])
@@ -321,6 +434,10 @@ func controller_view_for(role: String) -> Dictionary:
 			"text": "You are back in %d Sol%s." % [sols_left, "" if sols_left == 1 else "s"]}
 	if phase != Phase.DECISION:
 		return {"screen": "waiting", "title": "Waiting for the crew...", "text": "Look at the main screen."}
+	if _votes.has(role):
+		var chosen: Dictionary = _find_option(current_event, str(_votes[role]))
+		return {"screen": "waiting", "title": "Vote sent!",
+			"text": "You voted: %s\n%s" % [chosen.get("label", ""), vote_progress_text()]}
 	return {
 		"screen": "choice",
 		"eventId": current_event_uid,
@@ -337,25 +454,35 @@ func choice_reject_reason(role: String, event_uid: String, option_id: String) ->
 		return "event_closed"
 	if GameState.is_away(role):
 		return "not_eligible"
+	if _votes.has(role):
+		return "already_decided"
 	var option: Dictionary = _find_option(current_event, option_id)
 	if option.is_empty() or not _role_may_pick(option, role) or not option_block_reason(option).is_empty():
+		return "invalid_option"
+	if not _tie_options.is_empty() and not (option_id in _tie_options):
 		return "invalid_option"
 	return ""
 
 
-## Elección que llega de un móvil: comprueba que el rol puede elegir esa opción ahora.
-func submit_choice_from(role: String, event_uid: String, option_id: String) -> bool:
-	if not choice_reject_reason(role, event_uid, option_id).is_empty():
-		return false
-	return submit_choice(option_id)
+## «2 of 3 have voted.» (para el móvil y la pantalla principal).
+func vote_progress_text() -> String:
+	var needed: Array[String] = voters()
+	var done: int = 0
+	for role in needed:
+		if _votes.has(role):
+			done += 1
+	return "%d of %d have voted." % [done, needed.size()]
 
 
-func submit_choice(option_id: String) -> bool:
+## Elección directa (pantalla principal: partida sin móviles o simulador de debug) o resultado de
+## la votación de los móviles (cast_vote). `note` es una línea que va antes del resultado.
+func submit_choice(option_id: String, note: String = "") -> bool:
 	if phase != Phase.DECISION:
 		return false
 	var option: Dictionary = _find_option(current_event, option_id)
 	if option.is_empty() or not option_block_reason(option).is_empty():
 		return false
+	_clear_votes()
 	_stop_countdown()
 
 	# ---- FASE_RESOLUCION ----
@@ -363,6 +490,8 @@ func submit_choice(option_id: String) -> bool:
 	# Cada opción puede fallar ("success_chance", 1.0 si no se indica).
 	var success: bool = randf() <= float(option.get("success_chance", 1.0))
 	var lines: Array[String] = []
+	if not note.is_empty():
+		lines.append(note)
 	if success:
 		lines.append(str(option.get("feedback", "")))
 		lines.append_array(GameState.apply_outcome(option))
@@ -537,6 +666,12 @@ func _stop_countdown() -> void:
 func _on_countdown_finished() -> void:
 	_countdown_active = false
 	set_process(false)
+	# Si ya hay votos, gana la más votada (en empate, la opción por defecto si está entre ellas).
+	var winners: Array[String] = _most_voted()
+	if not winners.is_empty():
+		var fallback: String = str(current_event.get("timeout_option", ""))
+		submit_choice(fallback if fallback in winners else winners[0])
+		return
 	# Al acabar el tiempo se elige la opción por defecto; si está bloqueada, la primera libre.
 	var chosen_id: String = str(current_event.get("timeout_option", ""))
 	var default_option: Dictionary = _find_option(current_event, chosen_id)

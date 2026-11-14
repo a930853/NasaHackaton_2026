@@ -9,8 +9,8 @@ extends Control
 ##   Botón redondo               -> el evento (las opciones se ven en los móviles)
 ##   Botón ancho de abajo        -> libro de palabras científicas
 ##
-## Hoy las decisiones se toman con botones; más adelante llegarán de los móviles/NFC
-## y bastará con llamar igualmente a TurnManager.submit_choice().
+## Con móviles, la tripulación vota en ellos (TurnManager.cast_vote, vía PhoneBridge) y aquí se ve
+## el recuento (si empata dos veces, se sortea entre las empatadas).
 ## Texto del juego: inglés sencillo para niños de 7 a 12 años.
 
 enum View { DECISIONS, STAT, GLOSSARY }
@@ -63,6 +63,7 @@ const ROLE_COLORS: Dictionary = {
 	"doctor": Color(1.0, 0.4, 0.4), "generalist": Color(1.0, 1.0, 1.0),
 }
 const GENERAL_LABEL: String = "Everyone"
+const WAITING_TEXT: String = "The crew is choosing on their phones..."
 
 const DEFEAT_REASONS: Dictionary = {
 	"health": "The whole crew got too sick to go on.",
@@ -162,6 +163,7 @@ func _ready() -> void:
 	TurnManager.timer_updated.connect(_on_timer_updated)
 	TurnManager.earth_help_changed.connect(_refresh_earth_help_button)
 	TurnManager.game_ended.connect(_on_game_ended)
+	TurnManager.votes_changed.connect(_on_votes_changed)
 
 	continue_button.pressed.connect(TurnManager.continue_after_resolution)
 	earth_help_button.pressed.connect(_open_earth_panel)
@@ -526,6 +528,7 @@ func _on_event_presented(event: Dictionary, hint: String) -> void:
 		_stats_at_event[stat] = GameState.get_stat(stat)
 	_progress_at_event = _progress_snapshot()
 
+	waiting_label.text = _waiting_text()
 	waiting_label.visible = true
 	_debug_panel.close()
 	decisions_view.scroll_vertical = 0
@@ -533,6 +536,18 @@ func _on_event_presented(event: Dictionary, hint: String) -> void:
 	mars_view.show_scene(_scene_for(event))
 	_show_view(View.DECISIONS)
 	_refresh_all()
+
+
+func _waiting_text() -> String:
+	if not PhoneBridge.active:
+		return WAITING_TEXT
+	return "%s %s" % [WAITING_TEXT, TurnManager.vote_progress_text()]
+
+
+## Recuento de la votación de los móviles.
+func _on_votes_changed() -> void:
+	if TurnManager.phase == TurnManager.Phase.DECISION:
+		waiting_label.text = _waiting_text()
 
 
 ## Escena de Marte del evento. Si no trae efecto propio, hereda el de un problema activo

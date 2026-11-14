@@ -5,7 +5,9 @@ extends Node
 ## que llega (evento vigente, jugador y opción válidos, duplicados). El móvil solo envía `optionId`.
 ##
 ##   TurnManager --event_presented--> PhoneBridge --controller_view--> Net --> móvil
-##   móvil --choose--> Net --> PhoneBridge --valida--> choice_result + TurnManager.submit_choice
+##   móvil --choose--> Net --> PhoneBridge --valida--> choice_result + TurnManager.cast_vote
+##
+## Cada jugador vota; TurnManager resuelve cuando han votado todos los que pueden (o desempata).
 ##
 ## Si no hay sala abierta (`active == false`) el juego funciona igual en una sola pantalla.
 ## Contrato: docs/protocol.md. Guía: docs/godot/red.md.
@@ -30,12 +32,15 @@ func _ready() -> void:
 	TurnManager.event_presented.connect(_on_event_presented)
 	TurnManager.decision_resolved.connect(_on_decision_resolved)
 	TurnManager.game_ended.connect(_on_game_ended)
+	TurnManager.votes_changed.connect(_on_votes_changed)
 
 
-## Roles de los jugadores de la sala (sin repetir).
-func roles() -> Array[String]:
+## Roles de los jugadores de la sala (sin repetir). Con `only_connected`, solo los que tienen el móvil conectado.
+func roles(only_connected: bool = false) -> Array[String]:
 	var result: Array[String] = []
 	for player in players:
+		if only_connected and not bool(player.get("connected", true)):
+			continue
 		var role: Variant = player.get("role")
 		if role != null and not (str(role) in result):
 			result.append(str(role))
@@ -66,6 +71,7 @@ func _reset() -> void:
 	_results.clear()
 	_result_order.clear()
 	TurnManager.present_roles = []
+	TurnManager.connected_roles = []
 	if was_active:
 		session_changed.emit()
 
@@ -78,6 +84,7 @@ func _on_game_started(started_players: Array) -> void:
 	players = started_players
 	active = true
 	TurnManager.present_roles = roles()
+	TurnManager.set_connected_roles(roles(true))
 	session_changed.emit()
 	for player in players:
 		_send(player, {
@@ -97,6 +104,7 @@ func _on_lobby_updated(updated_players: Array, _status: String) -> void:
 			if previous.get("id") == updated.get("id") and not bool(previous.get("connected", false)):
 				_send(updated, _current_view(str(updated.get("role", ""))))
 	players = updated_players
+	TurnManager.set_connected_roles(roles(true))
 
 
 func _on_net_disconnected() -> void:
@@ -115,12 +123,13 @@ func _on_event_presented(_event: Dictionary, _hint: String) -> void:
 		_send(player, _current_view(str(player.get("role", ""))))
 
 
-func _on_decision_resolved(_option: Dictionary, feedback: String, success: bool) -> void:
+func _on_decision_resolved(option: Dictionary, feedback: String, success: bool) -> void:
 	if not active:
 		return
 	_last_result_view = {
 		"screen": "result",
-		"title": "It worked!" if success else "Oh no!",
+		# Sin opción = no se decidió nada (el problema espera, se pidió ayuda a la Tierra…).
+		"title": "News from the base" if option.is_empty() else ("It worked!" if success else "Oh no!"),
 		"text": feedback,
 	}
 	for player in players:
@@ -177,10 +186,22 @@ func _on_choice(player_id: String, role: String, action_id: String, event_id: St
 		_reject(player_id, action_id, reason)
 		return
 
-	# 4. Aceptar: se confirma primero y después se aplican las consecuencias.
+	# 4. Aceptar el voto. Con el último que faltaba, TurnManager resuelve y todos reciben el resultado;
+	#    si no, votes_changed manda a quien ya votó su pantalla de espera con el recuento.
 	_remember(action_id, true, "")
 	Net.send_result(player_id, action_id, true)
-	TurnManager.submit_choice_from(role, event_id, option_id)
+	TurnManager.cast_vote(role, event_id, option_id)
+
+
+## Alguien votó o se fue un votante: quien ya votó ve «Vote sent!» con el recuento actualizado.
+func _on_votes_changed() -> void:
+	if not active or TurnManager.phase != TurnManager.Phase.DECISION:
+		return
+	var voted: Dictionary = TurnManager.votes()
+	for player in players:
+		var role: String = str(player.get("role", ""))
+		if voted.has(role):
+			_send(player, _current_view(role))
 
 
 func _is_player(player_id: String) -> bool:

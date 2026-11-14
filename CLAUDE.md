@@ -74,7 +74,7 @@ Los clientes construyen la URL del WebSocket a partir de `location` (`ws(s)://<h
 
 - Evento: `id`, `mode` (`individual` | `vote`), `eligiblePlayers`, `options`, `decisions`, `resolutionRule`.
 - Se puede jugar con 1–4 jugadores: nunca asignar una decisión obligatoria a un rol ausente.
-- Elección aceptada = bloqueada. Eventos antiguos rechazan decisiones. Empate → segunda votación entre empatadas → si persiste, desempata el anfitrión.
+- Elección aceptada = bloqueada. Eventos antiguos rechazan decisiones. Empate → segunda votación entre empatadas → si persiste, se sortea entre ellas.
 - Si falta un jugador necesario, se espera; el anfitrión puede omitir ausentes explícitamente.
 
 ## Comandos

@@ -21,7 +21,8 @@ Decisiones tomadas:
 - **Dirección del mando que se enseña:** en web, `location.origin`; en el editor, `http://localhost:5173` (Vite). Si contiene `localhost` el lobby avisa de que los móviles no podrán usarla.
 - **QR:** pendiente. Godot no trae generador y de momento se muestran el **código en texto** y la dirección completa (plan B del contrato). La landing (`/`) también permite entrar escribiendo el código.
 - **Menos de 4 jugadores:** `TurnManager.present_roles` guarda los roles con jugador. Las opciones de un rol **ausente** las ven todos los presentes con el prefijo `(Rol)`, así nunca hay una decisión que nadie pueda tomar. Si todos los presentes están ocupados fuera, el evento espera a que vuelva alguien.
-- **Quién decide:** la primera elección válida resuelve el evento (no hay votación todavía). Las que llegan después reciben `event_closed`.
+- **Quién decide (votación):** cada jugador conectado y en la base vota una opción (`TurnManager.cast_vote`). Cuando han votado todos los que pueden, gana la más votada. Un voto aceptado queda bloqueado (otro `actionId` → `already_decided`) y el móvil pasa a una vista `waiting` «Vote sent!» con el recuento. Un móvil desconectado no bloquea la votación.
+- **Empates:** segunda votación solo entre las empatadas, con nuevo `eventId` (`<id>#<n>-tie`), así que un voto tardío de la primera ronda recibe `event_closed`. Si vuelve a empatar, se sortea entre las empatadas y el resultado lo dice («It was a tie again, so luck decided!»). Si se acaba la cuenta atrás de un evento crítico, gana lo más votado hasta ese momento (o la opción por defecto si no hay votos).
 - **Rechazos:** `choice_result` con `event_closed`, `not_eligible` o `invalid_option`. El backend no reenvía `choice_result` al mando; el mando se entera por la siguiente `controller_view`.
 - **Si cae el backend:** `PhoneBridge` se desactiva y la partida sigue en la pantalla principal (con el panel `Phone (debug)`).
 
@@ -284,7 +285,7 @@ Cuando `_try_resolve` detecta que se cumple la regla:
 | `individual` | Decide el jugador asignado. | Se aplica su opción. |
 | `vote` | Han votado todos los `eligible_players` **conectados** requeridos. | Opción más votada. |
 
-**Empates (`vote`):** nueva votación **solo entre las opciones empatadas** (nuevo `eventId`, p. ej. `storm-01#1-desempate`). Si vuelve a empatar, **desempata el anfitrión** (un botón en la pantalla de Godot).
+**Empates (`vote`):** nueva votación **solo entre las opciones empatadas** (nuevo `eventId`, p. ej. `storm-01#1-desempate`). Si vuelve a empatar, **se sortea** entre las empatadas.
 
 Al resolver:
 
@@ -338,5 +339,5 @@ Al resolver:
 - [ ] `actionId` repetido → misma respuesta, sin efectos duplicados.
 - [ ] `choose` de un evento anterior → `event_closed`.
 - [ ] Todo `choose` recibe un `choice_result`.
-- [ ] Empate → segunda votación → desempata el anfitrión.
+- [x] Empate → segunda votación → sorteo.
 - [ ] Tras `net_disconnected` se ofrece volver al menú.
