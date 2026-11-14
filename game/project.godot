@@ -35,7 +35,7 @@ folder_colors={
 "res://Images/": "blue",
 "res://Scenes/": "red",
 "res://Scripts/": "green",
-"res://Sounds/": "purple"
+"res://Sound/": "purple"
 }
 
 [physics]

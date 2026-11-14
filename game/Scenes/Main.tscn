@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bs6yxoxmdolrs" path="res://Scripts/main.gd" id="1_idj7w"]
 [ext_resource type="Script" uid="uid://bm83gh6ysyu4q" path="res://Scripts/sfx.gd" id="2_idj7w"]
-[ext_resource type="AudioStream" uid="uid://cwul86wmfs4q4" path="res://Musica/Soundtrack/Chill_Space2026.mp3" id="2_kln2b"]
+[ext_resource type="AudioStream" uid="uid://cwul86wmfs4q4" path="res://Sound/Soundtrack/Chill_Space2026.mp3" id="2_kln2b"]
 
 [node name="Main" type="Node" unique_id=831378100]
 script = ExtResource("1_idj7w")
