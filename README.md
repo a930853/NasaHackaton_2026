@@ -17,12 +17,14 @@ Juego cooperativo por salas para el NASA Hackathon 2026. Una **pantalla principa
 | Carpeta | Contenido | Estado |
 |---|---|---|
 | [`game/`](game/) | Proyecto Godot 4.7 (GDScript) | En desarrollo |
+| [`game_debug/`](game_debug/) | Proyecto Godot aparte para probar la conexión con información de depuración | En desarrollo |
 | [`backend/`](backend/) | Servidor Node (Express + `ws`) | Implementado, con tests |
 | [`controller/`](controller/) | Mando web (Vue 3 + Vite + Tailwind) | Implementado, con tests |
 | `landing/` | Página de inicio `/` | Pendiente |
 | `deploy/` | Configuración de Nginx | Pendiente |
 | [`scripts/`](scripts/) | `npm run dev` (backend + mando) | Herramientas de desarrollo |
 | `dist/game/` | Exportación web de Godot | Se genera al exportar |
+| `dist/game_debug/` | Exportación web de `game_debug` | Se genera al exportar |
 | `dist/controller/` | Build del mando | Se genera con `npm run build` (no se versiona) |
 | [`docs/`](docs/) | Documentación | Ver abajo |
 | `compose.yaml` | Nginx + backend | Pendiente |
