@@ -36,6 +36,9 @@ const EARTH_HELP_OPTIONS: Array[Dictionary] = [
 
 var phase: int = Phase.IDLE
 var current_event: Dictionary = {}
+var current_event_uid: String = ""   # "<id>#<n>": identifica ESTA aparición del evento (para los móviles)
+
+var _event_counter: int = 0
 
 var _first_sol: bool = true
 var _flare_pending: bool = false
@@ -74,11 +77,13 @@ func _process(delta: float) -> void:
 func start_game() -> void:
 	GameState.reset()
 	EventManager.reset()
+	_event_counter = 0
 	_paused_events.clear()
 	_interrupted_event = {}
 	_flare_triggered = false
 	_first_sol = true
 	GlossaryManager.unlock("sol")
+	Events.sfx_requested.emit("rocket_landing", 0.0)  # la misión empieza con el aterrizaje
 	_fetch_flare()
 	_begin_sol()
 
@@ -93,6 +98,7 @@ func _begin_sol() -> void:
 	else:
 		GameState.current_sol += 1
 		GameState.earth_help_used_this_sol = false
+		lines.append_array(GameState.process_crew_return())
 		var loss: int = GameState.passive_oxygen_loss()
 		if loss > 0:
 			GameState.modify_stat("oxygen", -loss)
@@ -117,6 +123,7 @@ func _select_event() -> void:
 	_set_phase(Phase.EVENT_SELECTION)
 	var event: Dictionary = {}
 	var hint: String = ""
+	var fresh: bool = true
 
 	if _flare_pending and not _flare_triggered:
 		event = EventManager.get_event(FLARE_EVENT_ID)
@@ -129,6 +136,7 @@ func _select_event() -> void:
 			var entry: Dictionary = _paused_events.pop_at(index)
 			event = entry["event"]
 			hint = str(entry["hint"])
+			fresh = entry.get("fresh", true)  # false: ya se aplicaron sus efectos de inicio
 
 	if event.is_empty():
 		event = EventManager.pick_event()
@@ -137,7 +145,7 @@ func _select_event() -> void:
 		push_error("TurnManager: no event available on Sol %d." % GameState.current_sol)
 		_end_sol()
 		return
-	_present_event(event, hint, true)
+	_present_event(event, hint, fresh)
 
 
 func _due_paused_index() -> int:
@@ -157,6 +165,8 @@ func _present_event(event: Dictionary, hint: String, fresh: bool) -> void:
 			shown["description"], _flare_info.get("classType", "M/X"),
 			str(_flare_info.get("beginTime", "?")).substr(0, 10)]
 	current_event = shown
+	_event_counter += 1
+	current_event_uid = "%s#%d" % [event["id"], _event_counter]
 
 	if fresh:
 		EventManager.mark_seen(str(event["id"]))
@@ -170,14 +180,113 @@ func _present_event(event: Dictionary, hint: String, fresh: bool) -> void:
 	_set_phase(Phase.DECISION)
 	earth_help_changed.emit()
 	event_presented.emit(shown, hint)
+	if not _has_available_option(shown):
+		_defer_until_crew_returns(event)
+		return
 	_start_countdown(shown)
+
+
+# ------------------------------------------- Tripulación fuera: opciones bloqueadas
+
+## Por qué una opción no se puede elegir ahora ("" si se puede).
+## - Una opción de un rol no se puede elegir si ese tripulante está fuera de la base.
+## - Una opción "para todos" que obliga a salir necesita al menos a alguien en la base.
+func option_block_reason(option: Dictionary) -> String:
+	var role: Variant = option.get("role")
+	if role != null:
+		var role_id: String = str(role)
+		if GameState.is_away(role_id):
+			var sols_left: int = GameState.away_sols_left(role_id)
+			return "The %s is outside (back in %d Sol%s)." % [
+				GameState.ROLE_NAMES[role_id], sols_left, "" if sols_left == 1 else "s"]
+		return ""
+	if int(option.get("away_sols", 0)) > 0 and GameState.available_crew().is_empty():
+		return "Everyone is outside right now."
+	return ""
+
+
+func _has_available_option(event: Dictionary) -> bool:
+	for option in event.get("options", []):
+		if option_block_reason(option).is_empty():
+			return true
+	return false
+
+
+## Si no se puede elegir ninguna opción, el problema espera hasta que vuelva alguien.
+## Se guarda como evento en espera (sin repetir sus efectos de inicio).
+func _defer_until_crew_returns(event: Dictionary) -> void:
+	var return_sol: int = GameState.current_sol + 1
+	if not GameState.crew_away.is_empty():
+		return_sol = 1 << 30
+		for role in GameState.crew_away:
+			return_sol = mini(return_sol, int(GameState.crew_away[role]))
+	_paused_events.append({
+		"event": EventManager.get_event(str(event["id"])),
+		"return_sol": return_sol,
+		"hint": "",
+		"fresh": false,
+	})
+	_stop_countdown()
+	_set_phase(Phase.RESOLUTION)
+	earth_help_changed.emit()
+	decision_resolved.emit({}, "Everyone who could help is outside! The problem waits until someone is back (Sol %d)." % return_sol, true)
+
+
+# ---------------------------------------------------------- Opciones para los móviles
+
+## Opciones que ve el jugador de `role` en el evento actual, con su estado.
+## `id` y `label` son los del contrato (docs/protocol.md). `detail` (costes), `disabled`
+## y `reason` son campos extra: hay que añadirlos a docs/protocol.md antes de enviarlos.
+func options_for_role(role: String) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for option in current_event.get("options", []):
+		var option_role: Variant = option.get("role")
+		if option_role != null and str(option_role) != role:
+			continue
+		var reason: String = option_block_reason(option)
+		result.append({
+			"id": str(option["id"]),
+			"label": str(option["label"]),
+			"detail": OptionInfo.costs_text(option),
+			"disabled": not reason.is_empty(),
+			"reason": reason,
+		})
+	return result
+
+
+## Vista (controller_view) que debe mostrar el móvil del jugador con ese rol.
+func controller_view_for(role: String) -> Dictionary:
+	if GameState.is_away(role):
+		var sols_left: int = GameState.away_sols_left(role)
+		return {"screen": "waiting", "title": "You are outside!",
+			"text": "You are back in %d Sol%s." % [sols_left, "" if sols_left == 1 else "s"]}
+	if phase != Phase.DECISION:
+		return {"screen": "waiting", "title": "Waiting for the crew...", "text": "Look at the main screen."}
+	return {
+		"screen": "choice",
+		"eventId": current_event_uid,
+		"title": str(current_event.get("title", "")),
+		"prompt": "What will you do?",
+		"options": options_for_role(role),
+	}
+
+
+## Elección que llega de un móvil: comprueba que el rol puede elegir esa opción ahora.
+func submit_choice_from(role: String, event_uid: String, option_id: String) -> bool:
+	if event_uid != current_event_uid or GameState.is_away(role):
+		return false
+	var option: Dictionary = _find_option(current_event, option_id)
+	var option_role: Variant = option.get("role")
+	if option.is_empty() or (option_role != null and str(option_role) != role):
+		return false
+	return submit_choice(option_id)
 
 
 func submit_choice(option_id: String) -> bool:
 	if phase != Phase.DECISION:
 		return false
 	var option: Dictionary = _find_option(current_event, option_id)
-	if option.is_empty():
+	if option.is_empty() or not option_block_reason(option).is_empty():
 		return false
 	_stop_countdown()
 
@@ -199,6 +308,13 @@ func submit_choice(option_id: String) -> bool:
 		if current_event.get("retry_on_fail", false):
 			EventManager.clear_seen(str(current_event["id"]))
 			lines.append("The problem is still there, so you can try again.")
+	# Quien hace la tarea sale de la base y tarda unos Soles en volver (haya salido bien o mal).
+	var away_sols: int = int(option.get("away_sols", 0))
+	if away_sols > 0:
+		var actor: String = str(option["role"]) if option.get("role") != null else GameState.pick_volunteer()
+		if not actor.is_empty():
+			GameState.send_away(actor, away_sols)
+			lines.append("The %s goes outside and will be back in %d Sols." % [GameState.ROLE_NAMES[actor], away_sols])
 	lines.append_array(_after_state_change())
 	decision_resolved.emit(option, "\n".join(PackedStringArray(lines)), success)
 	return true
@@ -347,9 +463,16 @@ func _stop_countdown() -> void:
 func _on_countdown_finished() -> void:
 	_countdown_active = false
 	set_process(false)
-	var options: Array = current_event.get("options", [])
-	var fallback_id: String = str(options[0]["id"]) if not options.is_empty() else ""
-	submit_choice(str(current_event.get("timeout_option", fallback_id)))
+	# Al acabar el tiempo se elige la opción por defecto; si está bloqueada, la primera libre.
+	var chosen_id: String = str(current_event.get("timeout_option", ""))
+	var default_option: Dictionary = _find_option(current_event, chosen_id)
+	if default_option.is_empty() or not option_block_reason(default_option).is_empty():
+		chosen_id = ""
+		for option in current_event.get("options", []):
+			if option_block_reason(option).is_empty():
+				chosen_id = str(option["id"])
+				break
+	submit_choice(chosen_id)
 
 
 # -------------------------------------------------------------------- Utilidades

@@ -1,7 +1,7 @@
-class_name GlossaryPanel
-extends UiOverlay
-## Libro de Tecnicismos: lista de términos desbloqueados y su explicación.
-## Se abre como modal encima del juego, sin pausarlo.
+class_name GlossaryView
+extends HBoxContainer
+## Libro de palabras científicas dentro de la pantalla de la cabina:
+## lista de términos desbloqueados a la izquierda y su explicación a la derecha.
 
 var _list: ItemList
 var _detail: RichTextLabel
@@ -9,42 +9,28 @@ var _ids: Array[String] = []
 
 
 func _init() -> void:
-	super(Vector2(900, 520))
-
-	content.add_child(make_title("Science Words Book"))
-
-	var row := HBoxContainer.new()
-	row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	row.add_theme_constant_override("separation", 16)
-	content.add_child(row)
+	add_theme_constant_override("separation", 10)
 
 	_list = ItemList.new()
-	_list.custom_minimum_size = Vector2(280, 0)
+	_list.custom_minimum_size = Vector2(150, 0)
+	_list.add_theme_font_size_override("font_size", 14)
 	_list.item_selected.connect(_on_item_selected)
-	row.add_child(_list)
+	add_child(_list)
 
 	_detail = RichTextLabel.new()
 	_detail.bbcode_enabled = true
 	_detail.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(_detail)
-
-	var close_button := Button.new()
-	close_button.text = "Close"
-	close_button.custom_minimum_size = Vector2(0, 40)
-	close_button.pressed.connect(close)
-	content.add_child(close_button)
+	_detail.add_theme_font_size_override("normal_font_size", 15)
+	_detail.add_theme_font_size_override("bold_font_size", 17)
+	add_child(_detail)
 
 
 func _ready() -> void:
 	GlossaryManager.term_unlocked.connect(_on_term_unlocked)
 
 
-func open() -> void:
-	_refresh()
-	super()
-
-
-func _refresh() -> void:
+## Vuelve a rellenar la lista con los términos desbloqueados hasta ahora.
+func refresh() -> void:
 	_ids = GlossaryManager.get_unlocked_ids()
 	_list.clear()
 	for term_id in _ids:
@@ -67,5 +53,5 @@ func _show_term(term_id: String) -> void:
 
 
 func _on_term_unlocked(_term_id: String, _title: String) -> void:
-	if visible:
-		_refresh()
+	if is_visible_in_tree():
+		refresh()

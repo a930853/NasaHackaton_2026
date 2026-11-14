@@ -1,17 +1,28 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://Scripts/main_ui.gd" id="1_mainui"]
-[ext_resource type="Texture2D" path="res://Images/MonsCloud_MarsExpress_1920.jpg" id="2_bg"]
-[ext_resource type="LabelSettings" uid="uid://d4nqt6gbcthqp" path="res://TextFonts/Subtitulo.tres" id="3_title"]
+[ext_resource type="Script" path="res://Scripts/mars_view.gd" id="2_mars"]
+[ext_resource type="Script" path="res://Scripts/glossary_view.gd" id="3_glossary"]
+[ext_resource type="Texture2D" path="res://Images/hud_frame.png" id="4_frame"]
+[ext_resource type="Script" path="res://Scripts/crew_panel.gd" id="6_crew"]
+[ext_resource type="LabelSettings" uid="uid://d4nqt6gbcthqp" path="res://TextFonts/Subtitulo.tres" id="5_title"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dim"]
+bg_color = Color(0, 0, 0, 0.58)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_screen"]
+bg_color = Color(0.04, 0.07, 0.12, 1)
 
 [sub_resource type="LabelSettings" id="LabelSettings_timer"]
-font_size = 22
+font_size = 26
 font_color = Color(1, 0.35, 0.35, 1)
+outline_size = 6
+outline_color = Color(0, 0, 0, 1)
 
 [sub_resource type="LabelSettings" id="LabelSettings_toast"]
-font_size = 18
+font_size = 15
 font_color = Color(0.7, 1, 0.8, 1)
-outline_size = 4
+outline_size = 5
 outline_color = Color(0, 0, 0, 1)
 
 [node name="MainUI" type="Control"]
@@ -23,7 +34,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_mainui")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Backdrop" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -31,195 +42,309 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("2_bg")
-expand_mode = 1
-stretch_mode = 6
+color = Color(0.03, 0.04, 0.07, 1)
 
-[node name="Dim" type="ColorRect" parent="."]
+[node name="MarsWindow" type="Control" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+anchors_preset = 0
 mouse_filter = 2
-color = Color(0, 0, 0, 0.78)
+script = ExtResource("2_mars")
 
-[node name="Margin" type="MarginContainer" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 16
 
-[node name="VBox" type="VBoxContainer" parent="Margin"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="TopBar" type="PanelContainer" parent="Margin/VBox"]
-layout_mode = 2
-
-[node name="TopMargin" type="MarginContainer" parent="Margin/VBox/TopBar"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 8
-
-[node name="TopVBox" type="VBoxContainer" parent="Margin/VBox/TopBar/TopMargin"]
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="HeaderRow" type="HBoxContainer" parent="Margin/VBox/TopBar/TopMargin/TopVBox"]
-layout_mode = 2
-theme_override_constants/separation = 24
-
-[node name="SolLabel" type="Label" parent="Margin/VBox/TopBar/TopMargin/TopVBox/HeaderRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 0)
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "Sol 1 / 20"
-
-[node name="StatsBox" type="HBoxContainer" parent="Margin/VBox/TopBar/TopMargin/TopVBox/HeaderRow"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 20
-
-[node name="ObjectivesLabel" type="Label" parent="Margin/VBox/TopBar/TopMargin/TopVBox"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Goals"
-
-[node name="ConditionsLabel" type="Label" parent="Margin/VBox/TopBar/TopMargin/TopVBox"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Problems going on: none"
-
-[node name="CenterPanel" type="PanelContainer" parent="Margin/VBox"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="CenterMargin" type="MarginContainer" parent="Margin/VBox/CenterPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 16
-
-[node name="CenterVBox" type="VBoxContainer" parent="Margin/VBox/CenterPanel/CenterMargin"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="SummaryLabel" type="Label" parent="Margin/VBox/CenterPanel/CenterMargin/CenterVBox"]
+[node name="TimerLabel" type="Label" parent="MarsWindow"]
 unique_name_in_owner = true
 visible = false
-layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.85, 1, 1)
-text = "Morning news"
-autowrap_mode = 3
-
-[node name="TitleLabel" type="Label" parent="Margin/VBox/CenterPanel/CenterMargin/CenterVBox"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Event title"
-label_settings = ExtResource("3_title")
-
-[node name="TimerLabel" type="Label" parent="Margin/VBox/CenterPanel/CenterMargin/CenterVBox"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-text = "Hurry up! 20 s"
-label_settings = SubResource("LabelSettings_timer")
-
-[node name="DescriptionLabel" type="RichTextLabel" parent="Margin/VBox/CenterPanel/CenterMargin/CenterVBox"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/normal_font_size = 19
-bbcode_enabled = true
-text = "Description"
-fit_content = true
-
-[node name="NasaFactLabel" type="Label" parent="Margin/VBox/CenterPanel/CenterMargin/CenterVBox"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.6, 0.85, 1, 1)
-text = "NASA fact"
-autowrap_mode = 3
-
-[node name="HintLabel" type="Label" parent="Margin/VBox/CenterPanel/CenterMargin/CenterVBox"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.9, 0.5, 1)
-text = "Hint from Earth"
-autowrap_mode = 3
-
-[node name="OptionsBox" type="VBoxContainer" parent="Margin/VBox/CenterPanel/CenterMargin/CenterVBox"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="FeedbackLabel" type="RichTextLabel" parent="Margin/VBox/CenterPanel/CenterMargin/CenterVBox"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-theme_override_font_sizes/normal_font_size = 19
-bbcode_enabled = true
-text = "Feedback"
-fit_content = true
-
-[node name="ContinueButton" type="Button" parent="Margin/VBox/CenterPanel/CenterMargin/CenterVBox"]
-unique_name_in_owner = true
-visible = false
-custom_minimum_size = Vector2(0, 48)
-layout_mode = 2
-text = "Continue"
-
-[node name="BottomBar" type="HBoxContainer" parent="Margin/VBox"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="GlossaryButton" type="Button" parent="Margin/VBox/BottomBar"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(260, 44)
-layout_mode = 2
-text = "Science Words Book (0)"
-
-[node name="EarthHelpButton" type="Button" parent="Margin/VBox/BottomBar"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 44)
-layout_mode = 2
-text = "Ask Earth for help"
-
-[node name="Spacer" type="Control" parent="Margin/VBox/BottomBar"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="DebugFlareButton" type="Button" parent="Margin/VBox/BottomBar"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(260, 44)
-layout_mode = 2
-text = "[Debug] Simulate solar flare"
-
-[node name="ToastLabel" type="Label" parent="."]
-unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -400.0
-offset_top = 150.0
-offset_right = 400.0
-offset_bottom = 180.0
+offset_left = -160.0
+offset_top = 14.0
+offset_right = 160.0
+offset_bottom = 50.0
+grow_horizontal = 2
+mouse_filter = 2
+text = "Hurry up! 20 s"
+label_settings = SubResource("LabelSettings_timer")
+horizontal_alignment = 1
+
+[node name="ToastLabel" type="Label" parent="MarsWindow"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 56.0
+offset_bottom = 84.0
 grow_horizontal = 2
 mouse_filter = 2
 text = "New word"
 label_settings = SubResource("LabelSettings_toast")
 horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="RightScreen" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_screen")
+
+[node name="ScreenMargin" type="MarginContainer" parent="RightScreen"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="ScreenVBox" type="VBoxContainer" parent="RightScreen/ScreenMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Header" type="VBoxContainer" parent="RightScreen/ScreenMargin/ScreenVBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="HeaderRow" type="HBoxContainer" parent="RightScreen/ScreenMargin/ScreenVBox/Header"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="SolLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Header/HeaderRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "Sol 1 / 20"
+
+
+[node name="DebugOptionsButton" type="Button" parent="RightScreen/ScreenMargin/ScreenVBox/Header/HeaderRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 10
+text = "Phone (debug)"
+
+
+
+
+[node name="DebugFlareButton" type="Button" parent="RightScreen/ScreenMargin/ScreenVBox/Header/HeaderRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 10
+text = "Flare (debug)"
+
+
+[node name="ObjectivesLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Goals"
+autowrap_mode = 3
+
+
+[node name="ConditionsLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Header"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.7, 0.4, 1)
+theme_override_font_sizes/font_size = 12
+text = "Problems"
+autowrap_mode = 3
+
+
+[node name="HeaderLine" type="HSeparator" parent="RightScreen/ScreenMargin/ScreenVBox"]
+layout_mode = 2
+
+[node name="Views" type="MarginContainer" parent="RightScreen/ScreenMargin/ScreenVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="DecisionsView" type="ScrollContainer" parent="RightScreen/ScreenMargin/ScreenVBox/Views"]
+unique_name_in_owner = true
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="DecisionsVBox" type="VBoxContainer" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="SummaryLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Morning news"
+autowrap_mode = 3
+
+[node name="TitleLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.93, 0.7, 1)
+theme_override_font_sizes/font_size = 22
+text = "Event title"
+autowrap_mode = 3
+
+[node name="DescriptionLabel" type="RichTextLabel" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 15
+theme_override_font_sizes/bold_font_size = 15
+bbcode_enabled = true
+text = "Description"
+fit_content = true
+scroll_active = false
+
+[node name="NasaFactLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "NASA fact"
+autowrap_mode = 3
+
+[node name="HintLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.5, 1)
+theme_override_font_sizes/font_size = 13
+text = "Hint from Earth"
+autowrap_mode = 3
+
+[node name="WaitingLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "The crew is choosing on their phones..."
+autowrap_mode = 3
+
+[node name="FeedbackLabel" type="RichTextLabel" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 14
+theme_override_font_sizes/bold_font_size = 14
+bbcode_enabled = true
+text = "Feedback"
+fit_content = true
+scroll_active = false
+
+[node name="ContinueButton" type="Button" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "Continue"
+
+[node name="EarthHelpButton" type="Button" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Ask Earth for help"
+
+[node name="StatView" type="VBoxContainer" parent="RightScreen/ScreenMargin/ScreenVBox/Views"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="StatTitle" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/StatView"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "HEALTH"
+
+[node name="StatValue" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/StatView"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 38
+text = "80 / 100"
+
+[node name="StatBar" type="ProgressBar" parent="RightScreen/ScreenMargin/ScreenVBox/Views/StatView"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+show_percentage = false
+
+[node name="StatDescription" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/StatView"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Description"
+autowrap_mode = 3
+
+[node name="StatEffects" type="RichTextLabel" parent="RightScreen/ScreenMargin/ScreenVBox/Views/StatView"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 14
+theme_override_font_sizes/bold_font_size = 14
+bbcode_enabled = true
+text = "Right now"
+fit_content = true
+scroll_active = false
+
+[node name="StatHistory" type="RichTextLabel" parent="RightScreen/ScreenMargin/ScreenVBox/Views/StatView"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/normal_font_size = 13
+theme_override_font_sizes/bold_font_size = 14
+bbcode_enabled = true
+text = "What changed it"
+
+[node name="GlossaryView" type="HBoxContainer" parent="RightScreen/ScreenMargin/ScreenVBox/Views"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+script = ExtResource("3_glossary")
+
+[node name="Frame" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_frame")
+expand_mode = 1
+
+[node name="CrewPanel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 0
+script = ExtResource("6_crew")
+
+[node name="HealthButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 0
+
+[node name="OxygenButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 0
+
+[node name="EnergyButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 0
+
+[node name="IntegrityButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 0
+
+[node name="DecideButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 0
+
+[node name="WordsButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 0

@@ -5,6 +5,7 @@ const BUS_SFX := &"SFX"
 
 # Precarga tus archivos desde res://Sounds/SFX/
 const SOUNDS: Dictionary = {
+	"rocket_landing": preload("res://Sound/SFX/Landing_SFX.mp3"),
 	#"click": preload("res://Sounds/SFX/click.ogg"),
 	#"alert": preload("res://Sounds/SFX/alert.ogg"),
 	#"nfc_scan": preload("res://Sounds/SFX/nfc_scan.ogg"),

@@ -8,8 +8,13 @@ signal stats_changed
 signal progress_changed
 signal conditions_changed
 signal seismic_alert_activated
+signal crew_changed
 
 const MAX_SOLS: int = 20
+const ROLES: Array[String] = ["engineer", "biologist", "doctor", "generalist"]
+const ROLE_NAMES: Dictionary = {
+	"engineer": "Engineer", "biologist": "Biologist", "doctor": "Doctor", "generalist": "Commander",
+}
 const STAT_NAMES: Array[String] = ["health", "oxygen", "energy", "integrity"]
 const STAT_START: int = 80
 const STAT_MAX: int = 100
@@ -48,6 +53,9 @@ var e2_pending: bool = false
 var health_always_above_goal: bool = true
 var earth_help_used_this_sol: bool = false
 
+## Tripulantes que están fuera de la base: rol -> Sol en que vuelven (ya en la base).
+var crew_away: Dictionary = {}
+
 var active_conditions: Array[Dictionary] = []
 var unlocked_terms: Array[String] = []
 var delayed_queue: DelayedEffectsQueue = DelayedEffectsQueue.new()
@@ -74,7 +82,9 @@ func reset() -> void:
 	active_conditions.clear()
 	unlocked_terms.clear()
 	delayed_queue.clear()
+	crew_away.clear()
 	_alert_just_activated = false
+	crew_changed.emit()
 	stats_changed.emit()
 	progress_changed.emit()
 	conditions_changed.emit()
@@ -188,6 +198,53 @@ func consume_alert_just_activated() -> bool:
 	var result: bool = _alert_just_activated
 	_alert_just_activated = false
 	return result
+
+
+# --- Tripulación fuera de la base ---
+
+func is_away(role: String) -> bool:
+	return crew_away.has(role)
+
+
+## Soles completos que le faltan para volver (0 si está en la base).
+func away_sols_left(role: String) -> int:
+	return maxi(int(crew_away.get(role, current_sol)) - current_sol, 0)
+
+
+## Tripulantes que ahora mismo están en la base.
+func available_crew() -> Array[String]:
+	var present: Array[String] = []
+	for role in ROLES:
+		if not is_away(role):
+			present.append(role)
+	return present
+
+
+## Quién sale cuando la opción es "para todos": un voluntario al azar entre los que están en la base.
+func pick_volunteer() -> String:
+	var present: Array[String] = available_crew()
+	return "" if present.is_empty() else present.pick_random()
+
+
+## Manda a un tripulante fuera: tarda `sols` Soles en volver. Con sols = 2 no está
+## en el Sol siguiente y vuelve al empezar el que va después.
+func send_away(role: String, sols: int) -> void:
+	if not (role in ROLES) or sols <= 0:
+		return
+	crew_away[role] = current_sol + sols
+	crew_changed.emit()
+
+
+## Al empezar un Sol vuelven los que ya han cumplido su tiempo. Devuelve líneas de aviso.
+func process_crew_return() -> Array[String]:
+	var lines: Array[String] = []
+	for role in crew_away.keys():
+		if current_sol >= int(crew_away[role]):
+			crew_away.erase(role)
+			lines.append("The %s is back at the base!" % ROLE_NAMES[role])
+	if not lines.is_empty():
+		crew_changed.emit()
+	return lines
 
 
 # --- Condiciones multi-Sol ---
