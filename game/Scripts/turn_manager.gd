@@ -117,7 +117,34 @@ func _begin_sol() -> void:
 	if GameState.check_end().begins_with("defeat"):
 		_finish(false, GameState.check_end())
 		return
+	if GameState.base_is_empty():
+		_empty_base_day()
+		return
 	_select_event()
+
+
+## Regla de base vacía: si los 4 tripulantes están ocupados no hay nadie para gestionar
+## problemas, así que ese Sol no sale ningún evento. El consumo diario ya se ha aplicado
+## al amanecer; solo hay que avisar y dejar pasar el día.
+func _empty_base_day() -> void:
+	var back_sol: int = 1 << 30
+	for role in GameState.crew_away:
+		back_sol = mini(back_sol, int(GameState.crew_away[role]))
+	_event_counter += 1
+	current_event = {
+		"id": "empty-base",
+		"title": "The base is empty!",
+		"description": "The whole crew is busy outside, so nobody is home to handle problems today. Nothing new happens and the day just passes.",
+		"nasa_fact": "",
+		"terms": [],
+		"options": [],
+		"scene": {"effect": "none"},
+	}
+	current_event_uid = "empty-base#%d" % _event_counter
+	_set_phase(Phase.RESOLUTION)
+	earth_help_changed.emit()
+	event_presented.emit(current_event, "")
+	decision_resolved.emit({}, "No event today. The crew will be back on Sol %d." % back_sol, true)
 
 
 # ------------------------------------------------------- FASE_SELECCION_EVENTO
@@ -194,19 +221,19 @@ func _present_event(event: Dictionary, hint: String, fresh: bool) -> void:
 # ------------------------------------------- Tripulación fuera: opciones bloqueadas
 
 ## Por qué una opción no se puede elegir ahora ("" si se puede).
-## - Una opción de un rol no se puede elegir si ese tripulante está fuera de la base.
-## - Una opción "para todos" que obliga a salir necesita al menos a alguien en la base.
+## - Una opción de un rol no se puede elegir si ese tripulante está ocupado.
+## - Una salida grupal ("para todos" con ocupación) necesita a toda la tripulación en la base.
 func option_block_reason(option: Dictionary) -> String:
 	var role: Variant = option.get("role")
 	if role != null:
 		var role_id: String = str(role)
 		if GameState.is_away(role_id):
 			var sols_left: int = GameState.away_sols_left(role_id)
-			return "The %s is outside (back in %d Sol%s)." % [
+			return "The %s is busy (back in %d Sol%s)." % [
 				GameState.ROLE_NAMES[role_id], sols_left, "" if sols_left == 1 else "s"]
 		return ""
-	if int(option.get("away_sols", 0)) > 0 and GameState.available_crew().is_empty():
-		return "Everyone is outside right now."
+	if int(option.get("away_sols", 0)) > 0 and GameState.available_crew().size() < GameState.ROLES.size():
+		return "The whole crew must be at the base to go out together."
 	return ""
 
 
@@ -234,7 +261,7 @@ func _defer_until_crew_returns(event: Dictionary) -> void:
 	_stop_countdown()
 	_set_phase(Phase.RESOLUTION)
 	earth_help_changed.emit()
-	decision_resolved.emit({}, "Everyone who could help is outside! The problem waits until someone is back (Sol %d)." % return_sol, true)
+	decision_resolved.emit({}, "Everyone who could help is busy! The problem waits until someone is back (Sol %d)." % return_sol, true)
 
 
 # ---------------------------------------------------------- Opciones para los móviles
@@ -263,7 +290,7 @@ func options_for_role(role: String) -> Array[Dictionary]:
 func controller_view_for(role: String) -> Dictionary:
 	if GameState.is_away(role):
 		var sols_left: int = GameState.away_sols_left(role)
-		return {"screen": "waiting", "title": "You are outside!",
+		return {"screen": "waiting", "title": "You are busy!",
 			"text": "You are back in %d Sol%s." % [sols_left, "" if sols_left == 1 else "s"]}
 	if phase != Phase.DECISION:
 		return {"screen": "waiting", "title": "Waiting for the crew...", "text": "Look at the main screen."}
@@ -313,13 +340,18 @@ func submit_choice(option_id: String) -> bool:
 		if current_event.get("retry_on_fail", false):
 			EventManager.clear_seen(str(current_event["id"]))
 			lines.append("The problem is still there, so you can try again.")
-	# Quien hace la tarea sale de la base y tarda unos Soles en volver (haya salido bien o mal).
-	var away_sols: int = int(option.get("away_sols", 0))
-	if away_sols > 0:
-		var actor: String = str(option["role"]) if option.get("role") != null else GameState.pick_volunteer()
-		if not actor.is_empty():
-			GameState.send_away(actor, away_sols)
-			lines.append("The %s goes outside and will be back in %d Sols." % [GameState.ROLE_NAMES[actor], away_sols])
+	# La tarea deja ocupado a quien la hace (haya salido bien o mal): el rol de la opción o,
+	# si es una salida de todos, toda la tripulación. Ver docs/juego/tiempos_fuera.md.
+	var busy_sols: int = int(option.get("away_sols", 0))
+	if busy_sols > 0:
+		var plural: String = "" if busy_sols == 1 else "s"
+		if option.get("role") != null:
+			var worker: String = str(option["role"])
+			GameState.send_away(worker, busy_sols)
+			lines.append("The %s will be busy for %d Sol%s." % [GameState.ROLE_NAMES[worker], busy_sols, plural])
+		else:
+			GameState.send_all_away(busy_sols)
+			lines.append("The whole crew goes out together! The base will be empty for %d Sol%s." % [busy_sols, plural])
 	lines.append_array(_after_state_change())
 	Events.sfx_requested.emit("success" if success else "failure", 0.0)
 	decision_resolved.emit(option, "\n".join(PackedStringArray(lines)), success)
