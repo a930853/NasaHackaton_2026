@@ -173,8 +173,10 @@ function restart() {
     />
 
     <section v-else-if="s.phase === 'closed'" class="screen-w flex min-h-0 flex-1 flex-col justify-center py-8 md:py-12">
-      <StatusCard mark="■" eyebrow="SALA CERRADA" :title="closedText(s.closedReason)">
-        <button class="btn-primary" type="button" @click="restart">Volver al inicio</button>
+      <StatusCard class="mission-status-card" mark="■" eyebrow="SALA CERRADA" :title="closedText(s.closedReason)">
+        <button class="role-change-button" type="button" @click="restart">
+          <span>Volver al inicio</span>
+        </button>
       </StatusCard>
     </section>
 
