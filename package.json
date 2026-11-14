@@ -10,6 +10,8 @@
     "postinstall": "npm install --prefix backend && npm install --prefix controller",
     "dev": "node scripts/dev.mjs",
     "test": "npm test --prefix backend && npm test --prefix controller",
-    "build": "npm run build --prefix controller"
+    "build": "npm run build --prefix controller",
+    "docker:dev": "docker compose -f compose.yaml -f compose.dev.yaml up --build",
+    "docker:prod": "docker compose up --build"
   }
 }

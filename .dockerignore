@@ -1,0 +1,12 @@
+# Contexto de la imagen "web" (raíz del repo). Solo necesita controller/,
+# landing/, deploy/ y dist/<exportación>.
+.git
+**/node_modules
+**/.godot
+**/.gitkeep
+dist/controller
+backend
+docs
+game
+game_debug
+scripts

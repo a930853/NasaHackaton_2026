@@ -74,7 +74,8 @@ func _ready() -> void:
 	_auto_start = args.has("autostart")
 	_controller_port = args.get("controller-port", _controller_port)
 
-	_log.add_note("Arranca el backend con «npm run dev» (raíz del repo) y pulsa Conectar.")
+	if not OS.has_feature("web"):
+		_log.add_note("Arranca el backend con «npm run dev» (raíz del repo) y pulsa Conectar.")
 	if _auto_create:
 		_on_connect_pressed()
 
@@ -289,6 +290,14 @@ func _controller_url(code: String) -> String:
 	return "\n".join(urls)
 
 
+## En web: ¿se abrió la página con localhost? (Fuera del navegador, no aplica.)
+func _opened_with_localhost() -> bool:
+	if not OS.has_feature("web"):
+		return false
+	var host: String = JavaScriptBridge.eval("location.hostname")
+	return host == "localhost" or host == "127.0.0.1" or host == "[::1]"
+
+
 func _lan_ips() -> PackedStringArray:
 	var ips: PackedStringArray = []
 	for address in IP.get_local_addresses():
@@ -327,6 +336,14 @@ func _build_ui() -> void:
 	var root := VBoxContainer.new()
 	root.add_theme_constant_override("separation", 12)
 	margin.add_child(root)
+
+	# Aviso si la pantalla se abrió con localhost: funciona, pero la dirección
+	# del mando que se enseña no les sirve a los móviles.
+	if _opened_with_localhost():
+		var warning := _make_label("Has abierto la pantalla con «localhost»: los móviles no podrán entrar con la dirección que se muestra. Ábrela con la IP del PC (https://<IP>/game/). Para probar en este mismo PC, sí sirve.", 18)
+		warning.add_theme_color_override("font_color", Color("ff7a7a"))
+		warning.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		root.add_child(warning)
 
 	# Fila 1: servidor y estado
 	var server_row := HBoxContainer.new()

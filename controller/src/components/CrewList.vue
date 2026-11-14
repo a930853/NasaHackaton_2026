@@ -8,12 +8,13 @@ defineProps({
 </script>
 
 <template>
-  <ul class="grid w-full max-w-[620px] gap-2" aria-label="Tripulación">
+  <ul class="crew-grid grid w-full max-w-[620px] grid-cols-2 gap-2" aria-label="Tripulación">
     <li
       v-for="p in players"
       :key="p.id"
-      class="flex items-center gap-2.5 rounded-[5px] border bg-[rgba(15,32,52,.6)] px-3 py-2.5 text-sm"
-      :class="[p.id === playerId ? 'border-line-strong' : 'border-[#22384f]', { 'opacity-50': !p.connected }]"
+      class="crew-member flex min-w-0 items-center gap-2.5 border-2 bg-[rgba(15,32,52,.6)] px-3 py-2.5 text-sm"
+      :class="{ 'opacity-50': !p.connected }"
+      :style="{ '--crew-color': ROLES[p.role]?.color ?? '#516276' }"
     >
       <span
         class="size-[9px] shrink-0 rounded-full"

@@ -1,0 +1,42 @@
+# Despliegue en la LAN.
+#
+#   Producción (sirve dist/game en /game/):
+#     docker compose up --build
+#   Desarrollo (igual, pero sirve dist/game_debug y muestra el log de mensajes):
+#     docker compose -f compose.yaml -f compose.dev.yaml up --build
+#
+# Antes hay que exportar a web el proyecto de Godot que se vaya a servir.
+#
+#   Pantalla:  https://<IP-del-PC>/game/
+#   Móviles:   https://<IP-del-PC>/controller/?room=<código>
+#
+# Todo va por HTTPS (Godot no arranca en web sin él). El certificado es
+# autofirmado: la primera vez cada navegador avisa y hay que aceptarlo
+# (Configuración avanzada → Continuar).
+
+services:
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      LOG_MESSAGES: "0"
+    # Sin puertos publicados: solo se llega a través de Nginx (/ws y /api).
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/web.Dockerfile
+      args:
+        GAME_EXPORT: game
+    restart: unless-stopped
+    depends_on:
+      - backend
+    # Si el 80 o el 443 están ocupados: HTTP_PORT=8080 HTTPS_PORT=8443 docker compose up
+    ports:
+      - "${HTTP_PORT:-80}:80"     # solo redirige a HTTPS
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - certs:/etc/nginx/certs   # el certificado sobrevive a los reinicios
+
+volumes:
+  certs:

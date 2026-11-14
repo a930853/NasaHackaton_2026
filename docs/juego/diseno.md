@@ -12,6 +12,14 @@ Juego cooperativo y educativo para **4 jugadores** en una partida de unos **30 m
 - **Móviles:** cada jugador tiene un rol y elige opciones. También se pueden usar etiquetas NFC de herramientas sobre la mesa.
 - Se puede jugar con **1 a 4 jugadores**: nunca puede quedar bloqueada una decisión por un rol que no está.
 
+### Boceto de la pantalla principal
+
+![Boceto de la interfaz: ventana, mesa de botones y panel de información](img/prototipo-ui.png)
+
+- **Ventana**: la vista del exterior de la base.
+- **Mesa de botones**: los cuatro recursos (salud, oxígeno, energía, integridad), **Decisiones** y **Diccionario** (el [Libro de tecnicismos](#libro-de-tecnicismos)).
+- **Pantalla de información**: muestra el detalle del botón pulsado.
+
 ## Bucle de un Sol
 
 El tiempo avanza **por turnos**: un evento principal por Sol y sin reloj, para que haya debate. Solo las emergencias tienen cuenta atrás (20 s).

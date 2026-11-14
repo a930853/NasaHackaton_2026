@@ -47,6 +47,339 @@
   }
 }
 
+.mission-screen {
+  background: #a7adbf !important;
+  color: #08090d;
+}
+
+.mission-brand {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  z-index: 3;
+  width: clamp(58px, 8vw, 92px);
+  height: clamp(58px, 8vw, 92px);
+}
+
+.mission-brand svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.mission-header {
+  padding-top: clamp(14px, 3vh, 28px);
+  padding-left: clamp(72px, 10vw, 112px);
+}
+
+.enter-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: clamp(10px, 2vw, 24px);
+  width: 100%;
+}
+
+.enter-header .mission-brand {
+  position: static;
+  flex: 0 0 clamp(58px, 8vw, 92px);
+  width: clamp(58px, 8vw, 92px);
+  height: clamp(58px, 8vw, 92px);
+}
+
+.enter-header .screen-heading {
+  min-width: 0;
+  flex: 0 1 auto;
+}
+
+.picker-header {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(10px, 2vw, 24px);
+  width: 100%;
+}
+
+.picker-header .mission-brand {
+  position: static;
+  flex: 0 0 clamp(58px, 8vw, 92px);
+  width: clamp(58px, 8vw, 92px);
+  height: clamp(58px, 8vw, 92px);
+}
+
+.picker-header .screen-heading {
+  min-width: 0;
+  flex: 0 1 auto;
+}
+
+.enter-screen form {
+  gap: clamp(6px, 1.2vh, 10px);
+}
+
+.entry-control,
+.entry-submit {
+  position: relative;
+  overflow: hidden;
+  border: 0;
+  clip-path: polygon(2% 0, 98% 0, 100% 16%, 100% 84%, 98% 100%, 2% 100%, 0 84%, 0 16%);
+}
+
+.entry-control {
+  min-height: clamp(54px, 8vh, 68px);
+  border: 4px solid #35d07f;
+  border-radius: 0;
+  background: #050505;
+}
+
+.entry-code:focus {
+  border-color: #35d07f;
+}
+
+.entry-name {
+  border-color: #f5235c;
+}
+
+.entry-name:focus {
+  border-color: #f5235c;
+}
+
+.entry-submit {
+  min-height: clamp(58px, 9vh, 76px);
+  margin-top: 8px;
+  background: #ffcf33;
+  color: #08090d;
+  font-size: clamp(15px, 2vw, 18px);
+  font-weight: 700;
+}
+
+.entry-submit::before {
+  position: absolute;
+  inset: 7px;
+  z-index: 0;
+  background: #050505;
+  content: '';
+  clip-path: polygon(2% 0, 98% 0, 100% 16%, 100% 84%, 98% 100%, 2% 100%, 0 84%, 0 16%);
+}
+
+.entry-submit > span {
+  position: relative;
+  z-index: 1;
+  color: #f5f5f5;
+}
+
+.entry-submit:hover,
+.entry-submit:focus-visible {
+  background: #ffcf33;
+  outline: 3px solid rgba(255, 207, 51, .45);
+  outline-offset: 3px;
+}
+
+.mission-screen .eyebrow,
+.mission-screen .text-muted,
+.mission-screen .notice {
+  color: #303849 !important;
+}
+
+.mission-screen .screen-heading > p {
+  color: #303849 !important;
+}
+
+.answer-panel {
+  width: 100%;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.answer-grid {
+  gap: clamp(8px, 1.2vw, 14px);
+}
+
+.answer-button {
+  position: relative;
+  overflow: hidden;
+  min-height: clamp(96px, 16vh, 140px);
+  border: 0;
+  border-radius: 0;
+  color: #f5f5f5;
+  background: var(--answer-color);
+  clip-path: polygon(3% 0, 97% 0, 100% 16%, 100% 84%, 97% 100%, 3% 100%, 0 84%, 0 16%);
+}
+
+.answer-button::before {
+  position: absolute;
+  inset: 7px;
+  z-index: 0;
+  background: #050505;
+  content: '';
+  clip-path: polygon(3% 0, 97% 0, 100% 16%, 100% 84%, 97% 100%, 3% 100%, 0 84%, 0 16%);
+}
+
+.answer-button > span {
+  position: relative;
+  z-index: 1;
+}
+
+.answer-button:hover,
+.answer-button:focus-visible {
+  color: #ffffff;
+  background: var(--answer-color);
+  outline: 3px solid rgba(255, 255, 255, .45);
+  outline-offset: 3px;
+}
+
+.answer-button-selected {
+  filter: brightness(1.2);
+}
+
+.role-button {
+  position: relative;
+  overflow: hidden;
+  min-height: clamp(104px, 16vh, 150px);
+  border: 0;
+  background: var(--button-color) !important;
+  clip-path: polygon(3% 0, 97% 0, 100% 16%, 100% 84%, 97% 100%, 3% 100%, 0 84%, 0 16%);
+}
+
+.role-button::before {
+  position: absolute;
+  inset: 7px;
+  z-index: 0;
+  background: #050505;
+  content: '';
+  clip-path: polygon(3% 0, 97% 0, 100% 16%, 100% 84%, 97% 100%, 3% 100%, 0 84%, 0 16%);
+}
+
+.role-button > span {
+  position: relative;
+  z-index: 1;
+}
+
+.role-button:hover,
+.role-button:focus-visible {
+  background: var(--button-color) !important;
+  outline: 3px solid color-mix(in srgb, var(--button-color) 45%, transparent);
+  outline-offset: 3px;
+}
+
+.role-button-selected {
+  filter: brightness(1.2);
+}
+
+.role-status-card,
+.mission-status-card {
+  position: relative;
+  overflow: hidden;
+  border: 0 !important;
+  background: var(--role-color) !important;
+  clip-path: polygon(1% 0, 99% 0, 100% 7%, 100% 93%, 99% 100%, 1% 100%, 0 93%, 0 7%);
+  padding-top: clamp(18px, 3vh, 30px) !important;
+  padding-bottom: clamp(18px, 3vh, 30px) !important;
+}
+
+.role-status-card::before,
+.mission-status-card::before {
+  position: absolute;
+  inset: 7px;
+  z-index: 0;
+  background: #050505;
+  content: '';
+  clip-path: polygon(1% 0, 99% 0, 100% 7%, 100% 93%, 99% 100%, 1% 100%, 0 93%, 0 7%);
+}
+
+.role-status-card > *,
+.mission-status-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.role-status-card h2,
+.mission-status-card h2 {
+  color: #f5f5f5;
+}
+
+.role-status-card .eyebrow,
+.mission-status-card .eyebrow {
+  color: var(--role-color) !important;
+}
+
+.role-status-card .text-muted,
+.mission-status-card .text-muted {
+  color: #d7e2ee !important;
+}
+
+.role-change-button {
+  position: relative;
+  overflow: hidden;
+  border: 0 !important;
+  border-radius: 0;
+  background: #14b9ef !important;
+  color: #f5f5f5 !important;
+  clip-path: polygon(8% 0, 92% 0, 100% 20%, 100% 80%, 92% 100%, 8% 100%, 0 80%, 0 20%);
+}
+
+.role-change-button::before {
+  position: absolute;
+  inset: 5px;
+  z-index: 0;
+  background: #050505;
+  content: '';
+  clip-path: polygon(8% 0, 92% 0, 100% 20%, 100% 80%, 92% 100%, 8% 100%, 0 80%, 0 20%);
+}
+
+.role-change-button > span {
+  position: relative;
+  z-index: 1;
+}
+
+.role-change-button:hover,
+.role-change-button:focus-visible {
+  background: #14b9ef !important;
+  outline: 3px solid rgba(20, 185, 239, .45);
+  outline-offset: 3px;
+}
+
+.crew-member {
+  position: relative;
+  overflow: hidden;
+  border: 0 !important;
+  border-radius: 0;
+  background: var(--crew-color) !important;
+  clip-path: polygon(3% 0, 97% 0, 100% 16%, 100% 84%, 97% 100%, 3% 100%, 0 84%, 0 16%);
+}
+
+.crew-member::before {
+  position: absolute;
+  inset: 5px;
+  z-index: 0;
+  background: #050505;
+  content: '';
+  clip-path: polygon(3% 0, 97% 0, 100% 16%, 100% 84%, 97% 100%, 3% 100%, 0 84%, 0 16%);
+}
+
+.crew-member > * {
+  position: relative;
+  z-index: 1;
+}
+
+.crew-member .text-muted {
+  color: #d7e2ee !important;
+}
+
+@media (max-width: 767px) {
+  .mission-brand {
+    top: 8px;
+    left: 8px;
+  }
+
+  .answer-button {
+    min-height: clamp(96px, 17vh, 140px);
+    padding: 16px;
+  }
+
+  .role-button {
+    min-height: clamp(96px, 18vh, 132px);
+  }
+}
+
 /* Piezas repetidas en varias pantallas */
 @layer components {
   .screen-w {
