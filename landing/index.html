@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Supervivencia en Marte</title>
+  <style>
+    /* Página de inicio provisional: crear partida (pantalla) o entrar con código (móvil). */
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      font-family: system-ui, sans-serif; background: #14161c; color: #eee; padding: 16px;
+    }
+    main { width: 100%; max-width: 420px; display: grid; gap: 24px; }
+    h1 { margin: 0; font-size: 1.8rem; }
+    section { background: #1e2129; border-radius: 12px; padding: 20px; display: grid; gap: 12px; }
+    h2 { margin: 0; font-size: 1.1rem; }
+    p { margin: 0; color: #aaa; }
+    a.button, button {
+      display: block; text-align: center; padding: 14px; border: 0; border-radius: 8px;
+      background: #c1440e; color: #fff; font-size: 1rem; font-weight: 600; text-decoration: none; cursor: pointer;
+    }
+    input {
+      padding: 14px; border-radius: 8px; border: 1px solid #444; background: #14161c; color: #fff;
+      font-size: 1.4rem; letter-spacing: .3em; text-align: center; text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Supervivencia en Marte</h1>
+
+    <section>
+      <h2>Pantalla principal</h2>
+      <p>Ábrela en el ordenador conectado al proyector.</p>
+      <a class="button" href="/game/">Crear partida</a>
+    </section>
+
+    <section>
+      <h2>Unirse desde el móvil</h2>
+      <form action="/controller/" method="get">
+        <input name="room" maxlength="8" placeholder="CÓDIGO" autocomplete="off" required>
+        <button type="submit" style="margin-top:12px; width:100%">Entrar</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>
