@@ -13,7 +13,10 @@ Juego cooperativo por salas para el NASA Hackathon 2026: una **pantalla principa
 
 ```text
 game/              Proyecto Godot 4.7 (GDScript, GL Compatibility). Exporta a ../dist/game/
-controller/        Mando web: HTML + CSS + JS sin framework. Se sirve en /controller/
+controller/        Mando web: Vue 3 + Vite + Tailwind 4 (JS). Compila a ../dist/controller/, se sirve en /controller/
+  src/net/socket.js       Único punto que toca el WebSocket
+  src/stores/session.js   Estado de la sesión e interpretación de mensajes
+  src/views/, components/ Pantallas (solo leen el estado y llaman acciones)
 landing/           Página de inicio "/" (crear partida o entrar con código)
 backend/
   src/server.js    HTTP (/api/health) + WebSocket (/ws), enrutado de mensajes
@@ -23,11 +26,13 @@ backend/
   Dockerfile
 deploy/nginx.conf  Sirve estáticos y hace proxy de /ws y /api al backend
 dist/game/         Exportación web de Godot (generada)
+dist/controller/   Build del mando (generado, no se versiona)
 compose.yaml       Servicios `web` (Nginx) y `backend` (Node)
 docs/protocol.md   Contrato de mensajes: FUENTE DE VERDAD compartida
+docs/godot.md, docs/controller.md, docs/backend.md   Guías por componente
 ```
 
-El lobby y las pantallas por rol son **estados internos del mando**, no aplicaciones separadas.
+El lobby y las pantallas por rol son **estados internos del mando**, no aplicaciones separadas. Las rutas de rol (`/controller/<rol>`) solo expresan la intención de rol (botón o etiqueta NFC del tablero físico); el rol real lo confirma el backend.
 
 ## Rutas
 
@@ -35,7 +40,8 @@ El lobby y las pantallas por rol son **estados internos del mando**, no aplicaci
 |---|---|
 | `/` | `landing/` |
 | `/game/` | `dist/game/` (Godot) |
-| `/controller/` y `/controller/?room=K7MP` | `controller/` (precarga el código del QR) |
+| `/controller/` y `/controller/?room=K7MP` | `dist/controller/` (precarga el código del QR) |
+| `/controller/<engineer\|biologist\|doctor\|generalist>` | Mismo mando, entrando directamente a ese rol (NFC). Nginx con *fallback* a `index.html` |
 | `/ws` | WebSocket único para Godot y mandos |
 | `/api/health` | Salud del backend |
 
@@ -66,7 +72,13 @@ Los clientes construyen la URL del WebSocket a partir de `location` (`ws(s)://<h
 
 ```bash
 # Backend en local (sin Docker)
-cd backend && npm install && npm run dev
+cd backend && npm install && npm run dev      # :3000 (PORT para cambiarlo)
+cd backend && npm test
+
+# Mando en local (necesita el backend)
+cd controller && npm install && npm run dev   # http://localhost:5173/controller/ (BACKEND_PORT si no es 3000)
+cd controller && npm test                     # store contra el backend real
+cd controller && npm run build                # → dist/controller/
 
 # Todo con Docker (tras exportar Godot a dist/game/)
 docker compose up --build
@@ -74,12 +86,14 @@ docker compose up --build
 
 Exportar Godot: abrir `game/project.godot` → Proyecto → Exportar → preset **Web** (apunta a `../dist/game/index.html`). `thread_support=false`, así que no hacen falta cabeceras COOP/COEP.
 
+En Windows, Hyper-V/WSL pueden reservar el puerto 3000 (`listen EACCES`). Comprobar con `netsh interface ipv4 show excludedportrange protocol=tcp` y usar otro puerto (`PORT` en el backend, `BACKEND_PORT` en el mando).
+
 ## Convenciones
 
 - Código e identificadores en inglés; textos de interfaz y documentación en español.
 - Commits con [Conventional Commits](https://www.conventionalcommits.org/es/): `tipo(ámbito): descripción`. Tipo en inglés (`feat`, `fix`, `refactor`, `docs`, `chore`, `style`, `test`, `build`), descripción en español, en minúscula y sin punto final. Ámbitos: `game`, `controller`, `backend`, `deploy`, `docs`. Ej.: `feat(backend): crear salas en memoria`.
 - Backend: Node ≥ 20, ES modules, dependencias de runtime `express` (HTTP) y `ws` (WebSocket); tests con `node:test` (`npm test`).
-- Mando: JS vanilla, mobile-first, sin dependencias externas en runtime (la demo debe funcionar en la LAN sin Internet).
+- Mando: Vue 3 (`<script setup>`, JS) + `vue-router` + Tailwind 4, mobile-first. Estilos con utilidades de Tailwind; el color del rol va por variables CSS (`--role-color`…). Nada cargado de Internet (fuentes con `@fontsource`): la demo funciona en la LAN sin conexión exterior.
 - Godot: el autoload `Events` (`game/Scripts/events.gd`) es el bus de señales; la red irá en un autoload propio (p. ej. `Net`) que emita señales a `Events`.
 
 ## Primer hito

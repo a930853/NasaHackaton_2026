@@ -37,6 +37,8 @@ npm test        # pruebas de integración
 
 Comprobación: `curl http://localhost:3000/api/health` → `{"ok":true,"rooms":0}`.
 
+**Windows:** si arranca con `listen EACCES` en el 3000, Hyper-V/WSL tienen reservado un rango que lo incluye (`netsh interface ipv4 show excludedportrange protocol=tcp`). Usad otro puerto con `PORT=8787 npm run dev` y, en el mando, `BACKEND_PORT=8787 npm run dev`. Dentro de Docker no pasa: el contenedor es Linux.
+
 ## Modelo
 
 ```text

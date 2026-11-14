@@ -18,10 +18,11 @@ Juego cooperativo por salas para el NASA Hackathon 2026. Una **pantalla principa
 |---|---|---|
 | [`game/`](game/) | Proyecto Godot 4.7 (GDScript) | En desarrollo |
 | [`backend/`](backend/) | Servidor Node (Express + `ws`) | Implementado, con tests |
-| `controller/` | Mando web (HTML, CSS, JS) | Pendiente |
+| [`controller/`](controller/) | Mando web (Vue 3 + Vite + Tailwind) | Implementado, con tests |
 | `landing/` | Página de inicio `/` | Pendiente |
 | `deploy/` | Configuración de Nginx | Pendiente |
 | `dist/game/` | Exportación web de Godot | Se genera al exportar |
+| `dist/controller/` | Build del mando | Se genera con `npm run build` (no se versiona) |
 | [`docs/`](docs/) | Documentación | Ver abajo |
 | `compose.yaml` | Nginx + backend | Pendiente |
 
@@ -31,6 +32,7 @@ Juego cooperativo por salas para el NASA Hackathon 2026. Una **pantalla principa
 |---|---|---|
 | [`docs/protocol.md`](docs/protocol.md) | **Todos** | Contrato de mensajes, errores, secuencias y criterios de aceptación. **Fuente de verdad**: se cambia aquí primero. |
 | [`docs/godot.md`](docs/godot.md) | Equipo Godot | Cómo implementar el contrato: autoload `Net`, lobby, QR, eventos, idempotencia y votaciones. |
+| [`docs/controller.md`](docs/controller.md) | Mando web | Arquitectura Vue, rutas de rol (NFC), estados, recuperación de sesión, estilos y despliegue. |
 | [`docs/backend.md`](docs/backend.md) | Backend / despliegue | Tecnologías, estructura, modelo de sala, reconexión y límites del MVP. |
 | [`docs/Clases Godot.pdf`](docs/Clases%20Godot.pdf), [`docs/Eventos _ Games.pdf`](docs/Eventos%20_%20Games.pdf) | Diseño del juego | Material de diseño del equipo. |
 | [`CLAUDE.md`](CLAUDE.md) | Claude Code | Contexto y convenciones del proyecto para el asistente. |
@@ -45,6 +47,18 @@ npm install
 npm run dev      # http://localhost:3000/api/health
 npm test         # pruebas de integración
 ```
+
+### Mando (con el backend en marcha)
+
+```bash
+cd controller
+npm install
+npm run dev      # http://localhost:5173/controller/ (también desde el móvil por la IP de la LAN)
+npm test
+npm run build    # genera dist/controller/
+```
+
+> **Windows:** si el backend falla con `listen EACCES` en el 3000, ese puerto está reservado por Hyper-V/WSL. Usad otro: `PORT=8787 npm run dev` en `backend/` y `BACKEND_PORT=8787 npm run dev` en `controller/`.
 
 ### Godot
 
@@ -65,6 +79,7 @@ Para que el QR funcione, la pantalla debe abrirse con la **IP de la LAN** (p. ej
 | `/` | Crear partida o entrar con código |
 | `/game/` | Pantalla principal (Godot) |
 | `/controller/` · `/controller/?room=K7MP` | Mando web (el QR precarga el código) |
+| `/controller/engineer` · `/biologist` · `/doctor` · `/generalist` | Mando entrando directamente a un rol (tablero NFC) |
 | `/ws` | WebSocket |
 | `/api/health` | Comprobación del backend |
 

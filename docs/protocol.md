@@ -304,6 +304,8 @@ Mando(nuevo)     Node                    Godot
 
 ## Notas para el mando
 
+Implementación de referencia y detalles: [controller.md](controller.md).
+
 - Guardar `code` y `resumeToken` en `localStorage` al recibir `joined`; al cargar la página, si existen, enviar `resume_player` en lugar de pedir el código.
 - Si `resume_player` falla con `invalid_token` o `room_not_found`, borrar lo guardado y volver a la pantalla de entrada.
 - Si el WebSocket se cae, reintentar con *backoff* y volver a enviar `resume_player`.
@@ -318,7 +320,7 @@ Mando(nuevo)     Node                    Godot
 - [x] Dos salas abiertas reciben únicamente sus propias decisiones. *(test de backend)*
 - [x] No pueden entrar cinco jugadores ni reservar el mismo rol dos veces. *(test de backend)*
 - [ ] Una doble pulsación no aplica dos veces una consecuencia. *(Godot)*
-- [x] Un móvil puede reconectar y recuperar su rol y pantalla. *(test de backend; falta el mando)*
+- [x] Un móvil puede reconectar y recuperar su rol y pantalla. *(tests de backend y del mando; falta probar en móviles reales)*
 - [ ] Una elección de un evento anterior se rechaza. *(Godot)*
 - [x] El cierre del anfitrión se comunica a los mandos. *(test de backend)*
 - [ ] La demo funciona en la LAN con todos sus archivos disponibles localmente.
