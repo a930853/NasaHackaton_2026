@@ -28,7 +28,7 @@ export const ROLES = {
     name: 'Polivalente',
     subtitle: 'Misión y coordinación',
     code: 'OPS',
-    color: '#68aaf0',
+    color: '#ffffff',
     pale: '#dfedff',
     dark: '#235185',
   },

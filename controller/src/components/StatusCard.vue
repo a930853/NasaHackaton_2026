@@ -11,6 +11,7 @@ defineProps({
 <template>
   <div class="border border-line px-5 py-[clamp(28px,6vh,55px)] text-center" role="status" aria-live="polite">
     <div
+      v-if="mark"
       class="mx-auto mb-5 grid size-[58px] place-items-center rounded-full border border-(--role-color) text-[27px] text-(--role-color)"
       aria-hidden="true"
     >

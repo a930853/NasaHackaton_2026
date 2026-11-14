@@ -28,10 +28,19 @@ const caption = (role) => {
 <template>
   <section class="screen-w flex min-h-0 flex-1 flex-col overflow-hidden" aria-labelledby="picker-title">
     <div class="flex min-h-0 flex-1 flex-col justify-center gap-[clamp(20px,6vh,56px)] py-5 md:py-12">
-      <ScreenHeading id="picker-title">
-        ¿Qué quieres ser <span class="text-amber">hoy?</span>
-        <template #hint>Selecciona tu especialidad para comenzar.</template>
-      </ScreenHeading>
+      <div class="picker-header">
+        <div class="mission-brand" aria-label="NASA">
+          <svg viewBox="0 0 100 100" role="img" aria-hidden="true">
+            <circle cx="50" cy="50" r="44" fill="#1262a8" />
+            <path d="M12 61C34 48 59 38 88 17C64 45 39 62 13 73" fill="none" stroke="#ef3340" stroke-width="4" />
+            <path d="M20 71C42 37 60 22 82 18C58 32 42 51 28 78" fill="none" stroke="#fff" stroke-width="1.5" />
+            <text x="50" y="59" fill="#fff" font-family="Georgia, serif" font-size="21" font-weight="700" text-anchor="middle">NASA</text>
+          </svg>
+        </div>
+        <ScreenHeading id="picker-title">
+          ¿Qué quieres ser <span class="text-amber">hoy?</span>
+        </ScreenHeading>
+      </div>
 
       <p v-if="message" class="notice-error" role="alert">{{ message }}</p>
 
@@ -40,8 +49,8 @@ const caption = (role) => {
           v-for="role in roleList"
           :key="role.id"
           type="button"
-          class="group flex cursor-pointer items-center gap-2.5 rounded-[5px] border border-l-[6px] p-3.5 text-left text-ink transition duration-200 md:gap-[18px] md:p-[clamp(18px,2.4vw,28px)] enabled:hover:-translate-y-[3px] enabled:hover:border-(--button-color) enabled:hover:bg-(--button-pale) enabled:hover:text-(--button-dark) focus-visible:outline-none disabled:cursor-not-allowed disabled:border-[#31445b] disabled:border-l-[#516276] disabled:bg-[rgba(15,32,52,.45)] disabled:text-[#6d7f94] disabled:opacity-70"
-          :class="role.mine ? 'border-(--button-color) bg-[rgb(15,32,52)]' : 'border-[#2d435b] border-l-(--button-color) bg-[rgba(15,32,52,.9)]'"
+          class="role-button group flex cursor-pointer items-center gap-2.5 p-3.5 text-left text-ink transition duration-200 md:gap-[18px] md:p-[clamp(18px,2.4vw,28px)] enabled:hover:-translate-y-[3px] enabled:hover:text-(--button-dark) focus-visible:outline-none disabled:cursor-not-allowed disabled:text-[#6d7f94] disabled:opacity-70"
+          :class="role.mine ? 'role-button-selected' : ''"
           :style="{ '--button-color': role.color, '--button-pale': role.pale, '--button-dark': role.dark }"
           :disabled="!role.available"
           @click="emit('pick', role.id)"
