@@ -11,7 +11,7 @@ extends Control
 ##   Botón MENU (arriba derecha) -> despliega «Options» (sonido) y «Exit» (vuelve al menú principal)
 ##
 ## Con móviles (multijugador), la tripulación vota en ellos (TurnManager.cast_vote, vía PhoneBridge) y
-## aquí se ve el recuento (si empata dos veces, se sortea entre las empatadas).
+## aquí se ve el recuento (si empata dos veces, decide el voto del Comandante).
 ## Jugando solo (sin móviles) las opciones salen en esta pantalla y se eligen con el ratón.
 ## Texto del juego: inglés sencillo para niños de 7 a 12 años.
 

@@ -3,7 +3,7 @@ extends RefCounted
 ## Una ronda de votación de prueba: todos los jugadores eligen una opción.
 ##
 ## Aquí está la parte que valida cada `choose` tal y como pide el contrato
-## (docs/godot/red.md, "Validar un choose"). No sabe nada de la red: recibe
+## (docs/es/godot/red.md, "Validar un choose"). No sabe nada de la red: recibe
 ## datos y devuelve un veredicto. Así se puede leer y probar por separado.
 
 var event_id := ""                 ## Id de ESTA aparición ("demo#1", "demo#2"…).

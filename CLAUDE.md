@@ -47,6 +47,7 @@ docs/es/godot/     arquitectura.md (gestores, FSM, events.json) y red.md (autolo
 docs/es/juego/     diseno.md (reglas y decisiones de diseño), eventos.md (catálogo original) y tiempos_fuera.md
 docs/assets/, docs/proposal/   Imágenes y vídeo de la documentación; propuesta original en PDF
 game/Data/events.json  Cifras de eventos y reglas: fuente de verdad del diseño numérico
+tools/             Scripts de Python: simulador de equilibrio (balance_sim.py), iconos del glosario (make_glossary_icons.py, necesita Pillow) y pantalla de carga web
 ```
 
 El lobby y las pantallas por rol son **estados internos del mando**, no aplicaciones separadas. Las rutas de rol (`/controller/<rol>`) solo expresan la intención de rol (botón o etiqueta NFC del tablero físico); el rol real lo confirma el backend.
@@ -80,16 +81,16 @@ Los clientes construyen la URL del WebSocket a partir de `location` (`ws(s)://<h
 
 ## Reglas de eventos (Godot)
 
-- Evento: `id`, `mode` (`individual` | `vote`), `eligiblePlayers`, `options`, `decisions`, `resolutionRule`.
+- Evento en `events.json`: `id`, `kind`, `conditions`, `options` (cada una con `role`, `success_chance`, `effects`…). Formato completo: `docs/es/godot/arquitectura.md` y `docs/es/resumen.md`.
 - Se puede jugar con 1–4 jugadores: nunca asignar una decisión obligatoria a un rol ausente.
 - Elección aceptada = bloqueada. Eventos antiguos rechazan decisiones. Empate → segunda votación entre empatadas → si persiste, decide el voto del Comandante (primer jugador en entrar).
-- Si falta un jugador necesario, se espera; el anfitrión puede omitir ausentes explícitamente.
+- Solo votan los móviles conectados y en la base: un móvil desconectado no bloquea la votación.
 
 ## Comandos
 
 ```bash
 # Todo desde la raíz (Node ≥ 22)
-npm install                                   # instala también backend/ y controller/
+npm install                                   # instala también backend/, controller/ y landing/
 npm run dev                                   # backend + mando + landing; se entra por la landing (:5173): / , /controller/, /game/ (dist/game) y /ws
 npm test                                      # tests de backend y mando
 
@@ -118,7 +119,7 @@ En Windows, Hyper-V/WSL pueden reservar el puerto 3000 (`listen EACCES`). Compro
 - Commits con [Conventional Commits](https://www.conventionalcommits.org/es/): `tipo(ámbito): descripción`. Tipo en inglés (`feat`, `fix`, `refactor`, `docs`, `chore`, `style`, `test`, `build`), descripción en español, en minúscula y sin punto final. Ámbitos: `game`, `controller`, `backend`, `deploy`, `docs`. Ej.: `feat(backend): crear salas en memoria`.
 - Backend: Node ≥ 20, ES modules, dependencias de runtime `express` (HTTP) y `ws` (WebSocket); tests con `node:test` (`npm test`).
 - Mando: Vue 3 (`<script setup>`, JS) + `vue-router` + Tailwind 4, mobile-first. Estilos con utilidades de Tailwind; el color del rol va por variables CSS (`--role-color`…). Nada cargado de Internet (fuentes con `@fontsource`): la demo funciona en la LAN sin conexión exterior.
-- Godot: el autoload `Events` (`game/Scripts/events.gd`) es el bus de señales; la red irá en un autoload propio (p. ej. `Net`) que emita señales a `Events`.
+- Godot: el autoload `Events` (`game/Scripts/events.gd`) es el bus de señales; la red está en los autoloads `Net` (conexión y sala) y `PhoneBridge` (vistas y elecciones de los móviles), que emiten señales a `Events`.
 
 ## Primer hito
 

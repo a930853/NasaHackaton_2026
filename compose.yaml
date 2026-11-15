@@ -1,4 +1,4 @@
-# Despliegue principal: Internet con Coolify (VPS). Guía: docs/deploy.md
+# Despliegue principal: Internet con Coolify (VPS). Guía: docs/es/deploy.md
 #
 # Coolify pone delante su proxy (Traefik) con un certificado de Let's Encrypt y
 # reenvía https://<dominio> al puerto 80 del servicio "web". Por eso aquí no se

@@ -5,7 +5,7 @@ extends Node
 ## El resto del juego no conoce el socket: escucha las señales de aquí y llama a
 ## las funciones de envío (create_room(), send_view()…).
 ##
-## Contrato de mensajes: docs/protocol.md. Guía para Godot: docs/godot/red.md.
+## Contrato de mensajes: docs/es/protocol.md. Guía para Godot: docs/es/godot/red.md.
 ## En game/ estas señales irían al bus `Events`; en este proyecto de depuración
 ## se emiten directamente desde Net para que todo quede en un solo fichero.
 
