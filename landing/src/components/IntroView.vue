@@ -33,16 +33,16 @@ defineExpose({ focusPlay: () => playEl.value?.focus() })
   <div class="flex min-h-dvh flex-col">
     <!-- Banner: franja con degradado de izquierda (opaco) a derecha (transparente), con el logo y
          el nombre en una sola línea en PC; abajo, una línea naranja que se desvanece igual -->
-    <header class="relative z-[1] flex items-center gap-[clamp(12px,1.6vw,24px)] bg-linear-to-r from-screen via-screen/75 to-screen/0 px-[clamp(24px,6vw,96px)] py-[clamp(12px,2vh,20px)] max-md:px-6">
+    <header class="relative z-[1] flex items-center gap-[clamp(14px,2vw,32px)] bg-linear-to-r from-screen via-screen/75 to-screen/0 px-[clamp(24px,6vw,96px)] py-[clamp(14px,3.4vh,48px)] max-md:px-6 max-md:py-6">
       <span class="absolute right-0 bottom-0 left-[clamp(24px,6vw,96px)] h-[3px] max-md:left-6 bg-linear-to-r from-energy via-energy/60 to-energy/0" aria-hidden="true" />
-      <img :src="logo" alt="" class="size-[clamp(48px,5vw,84px)] shrink-0 drop-shadow-[3px_3px_0_var(--color-ink)] [image-rendering:pixelated]">
-      <h1 class="outline-text m-0 font-display text-[clamp(20px,3.1vw,54px)] leading-[1.1] font-normal tracking-[-.03em] text-white md:whitespace-nowrap max-md:text-[min(6.6vw,30px)]">
+      <img :src="logo" alt="" class="size-[clamp(48px,min(6.4vw,11vh),112px)] shrink-0 drop-shadow-[3px_3px_0_var(--color-ink)] [image-rendering:pixelated]">
+      <h1 class="outline-text m-0 font-display text-[clamp(22px,min(3.5vw,6.6vh),64px)] leading-[1.1] font-normal tracking-[-.03em] text-white md:whitespace-nowrap max-md:text-[min(6.6vw,30px)]">
         Red Planet Survivors
       </h1>
     </header>
 
   <main
-    class="intro-shade flex flex-1 flex-col justify-center gap-[clamp(18px,3.4vh,40px)] py-[clamp(20px,4vh,64px)] pr-[clamp(24px,4vw,64px)] pl-[clamp(24px,6vw,96px)] text-[clamp(17px,calc(.5vw+11px),22px)] max-md:justify-start max-md:px-6 max-md:pt-7 max-md:pb-[calc(var(--hatch-h)+32px)]"
+    class="intro-shade flex flex-1 flex-col justify-center gap-[clamp(10px,2.6vh,40px)] py-[clamp(12px,3vh,64px)] pr-[clamp(24px,4vw,64px)] pl-[clamp(24px,6vw,96px)] text-[clamp(16px,min(calc(.5vw+11px),2.5vh),22px)] max-md:justify-start max-md:px-6 max-md:pt-7 max-md:pb-[calc(var(--hatch-h)+32px)]"
   >
     <p class="m-0 max-w-[25em] text-[1.4em] leading-[1.4] text-pretty text-glass">
       Your crew just landed in Jezero Crater, on Mars. Work together to keep your base alive for 20 Sols.
