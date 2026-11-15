@@ -47,7 +47,7 @@ Mobile web controllers ───┘                         │
 
 ### Test the game
 
-- The game is currently running on a member's server -> [[red-planet-survivors.karu.es/]]
+- The game is currently running on a member's server -> https://red-planet-survivors.karu.es/
 
 ### Requirements
 
