@@ -7,10 +7,10 @@
     "node": ">=22"
   },
   "scripts": {
-    "postinstall": "npm install --prefix backend && npm install --prefix controller",
+    "postinstall": "npm install --prefix backend && npm install --prefix controller && npm install --prefix landing",
     "dev": "node scripts/dev.mjs",
     "test": "npm test --prefix backend && npm test --prefix controller",
-    "build": "npm run build --prefix controller",
+    "build": "npm run build --prefix controller && npm run build --prefix landing",
     "docker:local": "docker compose -f compose.yaml -f compose.local.yaml up --build",
     "docker:dev": "docker compose -f compose.yaml -f compose.local.yaml -f compose.dev.yaml up --build"
   }

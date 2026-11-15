@@ -1,6 +1,6 @@
 # Imagen "web": Nginx con todo lo estático y el proxy hacia el backend.
 #
-#   /             landing/
+#   /             la landing, compilada aquí mismo (Vue + Vite)
 #   /controller/  el mando, compilado aquí mismo (no hace falta npm run build antes)
 #   /game/        la exportación web de Godot elegida con GAME_EXPORT
 #
@@ -20,13 +20,22 @@ COPY controller/ ./
 # vite.config.js compila a ../dist/controller → /src/dist/controller
 RUN npm run build
 
-# ---------- 2. Nginx ----------
+# ---------- 2. Compilar la landing ----------
+FROM node:22-bookworm-slim AS landing
+WORKDIR /src/landing
+COPY landing/package.json landing/package-lock.json ./
+RUN npm ci
+COPY landing/ ./
+# vite.config.js compila a ../dist/landing → /src/dist/landing
+RUN npm run build
+
+# ---------- 3. Nginx ----------
 FROM nginx:1.27-alpine
 ARG GAME_EXPORT=game
 
 COPY deploy/nginx/default.conf /etc/nginx/conf.d/default.conf
 
-COPY landing/ /srv/www/
+COPY --from=landing /src/dist/landing/ /srv/www/
 COPY --from=controller /src/dist/controller/ /srv/www/controller/
 COPY dist/${GAME_EXPORT}/ /srv/www/game/
 

@@ -68,7 +68,7 @@ Godot de **escritorio** (el editor) no puede conectarse a este despliegue porque
 compose.yaml            Internet (Coolify): backend + web, sin puertos publicados, healthchecks
 compose.local.yaml      local: añade el servicio tls en los puertos 80 y 443
 compose.dev.yaml        local, desarrollo: GAME_EXPORT=game_debug y LOG_MESSAGES=1
-deploy/web.Dockerfile   compila el mando y copia landing/, el mando y dist/<GAME_EXPORT>/
+deploy/web.Dockerfile   compila el mando y la landing (Vite) y copia dist/<GAME_EXPORT>/
 deploy/nginx/default.conf  Nginx de la app (HTTP): rutas y proxy de /ws y /api
 deploy/tls/             proxy HTTPS de local: Dockerfile, nginx.conf y 15-cert.sh (certificado)
 .dockerignore           deja fuera node_modules, .godot, los proyectos de Godot…
@@ -78,7 +78,7 @@ Rutas de la app:
 
 | Ruta | Qué hace |
 |---|---|
-| `/` | `landing/` |
+| `/` | La landing (compilada de `landing/`) |
 | `/game/` | Exportación de Godot, sin caché (cada exportación reutiliza los nombres de fichero) |
 | `/controller/…` | Mando; las rutas de rol caen en `index.html` |
 | `/ws` | Proxy WebSocket al backend (tiempo de espera 1 h) |
