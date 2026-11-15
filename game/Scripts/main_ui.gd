@@ -8,13 +8,14 @@ extends Control
 ##                                  Fuerza de la base (morado): enseñan su estadística
 ##   Botón redondo               -> el evento (con móviles las opciones se ven en ellos; solo, aquí)
 ##   Botón ancho de abajo        -> libro de palabras científicas
+##   Botón MENU (arriba derecha) -> despliega «Options» (sonido) y «Exit» (vuelve al menú principal)
 ##
 ## Con móviles (multijugador), la tripulación vota en ellos (TurnManager.cast_vote, vía PhoneBridge) y
 ## aquí se ve el recuento (si empata dos veces, se sortea entre las empatadas).
 ## Jugando solo (sin móviles) las opciones salen en esta pantalla y se eligen con el ratón.
 ## Texto del juego: inglés sencillo para niños de 7 a 12 años.
 
-enum View { DECISIONS, STAT, GLOSSARY }
+enum View { DECISIONS, STAT, GLOSSARY, MENU }
 
 ## Tamaño del PNG del marco y huecos (en píxeles de la imagen) donde va cada elemento.
 const HUD_SIZE: Vector2 = Vector2(1680, 936)
@@ -27,9 +28,14 @@ const HUD_RECTS: Dictionary = {
 	"integrity": Rect2(372, 745, 162, 94),
 	"decide": Rect2(656, 590, 128, 110),
 	"words": Rect2(632, 785, 234, 64),
+	"menu": Rect2(1000, 46, 300, 98),     # placa gris sobre la pantalla derecha, a la izquierda de las 3 ranuras
 	"crew": Rect2(985, 742, 615, 182),
 }
 const BUTTON_INSET: float = 2.0
+const BOOK_ICON_PATH: String = "res://Images/Libro.png"
+const MENU_BUTTON_FONT_SIZE: int = 24
+const MENU_ITEM_WIDTH: float = 360.0
+const CLOSE_BUTTON_SIZE: float = 44.0
 
 const STAT_LABELS: Dictionary = {
 	"health": "Health", "oxygen": "Oxygen", "energy": "Energy", "integrity": "Base strength",
@@ -135,7 +141,12 @@ var _fact_to_show: bool = false       # dato NASA y pista de la Tierra salen al 
 var _hint_to_show: bool = false
 var _stat_buttons: Dictionary = {}    # stat -> Button
 var _stat_icons: Dictionary = {}      # stat -> StatIcon (dibujo en la cara del botón)
-var _words_label: Label
+var _words_label: Label                # texto pequeño del botón del libro («3 words», «NEW!»)
+var _menu_button: Button               # botón MENU de la placa de arriba a la derecha
+var _menu_view: Control                # lo que despliega: «Options», «Exit» y la X para cerrar
+var _options_panel: Control            # panel de sonido (res://Scenes/OptionsPanel.tscn)
+var _view_before_menu: int = View.DECISIONS
+var _leaving: bool = false
 var _view: int = View.DECISIONS
 var _selected_stat: String = "health"
 var _new_words: int = 0
@@ -153,10 +164,13 @@ var _suppress_deltas: bool = false        # true al reiniciar: no mostrar númer
 
 
 func _ready() -> void:
+	_menu_button = Button.new()   # se coloca con el resto del marco en _place_hud()
+	add_child(_menu_button)
 	_place_hud()
 	_build_buttons()
 	_build_overlays()
 	_build_options_box()
+	_build_menu()
 	toast_label.modulate.a = 0.0
 	for stat in GameState.STAT_NAMES:
 		_stat_history[stat] = []
@@ -205,6 +219,7 @@ func _place_hud() -> void:
 	_place(integrity_button, (HUD_RECTS["integrity"] as Rect2).grow(-BUTTON_INSET))
 	_place(decide_button, HUD_RECTS["decide"])
 	_place(words_button, (HUD_RECTS["words"] as Rect2).grow(-BUTTON_INSET))
+	_place(_menu_button, HUD_RECTS["menu"])
 	_place(crew_panel, HUD_RECTS["crew"])
 
 
@@ -248,8 +263,7 @@ func _build_buttons() -> void:
 	_style_hud_button(words_button, Color(0.35, 0.7, 1.0), 8)
 	words_button.button_group = group
 	words_button.pressed.connect(_show_glossary)
-	var words_face: Dictionary = _build_face(words_button, "WORD BOOK", 13, 0)
-	_words_label = words_face["name"]
+	_build_words_face()
 
 
 ## Estilo común: fondo oscuro de pantalla, borde de color al pasar el ratón y al estar elegido.
@@ -278,30 +292,146 @@ func _make_box(fill: Color, border: Color, radius: int, border_width: int) -> St
 	return box
 
 
-## Texto sobre el botón: nombre pequeño y, opcionalmente, un número grande debajo.
-func _build_face(button: Button, title: String, title_size: int, value_size: int) -> Dictionary:
-	var box := VBoxContainer.new()
-	box.set_anchors_preset(Control.PRESET_FULL_RECT)
-	box.alignment = BoxContainer.ALIGNMENT_CENTER
-	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	box.add_theme_constant_override("separation", -2)
-	button.add_child(box)
+## Cara del botón del libro: un libro en pixel art a la izquierda y, a su lado, el nombre y cuántas
+## palabras se han descubierto. Si hay una nueva, el contador se pone ámbar con «NEW!».
+func _build_words_face() -> void:
+	var row := HBoxContainer.new()
+	row.set_anchors_preset(Control.PRESET_FULL_RECT)
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_theme_constant_override("separation", 10)
+	words_button.add_child(row)
 
-	var name_label := Label.new()
-	name_label.text = title
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", title_size)
-	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	box.add_child(name_label)
+	if ResourceLoader.exists(BOOK_ICON_PATH):   # si aún no se importó, el botón sale solo con texto
+		var icon := TextureRect.new()
+		icon.texture = load(BOOK_ICON_PATH)
+		icon.custom_minimum_size = Vector2(44.0, 44.0)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row.add_child(icon)
 
-	var value_label: Label = null
-	if value_size > 0:
-		value_label = Label.new()
-		value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		value_label.add_theme_font_size_override("font_size", value_size)
-		value_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		box.add_child(value_label)
-	return {"name": name_label, "value": value_label}
+	var texts := VBoxContainer.new()
+	texts.alignment = BoxContainer.ALIGNMENT_CENTER
+	texts.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	texts.add_theme_constant_override("separation", -3)
+	row.add_child(texts)
+
+	var title := Label.new()
+	title.text = "WORD BOOK"
+	title.add_theme_font_size_override("font_size", 16)
+	title.add_theme_color_override("font_color", Color(0.93, 0.96, 1.0))
+	title.add_theme_color_override("font_outline_color", Color(0.02, 0.05, 0.12))
+	title.add_theme_constant_override("outline_size", 4)
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	texts.add_child(title)
+
+	_words_label = Label.new()
+	_words_label.add_theme_font_size_override("font_size", 13)
+	_words_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	texts.add_child(_words_label)
+
+
+## Botón MENU de la placa de arriba a la derecha y lo que despliega en la pantalla derecha: «Options»
+## (sonido), «Exit» (vuelve al menú principal) y una X arriba a la derecha para volver atrás.
+## Todos con el estilo azul del menú de inicio (MenuStyle).
+func _build_menu() -> void:
+	_menu_button.text = "MENU"
+	_menu_button.focus_mode = Control.FOCUS_NONE
+	_menu_button.tooltip_text = "Options and exit"
+	MenuStyle.apply(_menu_button, MENU_BUTTON_FONT_SIZE)
+	_menu_button.pressed.connect(_on_menu_button_pressed)
+
+	_menu_view = Control.new()
+	_menu_view.visible = false
+	_menu_view.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_menu_view.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	decisions_view.get_parent().add_child(_menu_view)
+
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_menu_view.add_child(center)
+	var column := VBoxContainer.new()
+	column.custom_minimum_size = Vector2(MENU_ITEM_WIDTH, 0.0)
+	column.add_theme_constant_override("separation", 16)
+	center.add_child(column)
+
+	var title := Label.new()
+	title.text = "MENU"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 28)
+	title.add_theme_color_override("font_color", Color(1.0, 0.93, 0.7))
+	column.add_child(title)
+
+	var options_button := Button.new()
+	options_button.text = "Options"
+	options_button.tooltip_text = "Change the sound"
+	MenuStyle.apply(options_button, MENU_BUTTON_FONT_SIZE)
+	options_button.pressed.connect(_on_menu_options_pressed)
+	column.add_child(options_button)
+
+	var exit_button := Button.new()
+	exit_button.text = "Exit"
+	exit_button.tooltip_text = "Leave the mission and go back to the main menu"
+	MenuStyle.apply(exit_button, MENU_BUTTON_FONT_SIZE)
+	exit_button.pressed.connect(_on_menu_exit_pressed)
+	column.add_child(exit_button)
+
+	# X arriba a la derecha para volver atrás
+	var close_button := Button.new()
+	close_button.text = "X"
+	close_button.tooltip_text = "Close the menu"
+	close_button.focus_mode = Control.FOCUS_NONE
+	close_button.anchor_left = 1.0
+	close_button.anchor_right = 1.0
+	close_button.offset_left = -CLOSE_BUTTON_SIZE
+	close_button.offset_right = 0.0
+	close_button.offset_top = 0.0
+	close_button.offset_bottom = CLOSE_BUTTON_SIZE
+	close_button.add_theme_font_size_override("font_size", 22)
+	close_button.add_theme_stylebox_override("normal", _make_box(Color(0.62, 0.16, 0.2), Color(1, 1, 1, 0.55), 8, 2))
+	close_button.add_theme_stylebox_override("hover", _make_box(Color(0.85, 0.24, 0.3), Color.WHITE, 8, 2))
+	close_button.add_theme_stylebox_override("pressed", _make_box(Color(0.45, 0.1, 0.14), Color.WHITE, 8, 2))
+	close_button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	close_button.pressed.connect(_close_menu)
+	_menu_view.add_child(close_button)
+
+	_options_panel = (load("res://Scenes/OptionsPanel.tscn") as PackedScene).instantiate()
+	add_child(_options_panel)   # el último hijo se dibuja encima de todo; empieza oculto
+
+
+func _on_menu_button_pressed() -> void:
+	if _view == View.MENU:
+		_close_menu()
+		return
+	_view_before_menu = _view
+	_show_view(View.MENU)
+
+
+## La X: vuelve a lo que se estaba viendo (evento, una barra o el libro).
+func _close_menu() -> void:
+	match _view_before_menu:
+		View.STAT:
+			_show_stat(_selected_stat)
+		View.GLOSSARY:
+			_show_glossary()
+		_:
+			_show_view(View.DECISIONS)
+
+
+func _on_menu_options_pressed() -> void:
+	Events.sfx_requested.emit("click", 0.05)
+	_options_panel.visible = true
+
+
+## Salir de la partida: de vuelta al menú principal (cierra también la sala si era multijugador).
+func _on_menu_exit_pressed() -> void:
+	if _leaving:
+		return
+	_leaving = true
+	Events.sfx_requested.emit("click", 0.05)
+	Events.scene_change_requested.emit("menu")
 
 
 ## Contenedor de las opciones para jugar solo: va en la pantalla derecha, justo bajo el aviso de espera.
@@ -352,6 +482,7 @@ func _show_view(view: int) -> void:
 	decisions_view.visible = view == View.DECISIONS
 	stat_view.visible = view == View.STAT
 	glossary_view.visible = view == View.GLOSSARY
+	_menu_view.visible = view == View.MENU
 	if view == View.DECISIONS:
 		decide_button.button_pressed = true
 
@@ -507,10 +638,13 @@ func _refresh_objectives() -> void:
 func _refresh_words_button() -> void:
 	if _words_label == null:
 		return
-	var text: String = "WORD BOOK (%d)" % GameState.unlocked_terms.size()
+	var count: int = GameState.unlocked_terms.size()
+	var text: String = "%d word%s" % [count, "" if count == 1 else "s"]
 	if _new_words > 0:
-		text += "  NEW!"
+		text = "NEW!  " + text
 	_words_label.text = text
+	_words_label.add_theme_color_override("font_color",
+		Color(1.0, 0.82, 0.35) if _new_words > 0 else Color(0.6, 0.8, 1.0))
 
 
 func _refresh_conditions() -> void:
@@ -543,7 +677,7 @@ func _refresh_earth_help_button() -> void:
 
 # -------------------------------------------------------- Señales del TurnManager
 
-func _on_sol_started(sol: int, lines: Array) -> void:
+func _on_sol_started(sol: int, _lines: Array) -> void:
 	sol_label.text = "Sol %d / %d" % [sol, GameState.MAX_SOLS]
 	if sol == 1:
 		# Partida nueva: sincroniza las barras sin números flotantes y borra el historial.
@@ -552,8 +686,10 @@ func _on_sol_started(sol: int, lines: Array) -> void:
 			_stat_history[stat] = []
 		_new_words = 0
 		_suppress_deltas = false
-	summary_label.text = "\n".join(PackedStringArray(lines))
-	summary_label.visible = not lines.is_empty()
+	# Las noticias del amanecer («el ingeniero ha vuelto», «el oxígeno bajó»...) ya no se escriben sobre el
+	# evento: las barras enseñan sus cambios y los avatares, quién está en la base.
+	summary_label.text = ""
+	summary_label.visible = false
 	feedback_label.visible = false
 	continue_button.visible = false
 	_refresh_all()

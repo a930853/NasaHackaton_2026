@@ -27,11 +27,11 @@ const FLARE_EVENT_ID: String = "rt-solar-flare"
 const REQUEST_TIMEOUT: float = 3.0
 
 ## Lectura del evento: el texto sale poco a poco y no se puede elegir hasta que acaba, para que
-## se lea antes de pulsar. 30 letras por segundo es más rápido que leer pero se nota que va escribiendo;
-## un texto normal (~220 letras) tarda unos 7 s. Mínimo y máximo para que nunca sea eterno ni instantáneo.
-const READING_CHARS_PER_SECOND: float = 30.0
-const READING_MIN_SECONDS: float = 2.0
-const READING_MAX_SECONDS: float = 10.0
+## se lea antes de pulsar. 23 letras por segundo se nota que va escribiendo pero deja leer sin esperar de
+## más: un texto normal (~130 letras) tarda unos 6 s. Mínimo y máximo para que nunca sea eterno ni instantáneo.
+const READING_CHARS_PER_SECOND: float = 23.0
+const READING_MIN_SECONDS: float = 2.5
+const READING_MAX_SECONDS: float = 12.0
 const FLARE_LOOKBACK_DAYS: int = 3
 
 ## Distancia Tierra-Marte de respaldo (no se consulta JPL Horizons en este prototipo).

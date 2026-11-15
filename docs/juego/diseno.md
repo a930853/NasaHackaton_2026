@@ -131,7 +131,11 @@ Cada opción deja ocupado a quien la hace durante 0, 1 o 2 Sols (`away_sols` en 
 
 ## Lectura del evento
 
-Al aparecer un evento, su descripción **se escribe poco a poco** (30 letras por segundo, entre 2 y 10 segundos según lo larga que sea; los eventos actuales tardan de 2,5 a 6,6 s) para animar a leerla. Hasta que acaba **no se puede decidir**: ni con el ratón en partida individual (las opciones aparecen al terminar), ni en los móviles (muestran «Read the story!» y reciben las opciones al terminar), ni pedir ayuda a la Tierra. El dato NASA y la pista de la Tierra salen también al terminar. La cuenta atrás de los eventos críticos (terremoto) empieza **después** de la lectura. Las constantes están en `TurnManager` (`READING_CHARS_PER_SECOND`, `READING_MIN_SECONDS`, `READING_MAX_SECONDS`). Un desempate de votación no repite la lectura.
+Al aparecer un evento, su descripción **se escribe poco a poco** (23 letras por segundo, entre 2,5 y 12 segundos según lo larga que sea; los eventos actuales tardan de 3,3 a 8,6 s, unos 5,8 s de media) para animar a leerla. Hasta que acaba **no se puede decidir**: ni con el ratón en partida individual (las opciones aparecen al terminar), ni en los móviles (muestran «Read the story!» y reciben las opciones al terminar), ni pedir ayuda a la Tierra. El dato NASA y la pista de la Tierra salen también al terminar. La cuenta atrás de los eventos críticos (terremoto) empieza **después** de la lectura. Las constantes están en `TurnManager` (`READING_CHARS_PER_SECOND`, `READING_MIN_SECONDS`, `READING_MAX_SECONDS`). Un desempate de votación no repite la lectura.
+
+El **tutorial** (la intro) también escribe cada página poco a poco, más rápido (55 letras por segundo, de 1,5 a 10 s) porque las páginas son largas. Allí sí se puede saltar: si se pulsa *Next* mientras se escribe, se enseña el resto de la página y la siguiente pulsación pasa de página.
+
+Las noticias del amanecer («el ingeniero ha vuelto», «el oxígeno bajó −4»…) **ya no se escriben encima del evento**: los cambios se ven en las barras (números flotantes y su historial) y quién está en la base, en los avatares.
 
 ## Qué se ve dónde
 
@@ -139,6 +143,8 @@ Al aparecer un evento, su descripción **se escribe poco a poco** (30 letras por
 |---|---|
 | Pantalla derecha de Godot | Información del evento: título, descripción, dato NASA, pista de la Tierra y resultado de la decisión. En **multijugador no muestra las opciones** (están en los móviles); en **partida individual** sí: salen debajo del evento y se eligen con el ratón. |
 | Móvil de cada jugador | **Todas** las opciones del evento, sean de su rol o no (se puede votar la opción de otro rol; si solo votara el dueño del rol, casi nunca saldría elegida). Las de un rol llevan su nombre delante, con sus costes. Las bloqueadas salen apagadas con el motivo. |
+
+**Botón MENU y libro de palabras.** En la placa gris de arriba a la derecha de la cabina hay un botón **MENU** (con el estilo azul del menú de inicio). Al pulsarlo, la pantalla derecha enseña dos botones azules: **Options** (abre el panel de sonido: volumen general, música y efectos) y **Exit** (abandona la partida y vuelve al menú principal; en multijugador cierra también la sala). Una **X** roja arriba a la derecha, o volver a pulsar MENU, vuelve a lo que se estaba viendo. El botón **WORD BOOK** lleva un libro en pixel art y cuenta las palabras descubiertas; si hay alguna nueva se pone en ámbar con «NEW!». La partida no se pausa al abrir el menú, y un evento nuevo lo cierra.
 
 Al pulsar *Start Game* se elige el modo: **individual** (una persona, una sola pantalla, sin móviles ni red; las opciones se eligen con el ratón) o **multijugador** (lobby con móviles y votación). En individual, la elección es directa (`TurnManager.submit_choice`), sin votación.
 

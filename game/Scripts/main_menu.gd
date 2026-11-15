@@ -7,6 +7,7 @@ extends Control
 
 const MEMBERS_TOP_SPACE: float = 48.0     # hueco para el título "Members"
 const OFFLINE_COLOR: Color = Color(0.55, 0.55, 0.6)
+const LOBBY_FONT_SIZE: int = 16           # texto de los botones del lobby (más estrecho que el del menú)
 const QR_SIZE: float = 186.0              # lado del QR del lobby en pantalla
 
 @onready var mainButtons: Control = $MenuButtons
@@ -35,25 +36,21 @@ func _ready() -> void:
 	_build_mode_box()
 	_build_qr_box()
 
-	_back_button = Button.new()
-	_back_button.text = "Back"
-	_back_button.set_anchors_preset(Control.PRESET_CENTER)
-	_back_button.offset_left = -60.0
-	_back_button.offset_right = 50.0
-	_back_button.offset_top = 164.0
-	_back_button.offset_bottom = 218.0
-	_back_button.pressed.connect(_on_lobby_back_pressed)
-	$Lobby/Panel.add_child(_back_button)
+	# Botones del lobby: todos con el estilo azul del menú (MenuStyle).
+	MenuStyle.apply(start_expedition_button, LOBBY_FONT_SIZE)
+	MenuStyle.apply($Lobby/Button, LOBBY_FONT_SIZE)
 
-	_local_button = Button.new()
-	_local_button.text = "Play solo instead"
-	_local_button.set_anchors_preset(Control.PRESET_CENTER)
-	_local_button.offset_left = 60.0
-	_local_button.offset_right = 312.0
-	_local_button.offset_top = 164.0
-	_local_button.offset_bottom = 218.0
+	# "Start expedition" pegado al borde derecho del panel; Back y "Play solo instead" junto a "Options",
+	# en la fila de abajo a la izquierda (los botones azules son grandes y no caben en una sola fila).
+	start_expedition_button.offset_left = 232.0
+	start_expedition_button.offset_right = 528.0
+	start_expedition_button.offset_top = 164.0
+	start_expedition_button.offset_bottom = 228.0
+
+	_back_button = _make_lobby_button("Back", 245.0, 355.0)
+	_back_button.pressed.connect(_on_lobby_back_pressed)
+	_local_button = _make_lobby_button("Play solo instead", 367.0, 679.0)
 	_local_button.pressed.connect(_on_local_pressed)
-	$Lobby/Panel.add_child(_local_button)
 
 	Events.net_connected.connect(_on_net_connected)
 	Events.net_connection_failed.connect(_on_connection_failed)
@@ -94,19 +91,32 @@ func _build_mode_box() -> void:
 	var multi_button := _mode_button("Play multiplayer", "Up to 4 players. Each one joins with a phone and the crew votes.")
 	multi_button.pressed.connect(_on_multiplayer_pressed)
 	var back := _mode_button("Back", "")
-	back.custom_minimum_size = Vector2(0, 40)
 	back.pressed.connect(_on_mode_back_pressed)
 	_mode_box.add_child(solo)
 	_mode_box.add_child(multi_button)
 	_mode_box.add_child(back)
 
 
+## Botón azul anclado abajo a la izquierda de la pantalla del lobby, en la misma fila que "Options".
+func _make_lobby_button(text: String, left: float, right: float) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.anchor_top = 1.0
+	button.anchor_bottom = 1.0
+	button.offset_left = left
+	button.offset_right = right
+	button.offset_top = -80.0
+	button.offset_bottom = -16.0
+	MenuStyle.apply(button, LOBBY_FONT_SIZE)
+	$Lobby.add_child(button)
+	return button
+
+
 func _mode_button(text: String, tooltip: String) -> Button:
 	var button := Button.new()
 	button.text = text
 	button.tooltip_text = tooltip
-	button.custom_minimum_size = Vector2(0, 64)
-	button.add_theme_font_size_override("font_size", 22)
+	MenuStyle.apply(button)
 	return button
 
 

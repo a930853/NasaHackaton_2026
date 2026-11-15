@@ -148,7 +148,7 @@ Cada Sol se elige un solo evento, en este orden:
 ## 5. Cómo funciona un evento
 
 1. **Presentación.** Aparece el título y la ventana de Marte cambia según el evento (polvo, llamarada, temblor, oscuridad…). Los eventos marcados `important` (terremotos y alerta solar) ponen una exclamación sobre el botón EVENT.
-2. **Lectura.** La descripción se escribe poco a poco (30 letras por segundo, entre 2 y 10 s). Hasta que termina no se puede elegir, votar ni pedir ayuda. Al terminar salen el dato NASA y las opciones.
+2. **Lectura.** La descripción se escribe poco a poco (23 letras por segundo, entre 2,5 y 12 s). El tutorial de la intro también escribe cada página poco a poco, pero ahí se puede saltar con *Next*. Hasta que termina no se puede elegir, votar ni pedir ayuda. Al terminar salen el dato NASA y las opciones.
 3. **Opciones.** Cada evento tiene de 1 a 3. Unas son de un rol (`role`) y otras de todos (`role: null`). Se enseña lo que cuesta cada una; la probabilidad de éxito no se enseña.
 4. **Decisión.**
    - *Solo:* clic en una opción.

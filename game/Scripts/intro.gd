@@ -7,6 +7,13 @@ const NEXT_SCENE := "gameplay"
 const FALLBACK_IMAGE: Texture2D = preload("res://Images/MonsCloud_MarsExpress_1920.jpg")
 const PAGE_FADE := 0.25
 
+## The text of each page is written letter by letter so it is read, not skipped. It is faster than the
+## event text (the pages are long). Pressing Next while it is being written shows the rest at once.
+const TYPING_CHARS_PER_SECOND := 55.0
+const TYPING_MIN_SECONDS := 1.5
+const TYPING_MAX_SECONDS := 10.0
+const BUTTON_FONT_SIZE := 18
+
 const CREDIT_FALLBACK := "Image: ESA Mars Express (saved on this computer)"
 const CREDIT_NASA := "Image: NASA Image and Video Library"
 
@@ -27,6 +34,7 @@ const PAGES: Array[Dictionary] = [
 
 var _page: int = 0
 var _leaving: bool = false
+var _typing_tween: Tween = null
 
 @onready var background: TextureRect = %Background
 @onready var credit_label: Label = %CreditLabel
@@ -44,6 +52,9 @@ func _ready() -> void:
 	if NasaApi.cached_texture == null:
 		Events.nasa_data_received.connect(_on_nasa_data_received, CONNECT_ONE_SHOT)
 
+	for button in [back_button, next_button, skip_button]:
+		MenuStyle.apply(button, BUTTON_FONT_SIZE)   # same blue buttons as the menu
+
 	back_button.pressed.connect(_on_back_pressed)
 	next_button.pressed.connect(_on_next_pressed)
 	skip_button.pressed.connect(_leave)
@@ -56,27 +67,54 @@ func _show_page(index: int, animate: bool = true) -> void:
 	_page = clampi(index, 0, PAGES.size() - 1)
 
 	if animate:
+		_stop_typing()
 		var tween := create_tween()
 		tween.tween_property(body_label, "modulate:a", 0.0, PAGE_FADE)
 		await tween.finished
 
 	title_label.text = PAGES[_page]["title"]
 	body_label.text = PAGES[_page]["body"]
+	body_label.modulate.a = 1.0
+	_start_typing()
 	page_label.text = "%d / %d" % [_page + 1, PAGES.size()]
 	back_button.disabled = _page == 0
 	next_button.text = "Start mission!" if _page == PAGES.size() - 1 else "Next"
 
-	if animate:
-		var tween_in := create_tween()
-		tween_in.tween_property(body_label, "modulate:a", 1.0, PAGE_FADE)
+
+## Writes the page letter by letter.
+func _start_typing() -> void:
+	_stop_typing()
+	body_label.visible_ratio = 0.0
+	var seconds: float = clampf(float(body_label.get_total_character_count()) / TYPING_CHARS_PER_SECOND,
+		TYPING_MIN_SECONDS, TYPING_MAX_SECONDS)
+	_typing_tween = create_tween()
+	_typing_tween.tween_property(body_label, "visible_ratio", 1.0, seconds)
+
+
+func _is_typing() -> bool:
+	return _typing_tween != null and _typing_tween.is_running()
+
+
+## Shows the whole page at once.
+func _stop_typing() -> void:
+	if _typing_tween != null:
+		_typing_tween.kill()
+		_typing_tween = null
+	body_label.visible_ratio = 1.0
 
 
 func _on_back_pressed() -> void:
+	if _is_typing():
+		_stop_typing()
+		return
 	if _page > 0:
 		_show_page(_page - 1)
 
 
 func _on_next_pressed() -> void:
+	if _is_typing():
+		_stop_typing()   # first press: show the rest of the page; second press: next page
+		return
 	if _page >= PAGES.size() - 1:
 		_leave()
 	else:

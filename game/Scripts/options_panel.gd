@@ -9,6 +9,7 @@ extends Control
 func _ready() -> void:
 	# Sincroniza los sliders con el volumen actual de los buses al cargar
 	self.visible = false
+	MenuStyle.apply(close_button)   # mismo botón azul que el menú
 	master_slider.value = _get_bus_linear(&"Master")
 	music_slider.value = _get_bus_linear(&"Music")
 	sfx_slider.value = _get_bus_linear(&"SFX")
