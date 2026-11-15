@@ -242,18 +242,18 @@ func option_block_reason(option: Dictionary) -> String:
 
 func _has_available_option(event: Dictionary) -> bool:
 	for option in event.get("options", []):
-		if option_block_reason(option).is_empty() and _someone_can_pick(option):
+		if option_block_reason(option).is_empty() and _someone_can_vote():
 			return true
 	return false
 
 
-## Con móviles: ¿hay algún jugador presente y en la base que pueda elegir esta opción?
-## (Si el único jugador está ocupado fuera, el evento espera a que vuelva.)
-func _someone_can_pick(option: Dictionary) -> bool:
+## Con móviles: ¿queda algún jugador presente y en la base que pueda votar?
+## (Si todos los jugadores están ocupados fuera, el evento espera a que vuelva alguien.)
+func _someone_can_vote() -> bool:
 	if present_roles.is_empty():
 		return true
 	for role in present_roles:
-		if not GameState.is_away(role) and _role_may_pick(option, role):
+		if not GameState.is_away(role):
 			return true
 	return false
 
@@ -281,8 +281,9 @@ func _defer_until_crew_returns(event: Dictionary) -> void:
 # ---------------------------------------------------------- Opciones para los móviles
 
 ## Roles que tienen jugador en la sala. Vacío = partida local en una sola pantalla (los 4 roles).
-## Con menos de 4 jugadores, las opciones de un rol ausente las puede elegir cualquiera de los presentes
-## (nunca se asigna una decisión obligatoria a un rol que no existe).
+## Todos los jugadores ven y pueden votar TODAS las opciones, sean de su rol o no: si solo votara
+## el dueño del rol, casi nunca saldría elegida su opción. Así tampoco hay decisiones que dependan
+## de un rol ausente (se puede jugar con 1-4 jugadores).
 var present_roles: Array[String] = []
 ## Roles con el móvil conectado ahora mismo. Solo votan estos (un móvil caído no bloquea la votación).
 var connected_roles: Array[String] = []
@@ -393,29 +394,20 @@ func _start_tiebreak(tied: Array[String]) -> void:
 	votes_changed.emit()
 
 
-## ¿Puede `role` elegir esta opción? Las suyas, las de todos y las de roles que nadie lleva.
-func _role_may_pick(option: Dictionary, role: String) -> bool:
-	var option_role: Variant = option.get("role")
-	if option_role == null or str(option_role) == role:
-		return true
-	return not present_roles.is_empty() and not (str(option_role) in present_roles)
-
-
-## Opciones que ve el jugador de `role` en el evento actual, con su estado.
-## `id` y `label` son los del contrato (docs/protocol.md); `detail` (costes), `disabled`
-## y `reason` son campos opcionales del mismo contrato.
-func options_for_role(role: String) -> Array[Dictionary]:
+## Opciones que ve el jugador de `role` en el evento actual, con su estado: TODAS las del evento
+## (se puede votar una opción de otro rol). Las que tienen un rol dueño llevan su nombre delante,
+## para saber quién la haría y quién quedará ocupado. `id` y `label` son los del contrato
+## (docs/protocol.md); `detail` (costes), `disabled` y `reason` son campos opcionales del mismo contrato.
+func options_for_role(_role: String) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for option in current_event.get("options", []):
-		if not _role_may_pick(option, role):
-			continue
 		if not _tie_options.is_empty() and not (str(option["id"]) in _tie_options):
 			continue
 		var reason: String = option_block_reason(option)
 		var label: String = str(option["label"])
 		var option_role: Variant = option.get("role")
-		if option_role != null and str(option_role) != role:
-			label = "(%s) %s" % [GameState.ROLE_NAMES[str(option_role)], label]  # cubres a un rol ausente
+		if option_role != null:
+			label = "(%s) %s" % [GameState.ROLE_NAMES[str(option_role)], label]
 		result.append({
 			"id": str(option["id"]),
 			"label": label,
@@ -457,7 +449,7 @@ func choice_reject_reason(role: String, event_uid: String, option_id: String) ->
 	if _votes.has(role):
 		return "already_decided"
 	var option: Dictionary = _find_option(current_event, option_id)
-	if option.is_empty() or not _role_may_pick(option, role) or not option_block_reason(option).is_empty():
+	if option.is_empty() or not option_block_reason(option).is_empty():
 		return "invalid_option"
 	if not _tie_options.is_empty() and not (option_id in _tie_options):
 		return "invalid_option"

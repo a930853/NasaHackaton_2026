@@ -108,7 +108,7 @@ Cada opción deja ocupado a quien la hace durante 0, 1 o 2 Sols (`away_sols` en 
 | Dónde | Qué muestra |
 |---|---|
 | Pantalla derecha de Godot | Información del evento: título, descripción, dato NASA, pista de la Tierra y resultado de la decisión. **No muestra las opciones.** |
-| Móvil de cada jugador | Las opciones de su rol y las de todos, con sus costes. Las bloqueadas salen apagadas con el motivo. |
+| Móvil de cada jugador | **Todas** las opciones del evento, sean de su rol o no (se puede votar la opción de otro rol; si solo votara el dueño del rol, casi nunca saldría elegida). Las de un rol llevan su nombre delante, con sus costes. Las bloqueadas salen apagadas con el motivo. |
 
 Hasta que haya móviles, `Phone (debug)` en la ventana de Marte abre un simulador con las mismas opciones. `TurnManager.controller_view_for(role)` prepara lo que recibirá cada mando y `submit_choice_from(role, eventId, optionId)` valida su elección. Las opciones llevan además de `id` y `label` los campos opcionales `detail` (costes), `disabled` y `reason`, ya recogidos en `docs/protocol.md`. Con móviles reales, `PhoneBridge` envía esas vistas y valida las elecciones (ver [../godot/red.md](../godot/red.md)).
 
