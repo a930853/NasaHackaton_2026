@@ -1,4 +1,4 @@
-// Textos de interfaz para los códigos del contrato (docs/protocol.md). En inglés sencillo, como el juego.
+// Textos de interfaz para los códigos del contrato (docs/es/protocol.md). En inglés sencillo, como el juego.
 
 const ERRORS = {
   offline: 'No connection to Mission Control. Try again in a few seconds.',

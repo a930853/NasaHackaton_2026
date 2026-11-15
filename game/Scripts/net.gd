@@ -5,7 +5,7 @@ extends Node
 ## (net_connected, room_created, lobby_updated, game_started, player_choice_received…)
 ## y llama a las funciones de envío de aquí (create_room(), send_view(), send_result()…).
 ##
-## Contrato de mensajes: docs/protocol.md. Guía para Godot: docs/godot/red.md.
+## Contrato de mensajes: docs/es/protocol.md. Guía para Godot: docs/es/godot/red.md.
 ## Quien traduce entre el juego (TurnManager) y los móviles es PhoneBridge.
 
 ## Dirección por defecto fuera del navegador (editor o ejecución sin ventana).

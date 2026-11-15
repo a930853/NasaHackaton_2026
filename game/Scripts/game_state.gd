@@ -26,7 +26,7 @@ const HEALTH_GOAL: int = 50
 ## --- Cambios automáticos de las barras al amanecer de cada Sol ---
 ## Están elegidos con el simulador de tools/balance_sim.py para que las derrotas de un jugador atento
 ## se repartan entre las cuatro barras (oxígeno ~19 %, energía ~13 %, salud ~10 %, integridad ~12 %,
-## con ~46 % de victorias). Antes casi todas las derrotas eran por oxígeno. Ver docs/juego/diseno.md.
+## con ~46 % de victorias). Antes casi todas las derrotas eran por oxígeno. Ver docs/es/juego/diseno.md.
 const PASSIVE_OXYGEN_LOSS: int = 3            # hasta que MOXIE esté al 100 %
 const PASSIVE_ENERGY_GAIN: int = 7            # paneles solares...
 const PASSIVE_ENERGY_GAIN_DUSTY: int = 6      # ...que dan menos cuando se llenan de polvo
@@ -233,7 +233,7 @@ func available_crew() -> Array[String]:
 	return present
 
 
-## Deja a un tripulante ocupado `sols` Soles (docs/juego/tiempos_fuera.md): no está disponible
+## Deja a un tripulante ocupado `sols` Soles (docs/es/juego/tiempos_fuera.md): no está disponible
 ## durante los `sols` Soles siguientes y vuelve al empezar el que va después.
 ## Con sols = 1: no está mañana y vuelve pasado mañana.
 ## `starts_today` = true para efectos diferidos, que se aplican al amanecer: el tripulante

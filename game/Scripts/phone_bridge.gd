@@ -10,7 +10,7 @@ extends Node
 ## Cada jugador vota; TurnManager resuelve cuando han votado todos los que pueden (o desempata).
 ##
 ## Si no hay sala abierta (`active == false`) el juego funciona igual en una sola pantalla.
-## Contrato: docs/protocol.md. Guía: docs/godot/red.md.
+## Contrato: docs/es/protocol.md. Guía: docs/es/godot/red.md.
 
 signal session_changed   ## Empieza o termina una partida con móviles.
 
@@ -234,7 +234,7 @@ func _send(player: Dictionary, view: Dictionary) -> void:
 
 # ---------------------------------------------------------------- Móviles -> juego
 
-## Valida una elección en el orden de docs/godot/red.md y la aplica si es correcta.
+## Valida una elección en el orden de docs/es/godot/red.md y la aplica si es correcta.
 func _on_choice(player_id: String, role: String, action_id: String, event_id: String, option_id: String) -> void:
 	if not active:
 		Net.send_result(player_id, action_id, false, "event_closed")

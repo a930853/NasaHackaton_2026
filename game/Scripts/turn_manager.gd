@@ -337,7 +337,7 @@ var present_roles: Array[String] = []
 ## Roles con el móvil conectado ahora mismo. Solo votan estos (un móvil caído no bloquea la votación).
 var connected_roles: Array[String] = []
 
-# Votación de los móviles (docs/juego/diseno.md, docs/godot/red.md):
+# Votación de los móviles (docs/es/juego/diseno.md, docs/es/godot/red.md):
 # cada jugador presente vota una opción; cuando han votado todos los que pueden, gana la más votada.
 # Empate -> segunda votación solo entre las empatadas; si vuelve a empatar, decide el Comandante.
 var _votes: Dictionary = {}               # role -> option_id
@@ -455,7 +455,7 @@ func _start_tiebreak(tied: Array[String]) -> void:
 ## Opciones que ve el jugador de `role` en el evento actual, con su estado: TODAS las del evento
 ## (se puede votar una opción de otro rol). Las que tienen un rol dueño llevan su nombre delante,
 ## para saber quién la haría y quién quedará ocupado. `id` y `label` son los del contrato
-## (docs/protocol.md); `detail` (costes), `disabled` y `reason` son campos opcionales del mismo contrato.
+## (docs/es/protocol.md); `detail` (costes), `disabled` y `reason` son campos opcionales del mismo contrato.
 func options_for_role(_role: String) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for option in current_event.get("options", []):
@@ -559,7 +559,7 @@ func submit_choice(option_id: String, note: String = "") -> bool:
 			EventManager.clear_seen(str(current_event["id"]))
 			lines.append("The problem is still there, so you can try again.")
 	# La tarea deja ocupado a quien la hace (haya salido bien o mal): el rol de la opción o,
-	# si es una salida de todos, toda la tripulación. Ver docs/juego/tiempos_fuera.md.
+	# si es una salida de todos, toda la tripulación. Ver docs/es/juego/tiempos_fuera.md.
 	var busy_sols: int = int(option.get("away_sols", 0))
 	if busy_sols > 0:
 		var plural: String = "" if busy_sols == 1 else "s"

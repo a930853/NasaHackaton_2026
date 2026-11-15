@@ -1,4 +1,4 @@
-// Tipos de mensaje y validación de entrada. Contrato: docs/protocol.md
+// Tipos de mensaje y validación de entrada. Contrato: docs/es/protocol.md
 import { logMessage } from './log.js';
 
 export const ROLES = ['engineer', 'biologist', 'doctor', 'generalist'];

@@ -1,4 +1,4 @@
-// Estado de la sesión del mando y su sincronización con el backend. Contrato: docs/protocol.md
+// Estado de la sesión del mando y su sincronización con el backend. Contrato: docs/es/protocol.md
 //
 // Las pantallas solo leen `state` y llaman a las acciones; nunca tocan el WebSocket.
 import { reactive } from 'vue'

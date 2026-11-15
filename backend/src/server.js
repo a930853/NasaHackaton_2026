@@ -1,4 +1,4 @@
-// Servidor HTTP (Express) + WebSocket (/ws). Contrato: docs/protocol.md
+// Servidor HTTP (Express) + WebSocket (/ws). Contrato: docs/es/protocol.md
 import { createServer } from 'node:http';
 import { fileURLToPath } from 'node:url';
 import express from 'express';

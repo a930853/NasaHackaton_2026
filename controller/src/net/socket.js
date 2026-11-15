@@ -1,4 +1,4 @@
-// Único punto de contacto con el WebSocket del backend. Contrato: docs/protocol.md
+// Único punto de contacto con el WebSocket del backend. Contrato: docs/es/protocol.md
 
 /** URL del WebSocket a partir del servidor que sirvió la página (sin IPs fijas). */
 export function wsUrl(loc = globalThis.location) {

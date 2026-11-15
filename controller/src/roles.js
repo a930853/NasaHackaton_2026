@@ -1,4 +1,4 @@
-// Roles del contrato (docs/protocol.md). La clave es también la ruta: /controller/<rol>.
+// Roles del contrato (docs/es/protocol.md). La clave es también la ruta: /controller/<rol>.
 // Colores y nombres iguales que en el juego (game/Scripts/main_ui.gd: ROLE_COLORS, ROLE_LABELS):
 // los cascos de los astronautas son de estos colores.
 export const ROLES = {
