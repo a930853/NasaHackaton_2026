@@ -75,7 +75,9 @@ const choiceView = (eventId) => ({
   options: [{ id: 'shelter', label: 'Refugio' }, { id: 'continue', label: 'Continuar' }],
 })
 
-test('entrar, elegir rol, recibir opciones y registrar una decisión', async () => {
+const resultView = { screen: 'result', canContinue: true, title: 'It worked!', text: 'Todos a salvo.' }
+
+test('entrar, elegir rol, recibir opciones y pasar a la vista de resultado', async () => {
   const h = await host()
   const s = await joinedPlayer(h, 'Ana', 'engineer')
   assert.equal(s.state.code, h.code)
@@ -93,12 +95,14 @@ test('entrar, elegir rol, recibir opciones y registrar una decisión', async () 
   const got = await h.next('choose')
   assert.deepEqual([got.playerId, got.role, got.optionId], [s.state.playerId, 'engineer', 'shelter'])
 
+  // Node no reenvía choice_result: el mando avanza con la siguiente controller_view.
   h.send({ type: 'choice_result', playerId: got.playerId, actionId: got.actionId, accepted: true })
-  await until(() => s.state.choice.status === 'registered', 'registrada')
-  assert.equal(s.state.choice.optionId, 'shelter')
+  h.send({ type: 'controller_view', playerId: got.playerId, view: resultView })
+  await until(() => s.state.view?.screen === 'result', 'resultado')
+  assert.equal(s.state.choice.status, 'idle')
 })
 
-test('un rechazo de Godot deja volver a elegir', async () => {
+test('una pregunta nueva de Godot deja volver a elegir', async () => {
   const h = await host()
   const s = await joinedPlayer(h, 'Luis', 'doctor')
   h.send({ type: 'start_game' })
@@ -108,11 +112,13 @@ test('un rechazo de Godot deja volver a elegir', async () => {
   s.choose('continue')
   const got = await h.next('choose')
   h.send({ type: 'choice_result', playerId: got.playerId, actionId: got.actionId, accepted: false, reason: 'event_closed' })
-  await until(() => s.state.choice.status === 'rejected', 'rechazo')
-  assert.equal(s.state.choice.reason, 'event_closed')
+  h.send({ type: 'controller_view', playerId: got.playerId, view: choiceView('e2') })
+  await until(() => s.state.view?.eventId === 'e2', 'vista nueva')
+  assert.equal(s.state.choice.status, 'idle')
 
   s.choose('shelter')
   const again = await h.next('choose')
+  assert.equal(again.eventId, 'e2')
   assert.notEqual(again.actionId, got.actionId) // pulsación nueva → actionId nuevo
 })
 
@@ -137,7 +143,7 @@ test('al recargar con una elección sin confirmar, se reenvía el mismo actionId
   assert.equal(s2.state.choice.status, 'sending')
 })
 
-test('una decisión registrada se mantiene tras recargar', async () => {
+test('la última vista se restaura tras recargar', async () => {
   const h = await host()
   const storage = memoryStorage()
   const s1 = await joinedPlayer(h, 'Leo', 'generalist', storage)
@@ -147,13 +153,15 @@ test('una decisión registrada se mantiene tras recargar', async () => {
   s1.choose('continue')
   const got = await h.next('choose')
   h.send({ type: 'choice_result', playerId: got.playerId, actionId: got.actionId, accepted: true })
-  await until(() => s1.state.choice.status === 'registered', 'registrada')
+  h.send({ type: 'controller_view', playerId: got.playerId, view: resultView })
+  await until(() => s1.state.view?.screen === 'result', 'resultado')
   s1.destroy()
 
   const s2 = mando(storage)
   s2.start()
-  await until(() => s2.state.view?.eventId === 'e9', 'vista restaurada')
-  assert.equal(s2.state.choice.status, 'registered')
+  await until(() => s2.state.view?.screen === 'result', 'vista restaurada')
+  assert.equal(s2.state.view.text, resultView.text)
+  assert.equal(s2.state.choice.status, 'idle') // no se reenvía ninguna elección
 })
 
 test('salir de la sala en el lobby vuelve a la entrada y olvida las credenciales', async () => {
