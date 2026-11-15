@@ -24,7 +24,7 @@ const HUD_RECTS: Dictionary = {
 	"oxygen": Rect2(375, 605, 158, 88),
 	"energy": Rect2(157, 745, 165, 93),
 	"integrity": Rect2(372, 745, 162, 94),
-	"decide": Rect2(657, 608, 128, 110),
+	"decide": Rect2(656, 590, 128, 110),
 	"words": Rect2(632, 785, 234, 64),
 	"crew": Rect2(985, 742, 615, 182),
 }
@@ -194,7 +194,7 @@ func _place_hud() -> void:
 	_place(oxygen_button, (HUD_RECTS["oxygen"] as Rect2).grow(-BUTTON_INSET))
 	_place(energy_button, (HUD_RECTS["energy"] as Rect2).grow(-BUTTON_INSET))
 	_place(integrity_button, (HUD_RECTS["integrity"] as Rect2).grow(-BUTTON_INSET))
-	_place(decide_button, (HUD_RECTS["decide"] as Rect2).grow(-BUTTON_INSET))
+	_place(decide_button, HUD_RECTS["decide"])
 	_place(words_button, (HUD_RECTS["words"] as Rect2).grow(-BUTTON_INSET))
 	_place(crew_panel, HUD_RECTS["crew"])
 
@@ -233,6 +233,7 @@ func _build_buttons() -> void:
 	decide_button.button_group = group
 	decide_button.pressed.connect(_show_view.bind(View.DECISIONS))
 	_event_face = EventButtonFace.new()
+	_event_face.set_anchors_preset(Control.PRESET_FULL_RECT)
 	decide_button.add_child(_event_face)
 
 	_style_hud_button(words_button, Color(0.35, 0.7, 1.0), 8)
