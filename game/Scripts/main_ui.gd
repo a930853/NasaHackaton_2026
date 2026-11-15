@@ -72,6 +72,7 @@ const ROLE_COLORS: Dictionary = {
 const GENERAL_LABEL: String = "Everyone"
 const WAITING_TEXT: String = "The crew is choosing on their phones..."
 const SOLO_PROMPT: String = "What will the crew do? Click an option:"
+const TYPING_SOUND: String = "texting"
 const READING_PROMPT: String = "Read the story carefully... your options are coming!"
 
 const DEFEAT_REASONS: Dictionary = {
@@ -736,10 +737,13 @@ func _start_typing(animate: bool) -> void:
 		_typing_tween = null
 	if not animate:
 		description_label.visible_ratio = 1.0
+		_stop_typing_sound()
 		return
 	description_label.visible_ratio = 0.0
 	_typing_tween = create_tween()
 	_typing_tween.tween_property(description_label, "visible_ratio", 1.0, TurnManager.reading_seconds)
+	_typing_tween.finished.connect(_stop_typing_sound)
+	Events.sfx_requested.emit(TYPING_SOUND, 0.0)   # suena mientras se escribe el texto
 
 
 func _stop_typing() -> void:
@@ -747,6 +751,15 @@ func _stop_typing() -> void:
 		_typing_tween.kill()
 		_typing_tween = null
 	description_label.visible_ratio = 1.0
+	_stop_typing_sound()
+
+
+func _stop_typing_sound() -> void:
+	Events.sfx_stop_requested.emit(TYPING_SOUND)
+
+
+func _exit_tree() -> void:
+	_stop_typing_sound()   # por si se sale de la partida mientras sale el texto
 
 
 ## Se acabó el tiempo de lectura: sale lo que faltaba (dato NASA, pista) y ya se puede elegir.

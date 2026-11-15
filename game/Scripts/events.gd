@@ -17,6 +17,7 @@ signal system_alert_triggered(system_name: String, severity: String)
 
 # --- Audio ---
 signal sfx_requested(sfx_key: String, pitch_variance: float)
+signal sfx_stop_requested(sfx_key: String)   # para los sonidos en bucle (p. ej. "texting" mientras sale el texto)
 
 # --- Network (backend Node: lobby y móviles). Los emite el autoload Net ---
 signal net_connected
