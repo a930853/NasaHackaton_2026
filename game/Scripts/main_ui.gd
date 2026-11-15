@@ -55,10 +55,10 @@ const LOW_STAT_COLOR: Color = Color(1.0, 0.3, 0.3)
 const HISTORY_LINES: int = 6
 
 const ROLE_LABELS: Dictionary = {
-	"engineer": "Engineer", "biologist": "Biologist", "doctor": "Doctor", "generalist": "Commander",
+	"engineer": "Engineer", "biologist": "Biologist", "doctor": "Doctor", "generalist": "Generalist",
 }
 ## Colores de rol (los mismos que el albedo de los cascos): Ingeniero amarillo,
-## Bióloga verde, Médico rojo y Polivalente (Commander) blanco.
+## Bióloga verde, Médico rojo y Polivalente (Generalist) blanco.
 const ROLE_COLORS: Dictionary = {
 	"engineer": Color(1.0, 0.85, 0.2), "biologist": Color(0.4, 0.9, 0.5),
 	"doctor": Color(1.0, 0.4, 0.4), "generalist": Color(1.0, 1.0, 1.0),

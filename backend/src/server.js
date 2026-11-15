@@ -115,6 +115,13 @@ export function createApp() {
       });
     },
 
+    continue(ws, ctx, msg) {
+      if (ctx.kind !== 'player') return sendError(ws, 'not_player', 'continue');
+      send(ctx.room.hostConnection, {
+        type: 'continue', playerId: ctx.player.id, role: ctx.player.role, actionId: msg.actionId,
+      });
+    },
+
     choice_result(ws, ctx, msg) {
       if (ctx.kind !== 'host') return sendError(ws, 'not_host', 'choice_result');
       const player = ctx.room.players.get(msg.playerId);

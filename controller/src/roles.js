@@ -27,16 +27,16 @@ export const ROLES = {
     dark: '#7d2222',
   },
   generalist: {
-    name: 'Commander',
-    subtitle: 'Leads the crew',
-    code: 'CMD',
+    name: 'Generalist',
+    subtitle: 'A little bit of everything',
+    code: 'GEN',
     color: '#ffffff',
     pale: '#eef3ff',
     dark: '#1a2030',
   },
 }
 
-export const ROLE_IDS = ['engineer', 'biologist', 'doctor']
+export const ROLE_IDS = ['engineer', 'biologist', 'doctor', 'generalist']
 
 /** Variables CSS del color de un rol. */
 export const roleStyle = (role) =>

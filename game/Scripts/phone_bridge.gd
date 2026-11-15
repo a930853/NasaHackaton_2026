@@ -22,12 +22,15 @@ var players: Array = []              ## [{id, name, role, connected}] de `game_s
 var _results: Dictionary = {}        ## actionId -> {accepted: bool, reason: String}
 var _result_order: Array[String] = []
 var _last_result_view: Dictionary = {}
+var _continue_votes: Dictionary = {} ## playerId -> actionId
+var _continue_actions: Dictionary = {} ## actionId -> playerId
 
 
 func _ready() -> void:
 	Events.game_started.connect(_on_game_started)
 	Events.lobby_updated.connect(_on_lobby_updated)
 	Events.player_choice_received.connect(_on_choice)
+	Events.player_continue_received.connect(_on_continue)
 	Events.net_disconnected.connect(_on_net_disconnected)
 	TurnManager.event_presented.connect(_on_event_presented)
 	TurnManager.decision_resolved.connect(_on_decision_resolved)
@@ -70,6 +73,8 @@ func _reset() -> void:
 	players = []
 	_results.clear()
 	_result_order.clear()
+	_continue_votes.clear()
+	_continue_actions.clear()
 	TurnManager.present_roles = []
 	TurnManager.connected_roles = []
 	TurnManager.set_commander_role("")
@@ -84,9 +89,13 @@ func _on_game_started(started_players: Array) -> void:
 	_result_order.clear()
 	players = started_players
 	active = true
+	_continue_votes.clear()
+	_continue_actions.clear()
 	TurnManager.present_roles = roles()
 	TurnManager.set_commander_role(_commander_role())
 	TurnManager.set_connected_roles(roles(true))
+	if TurnManager.phase == TurnManager.Phase.RESOLUTION:
+		_try_continue()
 	session_changed.emit()
 	for player in players:
 		_send(player, {
@@ -107,6 +116,8 @@ func _on_lobby_updated(updated_players: Array, _status: String) -> void:
 				_send(updated, _current_view(str(updated.get("role", ""))))
 	players = updated_players
 	TurnManager.set_connected_roles(roles(true))
+	if TurnManager.phase == TurnManager.Phase.RESOLUTION:
+		_try_continue()
 
 
 func _commander_role() -> String:
@@ -137,12 +148,15 @@ func _on_decision_resolved(option: Dictionary, feedback: String, success: bool) 
 		return
 	_last_result_view = {
 		"screen": "result",
+		"canContinue": true,
 		# Sin opción = no se decidió nada (el problema espera, se pidió ayuda a la Tierra…).
 		"title": "News from the base" if option.is_empty() else ("It worked!" if success else "Oh no!"),
 		"text": feedback,
 	}
 	for player in players:
 		_send(player, _last_result_view)
+	_continue_votes.clear()
+	_continue_actions.clear()
 
 
 func _on_game_ended(victory: bool, report: Dictionary) -> void:
@@ -150,11 +164,38 @@ func _on_game_ended(victory: bool, report: Dictionary) -> void:
 		return
 	var view: Dictionary = {
 		"screen": "result",
+		"canContinue": false,
 		"title": "Mission complete!" if victory else "Mission failed",
 		"text": "Final score: %d. Look at the main screen." % int(report.get("score", 0)),
 	}
 	for player in players:
 		_send(player, view)
+
+
+func _on_continue(player_id: String, _role: String, action_id: String) -> void:
+	if not active or TurnManager.phase != TurnManager.Phase.RESOLUTION:
+		return
+	if not _is_player(player_id) or action_id.is_empty() or _continue_actions.has(action_id):
+		return
+	_continue_actions[action_id] = player_id
+	_continue_votes[player_id] = action_id
+	for player in players:
+		if str(player.get("id", "")) == player_id:
+			_send(player, {
+				"screen": "waiting", "title": "Ready to continue",
+				"text": "Waiting for the rest of the crew…",
+			})
+			break
+	_try_continue()
+
+
+func _try_continue() -> void:
+	for player in players:
+		if bool(player.get("connected", false)) and not _continue_votes.has(str(player.get("id", ""))):
+			return
+	_continue_votes.clear()
+	_continue_actions.clear()
+	TurnManager.continue_after_resolution()
 
 
 ## Lo que debe ver ahora el móvil de un rol: la pregunta si hay decisión, si no la última noticia.

@@ -16,7 +16,7 @@ const MAX_SOLS: int = 20
 const EARTH_HELP_COOLDOWN_SOLS: int = 4
 const ROLES: Array[String] = ["engineer", "biologist", "doctor", "generalist"]
 const ROLE_NAMES: Dictionary = {
-	"engineer": "Engineer", "biologist": "Biologist", "doctor": "Doctor", "generalist": "Commander",
+	"engineer": "Engineer", "biologist": "Biologist", "doctor": "Doctor", "generalist": "Generalist",
 }
 const STAT_NAMES: Array[String] = ["health", "oxygen", "energy", "integrity"]
 const STAT_START: int = 80

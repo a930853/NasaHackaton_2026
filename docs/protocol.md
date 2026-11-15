@@ -21,6 +21,7 @@ Fuente de verdad compartida entre **Godot**, el **mando web** y el **backend**. 
 | [`game_started`](#game_started) | Node → Godot y mandos | — |
 | [`controller_view`](#controller_view) | Godot → Node → Mando | Node (forma) |
 | [`choose`](#choose) | Mando → Node → Godot | Node (forma e identidad) · **Godot** (todo lo demás) |
+| [`continue`](#continue) | Mando → Node → Godot | Node (forma e identidad) · **Godot** (todos han confirmado) |
 | [`choice_result`](#choice_result) | Godot → Node | Node (forma) |
 | [`resume_player`](#resume_player) | Mando → Node | Node |
 | [`finish_game`](#finish_game) | Godot → Node | Node |
@@ -73,7 +74,7 @@ Mando → Node. Pide (o cambia) su rol. Solo en el lobby.
 ```json
 { "type": "select_role", "role": "engineer" }
 ```
-El jugador elige un rol principal: `engineer`, `biologist` o `doctor`. El primer jugador recibe además `commander: true`; esa capacidad no ocupa un cuarto rol y su voto decide el segundo empate. Si el jugador ya tenía rol, lo cambia (libera el anterior).
+El jugador elige un rol principal: `engineer`, `biologist`, `doctor` o `generalist`. El primer jugador recibe además `commander: true`; esa capacidad no ocupa un rol y su voto decide el segundo empate. Si el jugador ya tenía rol, lo cambia (libera el anterior).
 
 Éxito: no hay respuesta directa; todos reciben un [`lobby_state`](#lobby_state). Errores: `invalid_role`, `role_taken`, `not_in_lobby`, `not_player`.
 
@@ -189,6 +190,17 @@ Godot → Node:
 Motivos de rechazo definidos por Godot: `event_closed`, `not_eligible`, `invalid_option`, `already_decided`. Node valida el mensaje, pero no entrega este resultado al mando.
 
 Un `actionId` repetido debe recibir **la misma respuesta** que la primera vez, sin repetir efectos (lo garantiza Godot, ver [godot/red.md](godot/red.md#validar-un-choose)).
+
+### `continue`
+Mando → Node → Godot. Confirma que el jugador quiere pasar al siguiente Sol después de ver el resultado.
+```json
+{ "type": "continue", "actionId": "p2-continue-17" }
+```
+Node añade `playerId` y `role` desde la conexión:
+```json
+{ "type": "continue", "playerId": "p2", "role": "doctor", "actionId": "p2-continue-17" }
+```
+Godot cuenta las confirmaciones de los jugadores conectados. Solo llama a `continue_after_resolution()` cuando todos han confirmado. El botón del anfitrión en la pantalla principal puede avanzar directamente.
 
 ### `resume_player`
 Mando → Node. Recupera una sesión tras una desconexión (recarga, cambio de red, pantalla bloqueada).

@@ -45,7 +45,7 @@ INICIO DEL SOL ──► SELECCIÓN DEL EVENTO ──► DECISIÓN ──► RES
 | `engineer` | Ingeniero | Hardware, paneles, rover, sensores, MOXIE. Es el rol con más opciones propias. |
 | `biologist` | Bióloga | Invernadero, cultivos, probióticos. |
 | `doctor` | Médico | Salud, botiquín, estrés. |
-| `generalist` | Capacidad adicional de Comandante | Moral del equipo, órdenes difíciles, comunicaciones con la Tierra; la tiene el primer jugador además de su rol principal. |
+| `generalist` | Polivalente | Puede participar en decisiones y tareas generales como cualquier otro rol. |
 
 Los ids en inglés son los del [contrato de mensajes](../protocol.md) y los de `events.json`. Cada opción de un evento es de dos tipos:
 
@@ -161,7 +161,7 @@ Fuentes que se comparan: **clases** (PDF «Clases Godot»), **eventos** (PDF «E
 | Tema | Lo que dice cada fuente | En `events.json` |
 |---|---|---|
 | **Duración de la partida** | 15 Sols (clases), 20 Sols (especificaciones), 30 Sols (eventos) | `max_sols: 30` |
-| **Nombre del 4.º rol** | Comandante (diseño); `generalist`, que el mando muestra como «Polivalente» | `generalist` |
+| **Capacidad adicional** | Comandante; la recibe el primer jugador además de su rol principal | `commander: true` |
 | **Salud** | Una barra común (especificaciones) o una barra por astronauta (clases) | Una común (`health`) |
 | **Fases de MOXIE** | 4 fases de 25 % (eventos) o 3 de 33 % (especificaciones) | 3 fases (33 + 33 + 34) |
 | **Plazo de los sensores** | Antes del Sol 20 (eventos) o del Sol 13 (especificaciones) | Sol 20 |

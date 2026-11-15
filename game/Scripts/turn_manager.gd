@@ -297,8 +297,6 @@ var _tie_options: Array[String] = []      # en el desempate, las únicas opcione
 var commander_role: String = ""
 
 func _effective_crew_role(role_id: String) -> String:
-	if role_id == "generalist" and not commander_role.is_empty():
-		return commander_role
 	return role_id
 
 
