@@ -330,7 +330,7 @@ Sale si la API DONKI de la NASA registra una llamarada de clase M o X en los úl
 | Turn on the base shields | Engineer | Energía −10. Si falla: Salud −5 y Fuerza de la base −5 | 90 % | 1 |
 | Hide in the middle room | Todos | Salud −5, Energía −5 | 100 % | — |
 
-Hay un botón de depuración en la ventana de Marte que simula la llamarada sin depender de la API.
+Al ejecutar desde el editor de Godot hay un botón de depuración en la ventana de Marte que simula la llamarada sin depender de la API (en la web publicada no aparece).
 
 ---
 

@@ -156,7 +156,7 @@ Dawn updates (“the Engineer returned”, “Oxygen dropped by 3”…) no long
 
 **Start Game** offers **solo** (one screen, no phones or network; choose with the mouse) or **multiplayer** (lobby, phones and voting). In solo mode, `TurnManager.submit_choice` applies the choice directly without voting.
 
-The `Phone (debug)` simulator is hidden: solo options are shown on screen, and multiplayer uses real phones (its code remains in `main_ui.gd`). Only `Flare (debug)` remains to simulate a solar alert. `TurnManager.controller_view_for(role)` prepares each controller view, and `submit_choice_from(role, eventId, optionId)` validates it. Options may include `detail`, `disabled` and `reason` as specified in `protocol.md`; real phones are handled by `PhoneBridge` (see [Godot networking](godot/networking.md)).
+The `Phone (debug)` simulator is hidden: solo options are shown on screen, and multiplayer uses real phones (its code remains in `main_ui.gd`). The `Flare (debug)` button, which simulates a solar alert, only appears when running from the Godot editor (not on the published web build). `TurnManager.controller_view_for(role)` prepares each controller view, and `submit_choice_from(role, eventId, optionId)` validates it. Options may include `detail`, `disabled` and `reason` as specified in `protocol.md`; real phones are handled by `PhoneBridge` (see [Godot networking](godot/networking.md)).
 
 ## Ask Earth for help
 
@@ -174,7 +174,7 @@ This mechanic is based on real communication delays: 4–24 minutes per message 
 - At the start of a game, query NASA DONKI for solar flares from the previous three days.
 - An M- or X-class flare interrupts the turn with a special event showing the real date.
 - During that Sol and the next, Earth help is unavailable and radiation increases. The crew can be protected with probiotics (Biologist), shields (Engineer) or the general `shelter` option.
-- The `Flare (debug)` button simulates a flare without relying on the API (for example, for a demo).
+- When running from the Godot editor, the `Flare (debug)` button simulates a flare without relying on the API. It is hidden on the published web build.
 
 ## Glossary
 

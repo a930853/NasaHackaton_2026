@@ -161,7 +161,7 @@ Las noticias del amanecer («el ingeniero ha vuelto», «el oxígeno bajó −3�
 
 Al pulsar *Start Game* se elige el modo: **individual** (una persona, una sola pantalla, sin móviles ni red; las opciones se eligen con el ratón) o **multijugador** (lobby con móviles y votación). En individual, la elección es directa (`TurnManager.submit_choice`), sin votación.
 
-El botón `Phone (debug)` (simulador de móvil) ya no se enseña: en solitario las opciones salen en pantalla y en multijugador hay móviles de verdad (su código sigue en `main_ui.gd`). Solo queda `Flare (debug)`, que simula la alerta solar. `TurnManager.controller_view_for(role)` prepara lo que recibirá cada mando, `choice_reject_reason` valida su elección y `cast_vote` la registra. Las opciones llevan además de `id` y `label` los campos opcionales `detail` (costes), `disabled` y `reason`, ya recogidos en el [contrato de mensajes](../protocol.md). Con móviles reales, `PhoneBridge` envía esas vistas y valida las elecciones (ver [../godot/red.md](../godot/red.md)).
+El botón `Phone (debug)` (simulador de móvil) ya no se enseña: en solitario las opciones salen en pantalla y en multijugador hay móviles de verdad (su código sigue en `main_ui.gd`). El botón `Flare (debug)`, que simula la alerta solar, solo sale al ejecutar desde el editor de Godot (no en la web publicada). `TurnManager.controller_view_for(role)` prepara lo que recibirá cada mando, `choice_reject_reason` valida su elección y `cast_vote` la registra. Las opciones llevan además de `id` y `label` los campos opcionales `detail` (costes), `disabled` y `reason`, ya recogidos en el [contrato de mensajes](../protocol.md). Con móviles reales, `PhoneBridge` envía esas vistas y valida las elecciones (ver [../godot/red.md](../godot/red.md)).
 
 ## Pedir ayuda a la Tierra
 
@@ -189,7 +189,7 @@ Se basa en el retraso real de las comunicaciones: entre 4 y 24 minutos por mensa
 - Al empezar la partida se consulta la API DONKI de la NASA (`/DONKI/FLR`, llamaradas solares de los últimos 3 días).
 - Si hay una llamarada de clase M o X, el juego **interrumpe el turno** con un evento especial que muestra la fecha real: *«📡 ¡Dato en vivo de la NASA! El [fecha] el Sol lanzó una llamarada que acaba de alcanzar Marte.»*
 - Durante ese Sol y el siguiente: no se puede pedir ayuda a la Tierra y sube la radiación. Hay que proteger a la tripulación con probióticos (Bióloga), escudos (Ingeniero) o la opción general de refugiarse (`shelter`).
-- El botón `Flare (debug)` simula la llamarada sin depender de la API (por ejemplo, para una demostración).
+- Al ejecutar desde el editor de Godot, el botón `Flare (debug)` simula la llamarada sin depender de la API. En la web publicada no aparece.
 
 ## Libro de tecnicismos
 

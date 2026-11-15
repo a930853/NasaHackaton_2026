@@ -34,7 +34,7 @@ const PAGES: Array[Dictionary] = [
 	},
 	{
 		"title": "Keep the 4 bars alive",
-		"body": "Your base has 4 bars: [b]Health[/b], [b]Oxygen[/b], [b]Energy[/b] and [b]Base strength[/b]. They start at 80. [b]If one reaches 0, you lose![/b]\n\nEvery morning they change by themselves:\n- [b]Oxygen[/b] goes down 4, until MOXIE works\n- [b]Energy[/b] goes up 7 (a bit less after Sol 8: dust covers the solar panels)\n- [b]Base strength[/b] goes down 3 (wind and dust)\n- [b]Health[/b] goes down 6 from Sol 4 (stress and radiation)\n\nSo you must keep fixing things!",
+		"body": "Your base has 4 bars: [b]Health[/b], [b]Oxygen[/b], [b]Energy[/b] and [b]Base strength[/b]. They start at 80. [b]If one reaches 0, you lose![/b]\n\nEvery morning they change by themselves:\n- [b]Oxygen[/b] goes down 3, until MOXIE works\n- [b]Energy[/b] goes up 7 (a bit less after Sol 8: dust covers the solar panels)\n- [b]Base strength[/b] goes down 2 (wind and dust)\n- [b]Health[/b] goes down 4 from Sol 4 (stress and radiation)\n\nSo you must keep fixing things!",
 		"images": [
 			{"paths": ["res://Images/Tutorial/tut_bars.png"],
 				"caption": "Click a bar to learn more about it", "max": Vector2(420, 280)},
@@ -42,7 +42,7 @@ const PAGES: Array[Dictionary] = [
 	},
 	{
 		"title": "Read, then choose",
-		"body": "Each Sol brings a new problem. The story appears [b]letter by letter[/b]: read it! You can choose only when it ends.\n\nThen pick an option. You can see what each one [b]costs[/b], like \"Energy -25\".\n\n[b]Playing alone:[/b] click an option.\n[b]With friends:[/b] everybody votes on their phone, and the option with most votes wins. A tie? Vote again! Tied again? Luck decides.\n\nThe red [b]EVENT[/b] button shows a yellow [b]exclamation mark[/b] when something important happens. Some emergencies have a countdown, so hurry!",
+		"body": "Each Sol brings a new problem. The story appears [b]letter by letter[/b]: read it! You can choose only when it ends.\n\nThen pick an option. You can see what each one [b]costs[/b], like \"Energy -25\".\n\n[b]Playing alone:[/b] click an option.\n[b]With friends:[/b] everybody votes on their phone, and the option with most votes wins. A tie? Vote again! Tied again? The Commander (the first player who joined) decides.\n\nThe red [b]EVENT[/b] button shows a yellow [b]exclamation mark[/b] when something important happens. Some emergencies have a countdown, so hurry!",
 		"images": [
 			{"paths": ["res://Images/Tutorial/tut_story.png"],
 				"caption": "Read the story, then pick an option", "max": Vector2(450, 200)},

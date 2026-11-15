@@ -509,8 +509,9 @@ func _refresh_all() -> void:
 	crew_panel.refresh()
 	debug_options_button.disabled = TurnManager.phase != TurnManager.Phase.DECISION or TurnManager.reading
 	# El simulador de móvil ya no se enseña ni en solitario (las opciones están en pantalla) ni en multijugador
-	# (hay móviles de verdad). Solo queda el botón «Flare (debug)».
+	# (hay móviles de verdad). El botón «Flare (debug)» solo sale al ejecutar desde el editor, no en la web publicada.
 	debug_options_button.visible = false
+	debug_flare_button.visible = OS.is_debug_build()
 
 
 func _refresh_stats() -> void:
