@@ -56,6 +56,8 @@ const EFFECTS: Dictionary = {
 	"cool": {"tint": Color(0.3, 0.6, 1.0, 0.25)},
 }
 
+const STORM_SOUND: String = "sandstorm"      # clave de sfx.gd (Sandstorm_SFX.mp3, en bucle)
+
 var _image: TextureRect
 var _tint: ColorRect
 var _flash: ColorRect
@@ -111,6 +113,10 @@ func _process(_delta: float) -> void:
 
 
 ## Cambia imagen, encuadre y efecto con una transición suave.
+func _exit_tree() -> void:
+	Events.sfx_stop_requested.emit(STORM_SOUND)   # por si se sale de la partida con la tormenta sonando
+
+
 func show_scene(scene: Dictionary) -> void:
 	_set_texture(str(scene.get("image", "")))
 	var pan_values: Array = scene.get("pan", [0.5, 0.5])
@@ -245,6 +251,12 @@ func _set_effect(effect: String, intensity: float) -> void:
 		_storm_tween.kill()
 	_storm_tween = create_tween()
 	_storm_tween.tween_method(_set_storm_intensity, _storm_intensity, storm_target, STORM_FADE_SECONDS)
+
+	# Sonido de la tormenta: suena en bucle mientras la ventana enseña la tormenta de arena
+	if config.get("storm", false):
+		Events.sfx_requested.emit(STORM_SOUND, 0.0)
+	else:
+		Events.sfx_stop_requested.emit(STORM_SOUND)
 
 	# Polvo que cruza la pantalla
 	var has_dust: bool = config.get("dust", false)

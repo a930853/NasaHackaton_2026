@@ -410,6 +410,8 @@ Cada evento lleva un «NASA fact» y varios añaden términos al libro. Estos te
 | Paisaje de la ventana de Marte | Dibujado por código (`mars_landscape.gd`); la tormenta de arena es un shader de ruido |
 | Marco de la cabina, logos de las barras, casco y botón EVENT | Pixel art propio del equipo en `game/Images/` |
 | Música y efectos de sonido | Ficheros del equipo en `game/Sound/` |
+| Sonidos en bucle | `Texting_SFX` mientras se escribe el texto de un evento y `Sandstorm_SFX` mientras la ventana de Marte enseña una tormenta de arena (clave `sandstorm` en `sfx.gd`, con fundido al apagarse) |
+| Cursor del ratón | Cohete en pixel art (`Raton.png`, ajuste de proyecto `mouse_cursor/custom_image`). Solo sustituye a la flecha: las tarjetas de opciones usan la flecha para no cambiarlo por la manita del sistema |
 
 ### Fuentes previstas y todavía no conectadas
 

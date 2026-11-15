@@ -7,6 +7,10 @@ extends Control
 
 const MEMBERS_TOP_SPACE: float = 48.0     # hueco para el título "Members"
 const OFFLINE_COLOR: Color = Color(0.55, 0.55, 0.6)
+const MODE_TITLE_FONT_SIZE: int = 36       # la pregunta de «jugar solo o multijugador» (el título del juego usa 55)
+const MODE_TITLE_WAVE: String = "20.0"
+const MODE_BOX_WIDTH: float = 580.0        # ancho de la pregunta (se parte en dos líneas)
+const MODE_BUTTON_WIDTH: float = 440.0
 const LOBBY_FONT_SIZE: int = 16           # texto de los botones del lobby (más estrecho que el del menú)
 const QR_SIZE: float = 186.0              # lado del QR del lobby en pantalla
 
@@ -72,18 +76,25 @@ func _on_start_button_pressed() -> void:
 func _build_mode_box() -> void:
 	_mode_box = VBoxContainer.new()
 	_mode_box.set_anchors_preset(Control.PRESET_CENTER)
-	_mode_box.offset_left = -220.0
-	_mode_box.offset_right = 220.0
-	_mode_box.offset_top = -120.0
-	_mode_box.offset_bottom = 120.0
+	_mode_box.offset_left = -MODE_BOX_WIDTH / 2.0
+	_mode_box.offset_right = MODE_BOX_WIDTH / 2.0
+	_mode_box.offset_top = -165.0
+	_mode_box.offset_bottom = 165.0
 	_mode_box.add_theme_constant_override("separation", 12)
 	_mode_box.visible = false
 	add_child(_mode_box)
 
-	var title := Label.new()
-	title.text = "How do you want to play?"
+	# La pregunta, con la misma estética que el título del juego: su fuente y su efecto de ola.
+	var game_title: RichTextLabel = $Tittle
+	var title := RichTextLabel.new()
+	title.bbcode_enabled = true
+	title.fit_content = true
+	title.scroll_active = false
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 26)
+	title.add_theme_font_override("normal_font", game_title.get_theme_font("normal_font"))
+	title.add_theme_font_size_override("normal_font_size", MODE_TITLE_FONT_SIZE)
+	title.text = "[wave amp=%s freq=2.0 connected=1]How do you want to play?[/wave]" % MODE_TITLE_WAVE
 	_mode_box.add_child(title)
 
 	var solo := _mode_button("Play solo", "One player. You choose every option with the mouse. No phone needed.")
@@ -117,6 +128,8 @@ func _mode_button(text: String, tooltip: String) -> Button:
 	button.text = text
 	button.tooltip_text = tooltip
 	MenuStyle.apply(button)
+	button.custom_minimum_size.x = MODE_BUTTON_WIDTH
+	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER   # la pregunta es más ancha que los botones
 	return button
 
 

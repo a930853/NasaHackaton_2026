@@ -12,6 +12,7 @@ const SOUNDS: Dictionary = {
 	"intercom": preload("res://Sound/SFX/IntercomsMessage_SFX.mp3"),
 	"click": preload("res://Sound/SFX/Click.mp3"),
 	"texting": preload("res://Sound/SFX/Texting_SFX.mp3"),
+	"sandstorm": preload("res://Sound/SFX/Sandstorm_SFX.mp3"),
 	#"alert": preload("res://Sounds/SFX/alert.ogg"),
 	#"nfc_scan": preload("res://Sounds/SFX/nfc_scan.ogg"),
 	#"success": preload("res://Sounds/SFX/success.ogg")
@@ -21,12 +22,17 @@ const SOUNDS: Dictionary = {
 const VOLUME_DB: Dictionary = {
 	"intercom": -8.0,
 	"texting": -6.0,
+	"sandstorm": -4.0,
 }
 
 ## Sonidos que se repiten en bucle hasta que alguien pide pararlos con Events.sfx_stop_requested
 ## (el texto de un evento suena a «teclear» mientras se va escribiendo).
-const LOOPING: Array[String] = ["texting"]
+const LOOPING: Array[String] = ["texting", "sandstorm"]
 const LOOP_FADE_SECONDS: float = 0.12
+## Fundido de salida de cada sonido en bucle (la tormenta se va apagando poco a poco).
+const LOOP_FADE_BY_KEY: Dictionary = {
+	"sandstorm": 1.2,
+}
 const SILENT_DB: float = -40.0
 
 var _loop_players: Dictionary = {}   # clave -> AudioStreamPlayer propio del bucle
@@ -100,7 +106,7 @@ func stop_sfx(sfx_key: String) -> void:
 	_cancel_fade(sfx_key)
 	var tween := create_tween()
 	_loop_fades[sfx_key] = tween
-	tween.tween_property(player, "volume_db", SILENT_DB, LOOP_FADE_SECONDS)
+	tween.tween_property(player, "volume_db", SILENT_DB, float(LOOP_FADE_BY_KEY.get(sfx_key, LOOP_FADE_SECONDS)))
 	tween.tween_callback(player.stop)
 
 

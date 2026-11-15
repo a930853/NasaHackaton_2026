@@ -31,9 +31,9 @@ offset_right = 3.0
 offset_bottom = 99.0
 grow_horizontal = 2
 theme_override_fonts/normal_font = ExtResource("2_f7j37")
-theme_override_font_sizes/normal_font_size = 55
+theme_override_font_sizes/normal_font_size = 45
 bbcode_enabled = true
-text = "[wave amp=30.0 freq=2.0 connected=1]Mars Mission[/wave]"
+text = "[wave amp=30.0 freq=2.0 connected=1]Red Planet Survivors[/wave]"
 horizontal_alignment = 1
 
 [node name="Background" type="Panel" parent="." unique_id=1240011585]

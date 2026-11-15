@@ -14,7 +14,9 @@ var disabled: bool = false:
 	set(value):
 		disabled = value
 		modulate = Color(1, 1, 1, 0.5) if value else Color.WHITE
-		mouse_default_cursor_shape = Control.CURSOR_ARROW if value else Control.CURSOR_POINTING_HAND
+		# Siempre la flecha: el cursor del juego es el cohete (project.godot) y solo sustituye a la flecha;
+		# con la manita del sistema el cohete desaparecía al pasar el ratón por las opciones.
+		mouse_default_cursor_shape = Control.CURSOR_ARROW
 
 var _text_label: RichTextLabel
 var _normal_style: StyleBoxFlat
@@ -23,7 +25,7 @@ var _hover_style: StyleBoxFlat
 
 func _init(bbcode_text: String = "") -> void:
 	focus_mode = Control.FOCUS_ALL
-	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	mouse_default_cursor_shape = Control.CURSOR_ARROW   # ver el comentario de `disabled`
 
 	_normal_style = _make_style(NORMAL_FILL, 1)
 	_hover_style = _make_style(HOVER_FILL, 2)
