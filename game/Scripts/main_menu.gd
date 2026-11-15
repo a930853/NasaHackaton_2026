@@ -223,10 +223,9 @@ func _show_room_info(code: String, note: String = "") -> void:
 	lines.append("[b]Room code:[/b]  [font_size=44][b]%s[/b][/font_size]" % code)
 	lines.append("")
 	lines.append("[b]How to join (on a phone):[/b]")
-	lines.append("1. Connect the phone to the same Wi-Fi.")
-	lines.append("2. Open  [b]%s[/b]" % Net.controller_url(code))
+	lines.append("1. Open  [b]%s[/b]" % Net.controller_url(code))
 	lines.append("    (or open the home page and type the code).")
-	lines.append("3. Pick a role. When everybody is ready, press Start expedition.")
+	lines.append("2. Pick a role. When everybody is ready, press Start expedition.")
 	if Net.controller_url_is_local():
 		lines.append("")
 		lines.append("[color=#ffd27a]Heads up: this address says \"localhost\", so phones cannot use it. Open the game with the computer's network address.[/color]")
