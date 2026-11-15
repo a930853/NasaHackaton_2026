@@ -52,7 +52,7 @@ func _draw() -> void:
 	var side: float = minf(size.x * 0.9, area_height)
 	var helmet := Rect2(Vector2((size.x - side) * 0.5, (area_height - side) * 0.5 + 1.0), Vector2(side, side))
 
-	var texture: Texture2D = _get_helmet()
+	var texture: Texture2D = get_helmet()
 	if texture != null:
 		draw_texture_rect(texture, helmet, false, albedo)
 	else:
@@ -69,7 +69,7 @@ func _draw() -> void:
 
 ## Carga la imagen del casco la primera vez. Se hace aquí y no con preload para que el
 ## juego arranque aunque Godot todavía no haya importado Astronauta.png.
-func _get_helmet() -> Texture2D:
+static func get_helmet() -> Texture2D:
 	if _helmet_texture == null and ResourceLoader.exists(HELMET_PATH):
 		_helmet_texture = load(HELMET_PATH)
 	return _helmet_texture

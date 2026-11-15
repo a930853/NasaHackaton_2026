@@ -21,7 +21,6 @@ const LOBBY_BORDER: Color = Color(0.35, 0.55, 0.85)
 const LOBBY_TITLE_COLOR: Color = Color(1.0, 0.93, 0.7)
 const LOBBY_TEXT_COLOR: Color = Color(0.82, 0.9, 1.0)
 const CODE_BORDER: Color = Color(0.95, 0.72, 0.25)
-const HELMET_PATH: String = "res://Images/Astronauta.png"
 const MEMBER_SLOTS: int = 4               # máximo de jugadores: se enseñan siempre 4 plazas
 const MEMBER_ROW_HEIGHT: float = 54.0
 const CODE_BOX_POSITION: Vector2 = Vector2(470.0, 92.0)
@@ -517,8 +516,7 @@ func _empty_row(text: String) -> Control:
 
 func _helmet_icon(color: Color) -> TextureRect:
 	var icon := TextureRect.new()
-	if ResourceLoader.exists(HELMET_PATH):   # si aún no se importó, la tarjeta sale sin casco
-		icon.texture = load(HELMET_PATH)
+	icon.texture = CrewAvatar.get_helmet()   # null si aún no se importó: la tarjeta sale sin casco
 	icon.custom_minimum_size = Vector2(40.0, 40.0)
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED

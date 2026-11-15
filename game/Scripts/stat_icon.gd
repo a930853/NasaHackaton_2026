@@ -13,6 +13,10 @@ const SALUD: Texture2D = preload("res://Images/Salud.png")
 const OXIGENO: Texture2D = preload("res://Images/Oxigeno.png")
 const ENERGIA: Texture2D = preload("res://Images/Energia.png")
 const INTEGRIDAD: Texture2D = preload("res://Images/Integridad.png")
+## Logo de cada estadística por su clave en GameState (lo usan el HUD y la pantalla final).
+const BY_STAT: Dictionary = {
+	"health": SALUD, "oxygen": OXIGENO, "energy": ENERGIA, "integrity": INTEGRIDAD,
+}
 
 const RECOLOR_SHADER: String = """
 shader_type canvas_item;

@@ -41,11 +41,6 @@ const CLOSE_BUTTON_MARGIN: float = 8.0
 const STAT_LABELS: Dictionary = {
 	"health": "Health", "oxygen": "Oxygen", "energy": "Energy", "integrity": "Base strength",
 }
-## Logo de cada estadística (las imágenes de res://Images/).
-const STAT_ICON_TEXTURES: Dictionary = {
-	"health": StatIcon.SALUD, "oxygen": StatIcon.OXIGENO,
-	"energy": StatIcon.ENERGIA, "integrity": StatIcon.INTEGRIDAD,
-}
 ## Mismo color que el borde de cada botón del marco.
 const STAT_COLORS: Dictionary = {
 	"health": Color(0.95, 0.27, 0.36), "oxygen": Color(0.30, 0.72, 1.0),
@@ -248,7 +243,7 @@ func _build_buttons() -> void:
 		_style_hud_button(button, STAT_COLORS[stat], 10, true)
 		button.button_group = group
 		button.pressed.connect(_show_stat.bind(stat))
-		var icon := StatIcon.new(STAT_ICON_TEXTURES[stat], STAT_COLORS[stat])
+		var icon := StatIcon.new(StatIcon.BY_STAT[stat], STAT_COLORS[stat])
 		button.add_child(icon)
 		_stat_icons[stat] = icon
 
@@ -986,7 +981,7 @@ Real space teams also fail sometimes. They learn and try again!" % [
 	for key in OBJECTIVE_NAMES:
 		objectives.append({"name": OBJECTIVE_NAMES[key], "done": bool(status[key])})
 
-	_end_screen.show_result(victory, "Mission complete!" if victory else "Mission failed", message, objectives,
+	_end_screen.show_result(victory, "Mission complete!" if victory else "Mission failed!", message, objectives,
 		int(report["score"]), "Words discovered: %d of %d" % [report["terms_unlocked"], report["terms_total"]], failed_stat)
 
 

@@ -11,13 +11,8 @@ signal back_to_menu
 
 const MARS: Texture2D = preload("res://Images/Marte.png")
 const ROCKET_SHEET_PATH: String = "res://Images/Cohete.png"   # 2 fotogramas de 24x40 (solo cambia la llama)
-const HELMET_PATH: String = "res://Images/Astronauta.png"
 const ROCKET_FRAME: Vector2 = Vector2(24.0, 40.0)
 const ROCKET_BODY_HEIGHT: float = 29.0     # alto del cohete sin la llama
-const STAT_ICONS: Dictionary = {
-	"health": StatIcon.SALUD, "oxygen": StatIcon.OXIGENO,
-	"energy": StatIcon.ENERGIA, "integrity": StatIcon.INTEGRIDAD,
-}
 
 const PANEL_SIZE: Vector2 = Vector2(820.0, 600.0)
 const WIN_COLOR: Color = Color(1.0, 0.87, 0.35)
@@ -107,10 +102,8 @@ func show_result(victory: bool, title: String, message: String, objectives: Arra
 	_column.add_child(_make_label(words_text, 14, DIM_TEXT_COLOR))
 	_column.add_child(_make_buttons())
 
+	_confetti.restart()            # borra el confeti que quedara de una partida anterior
 	_confetti.emitting = victory
-	if not victory:
-		_confetti.restart()
-		_confetti.emitting = false   # sin confeti: se borra el que quedara de una partida anterior
 	_start_flame(victory)
 	_start_vignette(not victory)
 	visible = true
@@ -188,7 +181,7 @@ func _make_picture(victory: bool, failed_stat: String) -> Control:
 	mars.modulate = Color(1.15, 1.1, 1.0) if victory else Color(0.45, 0.4, 0.42)
 	row.add_child(mars)
 
-	if not victory and STAT_ICONS.has(failed_stat):
+	if not victory and StatIcon.BY_STAT.has(failed_stat):
 		# El icono de la barra que se agotó, sobre la misma placa clara de los botones de la cabina y con borde rojo.
 		var plate := PanelContainer.new()
 		plate.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -200,7 +193,7 @@ func _make_picture(victory: bool, failed_stat: String) -> Control:
 		plate_style.set_content_margin_all(8)
 		plate.add_theme_stylebox_override("panel", plate_style)
 		var icon := TextureRect.new()
-		icon.texture = STAT_ICONS[failed_stat]
+		icon.texture = StatIcon.BY_STAT[failed_stat]
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -217,12 +210,11 @@ func _make_crew(victory: bool) -> Control:
 	row.add_theme_constant_override("separation", 14)
 	for role in GameState.ROLES:
 		var helmet := TextureRect.new()
-		if ResourceLoader.exists(HELMET_PATH):
-			helmet.texture = load(HELMET_PATH)
+		helmet.texture = CrewAvatar.get_helmet()
 		helmet.custom_minimum_size = Vector2(48.0, 48.0)
 		helmet.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		helmet.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		helmet.modulate = CrewAvatar.ROLE_ALBEDO.get(role, Color.WHITE) if victory else Color(0.45, 0.47, 0.52)
+		helmet.modulate = CrewAvatar.ROLE_ALBEDO.get(role, Color.WHITE) if victory else CrewAvatar.AWAY_ALBEDO
 		row.add_child(helmet)
 	return row
 
@@ -412,9 +404,16 @@ class _Stars extends Control:
 		for i in range(COUNT):
 			_points.append(Vector3(rng.randf(), rng.randf(), rng.randf() * TAU))
 
+	# Solo se redibuja mientras la pantalla final está a la vista
+	func _ready() -> void:
+		set_process(is_visible_in_tree())
+
+	func _notification(what: int) -> void:
+		if what == NOTIFICATION_VISIBILITY_CHANGED:
+			set_process(is_visible_in_tree())
+
 	func _process(_delta: float) -> void:
-		if is_visible_in_tree():
-			queue_redraw()
+		queue_redraw()
 
 	func _draw() -> void:
 		var seconds: float = Time.get_ticks_msec() / 1000.0
