@@ -1,8 +1,8 @@
 # Resumen del proyecto: Supervivencia en Marte
 
-Resumen de lo que hay **implementado** hoy: cómo funciona el juego, todos los tipos de evento y de dónde salen los datos. Las cifras vienen de [`game/Data/events.json`](../game/Data/events.json) y del código de `game/Scripts/`; si algo no coincide con este documento, manda el código.
+Resumen de lo que hay **implementado** hoy: cómo funciona el juego, todos los tipos de evento y de dónde salen los datos. Las cifras vienen de [`game/Data/events.json`](../../game/Data/events.json) y del código de `game/Scripts/`; si algo no coincide con este documento, manda el código.
 
-> Para más detalle: reglas en [juego/diseno.md](juego/diseno.md), red en [godot/red.md](godot/red.md), mensajes en [protocol.md](protocol.md) y despliegue en [deploy.md](deploy.md). `diseno.md` y `juego/eventos.md` conservan cifras antiguas del diseño (30 Sols, plazo del Sol 20) que el juego ya no usa.
+> Para más detalle: reglas en [juego/diseno.md](juego/diseno.md), red en [godot/red.md](godot/red.md), mensajes en [protocol.md](protocol.md) y despliegue en [deploy.md](deploy.md).
 
 ## Índice
 
@@ -152,7 +152,7 @@ Cada Sol se elige un solo evento, en este orden:
 3. **Opciones.** Cada evento tiene de 1 a 3. Unas son de un rol (`role`) y otras de todos (`role: null`). Se enseña lo que cuesta cada una; la probabilidad de éxito no se enseña.
 4. **Decisión.**
    - *Solo:* clic en una opción.
-   - *Multijugador:* todos ven **todas** las opciones y vota cada jugador conectado y en la base. Gana la más votada. Empate → segunda votación entre las empatadas → si vuelve a empatar, se sortea.
+   - *Multijugador:* todos ven **todas** las opciones y vota cada jugador conectado y en la base. Gana la más votada. Empate → segunda votación entre las empatadas → si vuelve a empatar, decide el voto del Comandante (el primer jugador que entró).
 5. **Cuenta atrás** (solo terremotos): 20 s desde que acaba la lectura. Si se acaba el tiempo gana lo más votado, o la opción por defecto.
 6. **Resolución.** Se tira el éxito con `success_chance`:
    - **Éxito:** se aplican todos los efectos y el progreso.
@@ -401,7 +401,7 @@ Cada evento lleva un «NASA fact» y varios añaden términos al libro. Estos te
 |---|---|
 | `game/Data/events.json` | Los 16 eventos: textos, condiciones, opciones, efectos, probabilidades y ocupación. Fuente de verdad de las cifras. |
 | `game/Data/glossary.json` | Los 18 términos del libro de palabras. |
-| `docs/protocol.md` | Contrato de mensajes entre Godot, backend y mando. |
+| `docs/es/protocol.md` | Contrato de mensajes entre Godot, backend y mando. |
 
 ### Imágenes y sonido
 

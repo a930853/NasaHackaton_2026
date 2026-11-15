@@ -196,7 +196,7 @@ Godot reports acceptance to Node. Node validates sender and shape but does not f
 { "type": "choice_result", "playerId": "p2", "actionId": "p2-action-18", "accepted": false, "reason": "event_closed" }
 ```
 
-Godot rejection reasons: `event_closed`, `not_eligible`, `invalid_option`, `already_decided`. Repeated `actionId` values must receive **the same response** as the first request, without applying effects again; Godot guarantees this (see [Godot networking](godot/networking.md#validating-a-choose)).
+Godot rejection reasons: `event_closed`, `not_eligible`, `invalid_option`, `already_decided`. Repeated `actionId` values must receive **the same response** as the first request, without applying effects again; Godot guarantees this (see [Godot networking](godot/networking.md)).
 
 ### `continue`
 

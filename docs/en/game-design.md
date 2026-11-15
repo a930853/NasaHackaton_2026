@@ -1,20 +1,20 @@
 # Game Design: Mars Survival
 
-The rules defined by the team. The event catalog is in [event-catalog.md](event-catalog.md); implementation details for Godot are in [Godot architecture](godot/architecture.md).
+The rules defined by the team, with the figures used by the submitted version. The event catalog is in [event-catalog.md](event-catalog.md); implementation details for Godot are in [Godot architecture](godot/architecture.md).
 
-> **Source of truth for numbers:** [`game/Data/events.json`](../../game/Data/events.json), which is loaded by the game. This document explains the rules; if a number differs, `events.json` takes precedence and this document should be corrected. Unresolved issues are listed under [Open decisions](#open-decisions).
+> **Source of truth for numbers:** [`game/Data/events.json`](../../game/Data/events.json), which is loaded by the game. This document explains the rules; if a number differs, `events.json` takes precedence and this document should be corrected. Contradictions between the source documents, and how they were resolved, are listed under [Design decisions](#design-decisions).
 
 ## Concept
 
-A cooperative educational game for **four players**, lasting about **30 minutes**. The crew lives at a Mars base near Jezero Crater and must survive a fixed number of Martian days (*Sols*) while completing scientific objectives. Every event is based on a real NASA mission or fact.
+A cooperative educational game for **1–4 players** (or one person with a mouse), in short sessions that fit in a class. The crew lives at a Mars base near Jezero Crater and must survive **20 Martian days** (*Sols*) while completing scientific objectives. Every event is based on a real NASA mission or fact.
 
 - **Main screen (Godot):** displays the event, base resources and outcome.
-- **Phones:** each player has a role and chooses options. NFC tool tags on the table can also be used.
+- **Phones:** each player has a role and chooses options. A physical board with NFC tags can open the controller directly with a role (`/controller/<role>`).
 - The game supports **1–4 players**: no mandatory decision may depend on a role that is absent.
 
 ### Main-screen sketch
 
-![Main screen sketch: window, button desk and information panel](../juego/img/prototipo-ui.png)
+![Main screen sketch: window, button desk and information panel](../assets/prototype-ui-game.png)
 
 - **Window:** view of the world outside the base.
 - **Button desk:** the four resources (health, oxygen, energy, integrity), **Decisions** and **Dictionary** (the [Glossary](#glossary)).
@@ -96,17 +96,18 @@ The themed `EndScreen` (`game/Scripts/end_screen.gd`) shows a blue button frame,
 - **Victory (“Mission complete!”):** gold title, upright rocket with a lit engine, glowing Mars, colorful helmets and confetti; `success` sound.
 - **Defeat (“Mission failed!”):** gently pulsing red screen, fallen rocket by a dark Mars, gray helmets and the depleted resource icon; `failure` sound.
 - **Defeat:** any resource reaches 0.
-- **Victory:** survive through the last Sol (**30**, in `events.json`). Score depends on completed objectives.
+- **Victory:** survive until Sol **20** (`GameState.MAX_SOLS`).
+- **Score:** 200 points per completed objective + the average of the four bars (`GameState.compute_score`).
 
 ## Objectives
 
-| Objective | Requirement | Reward | In `events.json` |
+| Objective | Requirement | Reward | State in `GameState` |
 |---|---|---|---|
-| **Seismic sensor network** (InSight mission) | Build and place 3 sensors. | If placed before **Sol 20**, the quake is forecast one Sol ahead. | Yes (`sensors`) |
-| **MOXIE oxygen generator** | Complete assembly phases to 100%. | Stops passive Oxygen loss. | Yes (`moxie`) |
-| **Healthy crew** | Keep Health above 50% for the whole game. | Counts toward score. | No |
-| **Stable colony** | Successfully grow 3 crops. | Counts toward score. | No |
-| **Rover rescue** | Free the rover trapped in the dunes. Inspired by Spirit, trapped in soft sand in 2009. | Counts toward score. | No (only `rover-stuck`) |
+| **Seismic sensor network** (InSight mission) | Build and place 3 sensors. | If placed before **Sol 13** (`SEISMIC_DEADLINE_SOL`), the quake comes with a warning. | `sensors_placed` |
+| **MOXIE oxygen generator** | Complete assembly phases to 100%. | Stops passive Oxygen loss. | `moxie_progress` |
+| **Healthy crew** | Keep Health above 50% for the whole game. | Counts toward score. | `health_always_above_goal` |
+| **Stable colony** | Successfully grow 3 crops. | Counts toward score. | `harvests_completed` |
+| **Rover rescue** | Free the rover trapped in the dunes. Inspired by Spirit, trapped in soft sand in 2009. | Counts toward score. | `rover_rescued` (`rover-stuck` event) |
 
 ## Event mechanics
 
@@ -159,10 +160,10 @@ The `Phone (debug)` simulator is hidden: solo options are shown on screen, and m
 This mechanic is based on real communication delays: 4–24 minutes per message between Mars and Earth, depending on distance.
 
 - Available for any unresolved event. The radio recharges every **4 Sols** (`GameState.EARTH_HELP_COOLDOWN_SOLS`), allowing at most five requests in a 20-Sol game. Four was chosen instead of three so it remains a valuable hint rather than a daily button.
-- The event becomes **“Waiting for Earth”** and the reply arrives **2–3 Sols** later. Persistent events continue applying their penalties while waiting.
-- According to `events.json`, the reply **removes a bad option** (`earth_discard` identifies it).
-- Planned choices: **Send the full report** (Commander, −5 Energy, faster answer); **send a quick message** (general vote, free, slower answer); **cancel and decide yourselves** (cannot request help for that event again this Sol).
-- JPL Horizons is a planned integration for showing the day's Earth–Mars distance and radio delay; it is not queried by the game yet. Current design fallback: 225 million km and 12 minutes.
+- The event is put **on hold**, the game moves to the next Sol and the event returns when the reply arrives. Persistent events keep applying their penalties while waiting.
+- The reply brings a **Mission Control hint** (`earth_hint` in `events.json`).
+- Two ways to ask (`TurnManager.EARTH_HELP_OPTIONS`): **Full report** (told by the Commander, −5 Energy, reply in **1 Sol**) and **Quick message** (free, reply in **2 Sols**). *Cancel* closes the window to decide without help.
+- **Distance:** the game shows a fixed value, 225 million km and 12 minutes of signal delay. Querying the day's distance from JPL Horizons is planned but not connected.
 - Earth help is unavailable during a solar alert.
 
 ## Real-time solar alert
@@ -197,22 +198,20 @@ Both requests use a 3-second timeout. The image library request does not require
 | [Mars Rover Photos](https://api.nasa.gov/) | Perseverance photos for the intro or rover event | Local art; no API request |
 | InSight Weather / MEDA | Wind bonus in “Dust on the Solar Panels” | No bonus from live weather data |
 
-## Open decisions
+## Design decisions
 
-Contradictions arose while converting source PDFs to Markdown. Resolve each issue and update this document and `events.json`.
+Converting the source PDFs to Markdown revealed contradictions between them. Sources compared: the “Godot Classes” PDF, the “Events / Games” PDF and the former `docs/especificaciones.md` (in Git history). This is how the submitted version resolves them:
 
-| Topic | Conflicting sources | Current `events.json` |
+| Topic | What the sources said | Decision |
 |---|---|---|
-| Game length | 15 Sols (classes), 20 Sols (specifications), 30 Sols (events) | `max_sols: 30` |
-| Additional ability | Commander; granted to the first player in addition to their primary role | `commander: true` |
-| Health | One shared bar (specifications) or one per astronaut (classes) | One shared `health` bar |
-| MOXIE phases | Four phases of 25% (events) or three of 33% (specifications) | Three phases (33 + 33 + 34) |
-| Sensor deadline | Before Sol 20 (events) or Sol 13 (specifications) | Sol 20 |
-| Earth-help reward | Reveal best option, give a hint or remove an option | Remove an option |
-| Help delay | 2–3 Sols (events) or 1–2 (specifications) | 2–3 Sols |
-| Role skill chance/cost | Expert 95%/×0.5; normal 75%/×1; novice 45%/×1.5 | Not implemented |
-| Health, colony and rover objectives | Included in design | Only `sensors` and `moxie` exist |
-| Victory condition | Complete at least 3 of 4 objectives (classes) or score by objectives | Not defined |
+| Game length | 15 Sols (classes), 20 (specifications), 30 (events) | **20 Sols** (`GameState.MAX_SOLS`) |
+| Additional ability | Commander, granted to the first player on top of their role | Yes: the first player to join is Commander and their vote breaks a second tie |
+| Health | One shared bar or one per astronaut | **One shared bar** (`health`) |
+| MOXIE phases | Four phases of 25% or three of 33% | **Three phases** (33 + 33 + 34) |
+| Sensor deadline | Before Sol 20 or Sol 13 | **Sol 13** (`SEISMIC_DEADLINE_SOL`) |
+| Earth-help reward | Reveal best option, give a hint or remove an option | **A hint** (`earth_hint`) |
+| Help delay | 2–3 Sols or 1–2 Sols | **1 Sol** (full report) or **2 Sols** (quick message) |
+| Role skill chance/cost | Only in the classes PDF | Dropped: each option has its own `success_chance` and role |
+| Health, colony and rover objectives | In the design | **Implemented**: they count toward the score |
+| Victory condition | 3 of 4 objectives, or score by objectives | **Survive 20 Sols**; objectives add points |
 | Rover location | Jezero Crater or Rocknest dunes (Gale Crater) | Rocknest |
-
-Sources compared: the “Godot Classes” PDF, “Events / Games” PDF, and former `docs/especificaciones.md`; their content is integrated into the design docs and originals remain in Git history.

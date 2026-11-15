@@ -1,20 +1,20 @@
 # Diseño del juego: Supervivencia en Marte
 
-Reglas del juego tal y como las ha definido el equipo. El catálogo de eventos está en [eventos.md](eventos.md) y cómo se implementa en Godot, en [../godot/arquitectura.md](../godot/arquitectura.md).
+Reglas del juego tal y como las ha definido el equipo, con las cifras que usa la versión entregada. El catálogo de eventos está en [eventos.md](eventos.md) y cómo se implementa en Godot, en [../godot/arquitectura.md](../godot/arquitectura.md).
 
-> **Dónde están las cifras de verdad:** en [`game/Data/events.json`](../../game/Data/events.json), que es lo que carga el juego. Este documento explica las reglas; si un número no coincide, manda `events.json` (y hay que corregir aquí). Lo que aún no está decidido está en [Decisiones pendientes](#decisiones-pendientes).
+> **Dónde están las cifras de verdad:** en [`game/Data/events.json`](../../../game/Data/events.json), que es lo que carga el juego. Este documento explica las reglas; si un número no coincide, manda `events.json` (y hay que corregir aquí). Las contradicciones entre los documentos de partida y cómo se resolvieron están en [Decisiones de diseño](#decisiones-de-diseño).
 
 ## Idea
 
-Juego cooperativo y educativo para **4 jugadores** en una partida de unos **30 minutos**. La tripulación vive en una base en Marte, cerca del cráter Jezero, y tiene que sobrevivir un número fijo de días marcianos (*Sols*) mientras completa objetivos científicos. Cada evento se basa en una misión o un dato real de la NASA.
+Juego cooperativo y educativo para **1 a 4 jugadores** (o una sola persona con el ratón), en partidas cortas que caben en una clase. La tripulación vive en una base en Marte, cerca del cráter Jezero, y tiene que sobrevivir **20 días marcianos** (*Sols*) mientras completa objetivos científicos. Cada evento se basa en una misión o un dato real de la NASA.
 
 - **Pantalla principal (Godot):** muestra el evento, los recursos de la base y el resultado.
-- **Móviles:** cada jugador tiene un rol y elige opciones. También se pueden usar etiquetas NFC de herramientas sobre la mesa.
+- **Móviles:** cada jugador tiene un rol y elige opciones. Un tablero físico con etiquetas NFC puede abrir el mando directamente con un rol (`/controller/<rol>`).
 - Se puede jugar con **1 a 4 jugadores**: nunca puede quedar bloqueada una decisión por un rol que no está.
 
 ### Boceto de la pantalla principal
 
-![Boceto de la interfaz: ventana, mesa de botones y panel de información](img/prototipo-ui.png)
+![Boceto de la interfaz: ventana, mesa de botones y panel de información](../../assets/prototype-ui-game.png)
 
 - **Ventana**: la vista del exterior de la base.
 - **Mesa de botones**: los cuatro recursos (salud, oxígeno, energía, integridad), **Decisiones** y **Diccionario** (el [Libro de tecnicismos](#libro-de-tecnicismos)).
@@ -99,17 +99,18 @@ Al acabar la partida sale una pantalla con la temática del juego (`EndScreen`, 
 ## Victoria y derrota
 
 - **Derrota:** cualquier recurso llega a 0.
-- **Victoria:** sobrevivir hasta el último Sol (**30** en `events.json`). La puntuación depende de cuántos objetivos se completan.
+- **Victoria:** sobrevivir hasta el Sol **20** (`GameState.MAX_SOLS`).
+- **Puntuación:** 200 puntos por objetivo cumplido + la media de las cuatro barras (`GameState.compute_score`).
 
 ## Objetivos
 
-| Objetivo | Qué hay que hacer | Recompensa | En `events.json` |
+| Objetivo | Qué hay que hacer | Recompensa | Estado en `GameState` |
 |---|---|---|---|
-| **Red de sensores sísmicos** (misión InSight) | Fabricar y colocar 3 sensores. | Si están colocados antes del **Sol 20**, el terremoto avisa con un Sol de antelación. | Sí (`sensors`) |
-| **Generador de oxígeno MOXIE** | Completar las fases de montaje hasta el 100 %. | Desaparece el consumo pasivo de oxígeno. | Sí (`moxie`) |
-| **Tripulación sana** | Mantener la salud por encima del 50 % toda la partida. | Cuenta para la puntuación. | No |
-| **Colonia estable** | Cultivar con éxito 3 cosechas. | Cuenta para la puntuación. | No |
-| **Rescate del rover** | Liberar el rover atrapado en las dunas. Inspirado en el rover Spirit, atrapado en arena blanda en 2009. | Cuenta para la puntuación. | No (solo el evento `rover-stuck`) |
+| **Red de sensores sísmicos** (misión InSight) | Fabricar y colocar 3 sensores. | Si están colocados antes del **Sol 13** (`SEISMIC_DEADLINE_SOL`), el terremoto avisa con antelación. | `sensors_placed` |
+| **Generador de oxígeno MOXIE** | Completar las fases de montaje hasta el 100 %. | Desaparece el consumo pasivo de oxígeno. | `moxie_progress` |
+| **Tripulación sana** | Mantener la salud por encima del 50 % toda la partida. | Cuenta para la puntuación. | `health_always_above_goal` |
+| **Colonia estable** | Cultivar con éxito 3 cosechas. | Cuenta para la puntuación. | `harvests_completed` |
+| **Rescate del rover** | Liberar el rover atrapado en las dunas. Inspirado en el rover Spirit, atrapado en arena blanda en 2009. | Cuenta para la puntuación. | `rover_rescued` (evento `rover-stuck`) |
 
 ## Mecánicas de los eventos
 
@@ -162,13 +163,14 @@ El botón `Phone (debug)` (simulador de móvil) ya no se enseña: en solitario l
 Se basa en el retraso real de las comunicaciones: entre 4 y 24 minutos por mensaje entre Marte y la Tierra, según la distancia.
 
 - Se puede usar sobre cualquier evento sin resolver. **La radio se recarga cada 4 Sols** (`GameState.EARTH_HELP_COOLDOWN_SOLS`): tras pedir ayuda, hay que esperar 4 Sols para volver a pedirla (como mucho 5 ayudas en una partida de 20 Sols). Se eligió 4 y no 3 para que sea una pista valiosa y no un botón de uso diario; con el mensaje lento (2 Sols) la radio vuelve a estar lista 2 Sols después de recibir la respuesta.
-- El evento pasa a **«Esperando a la Tierra»** y la respuesta llega **entre 2 y 3 Sols** después. Mientras tanto, el evento sigue aplicando su castigo si lo tiene.
-- Según `events.json`, la respuesta **descarta una opción mala** del evento (`earth_discard` indica cuál).
-- Opciones previstas en el diseño:
-  1. **Enviar el informe completo** (Comandante): −5 Energía. La respuesta llega antes.
-  2. **Enviar un mensaje rápido** (votación): sin coste. La respuesta tarda más.
-  3. **Cancelar y decidir vosotros** (votación): no se puede volver a pedir ayuda sobre ese evento ese Sol.
-- **Dato real:** la API Horizons de JPL da la distancia Tierra–Marte del día. Godot puede mostrar: *«Hoy Marte está a X millones de km; vuestra señal tardará Y minutos en llegar a Houston»*. Si no hay conexión, se usan 225 millones de km y 12 minutos.
+- El evento queda **en espera**, se pasa al Sol siguiente y vuelve cuando llega la respuesta. Mientras tanto, el evento sigue aplicando su castigo si lo tiene.
+- La respuesta trae una **pista de Control de Misión** (`earth_hint` en `events.json`).
+- Dos formas de pedirla (`TurnManager.EARTH_HELP_OPTIONS`):
+  1. **Full report** (lo cuenta el Comandante): −5 Energía. La respuesta llega en **1 Sol**.
+  2. **Quick message**: sin coste. La respuesta llega en **2 Sols**.
+
+  La ventana se cierra con «Cancel» para decidir sin ayuda.
+- **Distancia:** el juego muestra un dato fijo, 225 millones de km y 12 minutos de señal. Consultar la distancia del día a JPL Horizons está previsto pero no conectado.
 - Durante una alerta solar no se puede pedir ayuda.
 
 **Cómo se ve en pantalla** (todo con la estética de la cabina: cajas oscuras de borde azul, fuente pixelada y los planetas en pixel art):
@@ -209,22 +211,20 @@ Ambas peticiones tienen un tiempo de espera de 3 s. La búsqueda de imágenes no
 | [Mars Rover Photos](https://api.nasa.gov/) | Fotos de Perseverance para la intro o el evento del rover | Imágenes locales; no se consulta la API |
 | InSight Weather / MEDA | Bonificación por viento en «Polvo en los paneles» | No hay bonificación basada en datos meteorológicos en vivo |
 
-## Decisiones pendientes
+## Decisiones de diseño
 
-Al pasar los PDF a Markdown han aparecido contradicciones. Hay que decidir cada una y actualizar este documento y `events.json`.
+Al pasar los PDF de partida a Markdown aparecieron contradicciones entre ellos. Fuentes comparadas: **clases** (PDF «Clases Godot»), **eventos** (PDF «Eventos / Games») y **especificaciones** (antiguo `docs/especificaciones.md`, en el historial de git). Así quedaron resueltas en la versión entregada:
 
-Fuentes que se comparan: **clases** (PDF «Clases Godot»), **eventos** (PDF «Eventos / Games») y **especificaciones** (el antiguo `docs/especificaciones.md`). Su contenido está ya integrado en `juego/` y `godot/`, y los originales siguen en el historial de git.
-
-| Tema | Lo que dice cada fuente | En `events.json` |
+| Tema | Lo que decían las fuentes | Decisión |
 |---|---|---|
-| **Duración de la partida** | 15 Sols (clases), 20 Sols (especificaciones), 30 Sols (eventos) | `max_sols: 30` |
-| **Capacidad adicional** | Comandante; la recibe el primer jugador además de su rol principal | `commander: true` |
-| **Salud** | Una barra común (especificaciones) o una barra por astronauta (clases) | Una común (`health`) |
-| **Fases de MOXIE** | 4 fases de 25 % (eventos) o 3 de 33 % (especificaciones) | 3 fases (33 + 33 + 34) |
-| **Plazo de los sensores** | Antes del Sol 20 (eventos) o del Sol 13 (especificaciones) | Sol 20 |
-| **Qué da la ayuda de la Tierra** | Revela la mejor opción, da una pista o descarta una opción | Descarta una opción |
-| **Retraso de la ayuda** | 2–3 Sols (eventos) o 1–2 Sols (especificaciones) | 2–3 Sols |
-| **Habilidad por rol**: probabilidad de éxito y coste según la destreza (3 = experto, 95 %, ×0,5; 2 = normal, 75 %, ×1; 1 = novato, 45 %, ×1,5) | Solo aparece en las clases | No existe |
-| **Objetivos de salud, colonia y rover** | En el diseño | Solo existen `sensors` y `moxie` |
-| **Condición de victoria** | Completar al menos 3 de 4 objetivos (clases) o una puntuación por objetivos | Sin definir |
+| **Duración de la partida** | 15 Sols (clases), 20 (especificaciones), 30 (eventos) | **20 Sols** (`GameState.MAX_SOLS`) |
+| **Capacidad adicional** | Comandante: la recibe el primer jugador además de su rol | Sí: el primero en entrar es Comandante y su voto decide un segundo empate |
+| **Salud** | Una barra común o una por astronauta | **Una barra común** (`health`) |
+| **Fases de MOXIE** | 4 fases de 25 % o 3 de 33 % | **3 fases** (33 + 33 + 34) |
+| **Plazo de los sensores** | Antes del Sol 20 o del Sol 13 | **Sol 13** (`SEISMIC_DEADLINE_SOL`) |
+| **Qué da la ayuda de la Tierra** | Revela la mejor opción, da una pista o descarta una opción | **Una pista** (`earth_hint`) |
+| **Retraso de la ayuda** | 2–3 Sols o 1–2 Sols | **1 Sol** (informe completo) o **2 Sols** (mensaje rápido) |
+| **Habilidad por rol** (probabilidad y coste según destreza) | Solo en las clases | Descartada: cada opción tiene su `success_chance` y su rol |
+| **Objetivos de salud, colonia y rover** | En el diseño | **Implementados**: cuentan para la puntuación |
+| **Condición de victoria** | 3 de 4 objetivos, o puntuación por objetivos | **Sobrevivir 20 Sols**; los objetivos suman puntos |
 | **Dónde está el rover** | Cráter Jezero o dunas de Rocknest (cráter Gale) | Rocknest |

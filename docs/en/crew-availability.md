@@ -48,38 +48,13 @@ The game lasts **20 Sols**. Durations range from 0 to 2 Sols to keep the pace wi
 - **Ask Earth for help:** 0 Sols, both for the Commander and a general vote.
 - **Solar alert (DONKI):** the selected role (Biologist or Engineer) is busy for 1 Sol.
 
-## 4. Suggested GDScript structure
+## 4. Implementation
 
-```gdscript
-# In GameState.gd
-var crew = {
-    "ENGINEER":  {"sols_busy": 0, "task": ""},
-    "BIOLOGIST": {"sols_busy": 0, "task": ""},
-    "DOCTOR":    {"sols_busy": 0, "task": ""},
-    "COMMANDER": {"sols_busy": 0, "task": ""}
-}
+Implemented in `GameState` (`game/Scripts/game_state.gd`); each option's Sols come from `away_sols` / `away_all` in `events.json`.
 
-# Call at dawn at the start of each new Sol.
-func update_crew_timers() -> Array[String]:
-    var returns: Array[String] = []
-    for role in crew.keys():
-        if crew[role]["sols_busy"] > 0:
-            crew[role]["sols_busy"] -= 1
-            if crew[role]["sols_busy"] == 0:
-                crew[role]["task"] = ""
-                returns.append(role)
-    return returns
-
-func is_crew_at_base() -> bool:
-    for role in crew.keys():
-        if crew[role]["sols_busy"] == 0:
-            return true
-    return false
-
-# Required before group EVAs.
-func is_entire_crew_available() -> bool:
-    for role in crew.keys():
-        if crew[role]["sols_busy"] > 0:
-            return false
-    return true
-```
+| Function | Purpose |
+|---|---|
+| `send_away(role, sols)` / `send_all_away(sols)` | Marks one crew member, or the whole crew, as busy |
+| `process_crew_return()` | At dawn, counts down one Sol and returns who is back at the base |
+| `is_away(role)`, `away_sols_left(role)`, `available_crew()` | Queries used to lock options and decide who votes |
+| `base_is_empty()` | When `true`, no event happens that Sol |

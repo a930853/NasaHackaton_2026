@@ -24,7 +24,7 @@ Decisiones tomadas:
 - **QR:** el lobby multijugador lo enseña a la derecha de las instrucciones, con `Net.controller_url(code)`. Lo genera `game/Scripts/qr_code.gd` (`QrCode.to_texture(texto)`), un generador en GDScript sin dependencias (modo byte, corrección M, versiones 1–10, hasta 213 bytes). El **código en texto** y la dirección siguen visibles como plan B, y la landing (`/`) permite entrar escribiendo el código.
 - **Todos votan todas las opciones:** cada móvil recibe todas las opciones del evento. Las que tienen un rol dueño llevan su nombre delante (`(Engineer) …`) y quien la haga queda ocupado. Si solo votara el dueño del rol, su opción casi nunca saldría elegida. Un rol ausente (menos de 4 jugadores) no deja ninguna decisión sin dueño. Si todos los presentes están ocupados fuera, el evento espera a que vuelva alguien.
 - **Quién decide (votación):** cada jugador conectado y en la base vota una opción (`TurnManager.cast_vote`). Cuando han votado todos los que pueden, gana la más votada. Un voto aceptado queda bloqueado (otro `actionId` → `already_decided`) y el móvil pasa a una vista `waiting` «Vote sent!» con el recuento. Un móvil desconectado no bloquea la votación.
-- **Empates:** segunda votación solo entre las empatadas, con nuevo `eventId` (`<id>#<n>-tie`), así que un voto tardío de la primera ronda recibe `event_closed`. Si vuelve a empatar, se sortea entre las empatadas y el resultado lo dice («It was a tie again, so luck decided!»). Si se acaba la cuenta atrás de un evento crítico, gana lo más votado hasta ese momento (o la opción por defecto si no hay votos).
+- **Empates:** segunda votación solo entre las empatadas, con nuevo `eventId` (`<id>#<n>-tie`), así que un voto tardío de la primera ronda recibe `event_closed`. Si vuelve a empatar, decide el voto del Comandante (el primer jugador que entró) y el resultado lo dice («It was a tie again, so the Commander's vote decided!»). Si se acaba la cuenta atrás de un evento crítico, gana lo más votado hasta ese momento (o la opción por defecto si no hay votos).
 - **Rechazos:** `choice_result` con `event_closed`, `not_eligible` o `invalid_option`. El backend no reenvía `choice_result` al mando; el mando se entera por la siguiente `controller_view`.
 - **Si cae el backend:** `PhoneBridge` se desactiva y la partida sigue en la pantalla principal (con el panel `Phone (debug)`).
 
@@ -287,7 +287,7 @@ Cuando `_try_resolve` detecta que se cumple la regla:
 | `individual` | Decide el jugador asignado. | Se aplica su opción. |
 | `vote` | Han votado todos los `eligible_players` **conectados** requeridos. | Opción más votada. |
 
-**Empates (`vote`):** nueva votación **solo entre las opciones empatadas** (nuevo `eventId`, p. ej. `storm-01#1-desempate`). Si vuelve a empatar, **se sortea** entre las empatadas.
+**Empates (`vote`):** nueva votación **solo entre las opciones empatadas** (nuevo `eventId`, p. ej. `storm-01#1-desempate`). Si vuelve a empatar, **decide el voto del Comandante** (si no votó ninguna de las empatadas, la primera de ellas).
 
 Al resolver:
 

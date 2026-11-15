@@ -1,8 +1,10 @@
-# Catálogo de eventos
+# Catálogo de eventos (diseño original)
+
+> **Este es el catálogo con el que se diseñó el juego.** Durante el desarrollo se ajustaron cifras, condiciones y algunos eventos (por ejemplo, la tormenta solar pasó a ser un evento en tiempo real con datos de DONKI). El catálogo de la **versión entregada**, sacado de `events.json`, está en [resumen.md › Catálogo de eventos](../resumen.md#6-catálogo-de-eventos).
 
 Todos los eventos de la partida. Las reglas generales (votación, roles, ayuda de la Tierra…) están en [diseno.md](diseno.md).
 
-- **Las cifras son las de [`game/Data/events.json`](../../game/Data/events.json).** Si cambiáis un evento, cambiadlo allí y aquí.
+- **Las cifras son las de [`game/Data/events.json`](../../../game/Data/events.json).** Si cambiáis un evento, cambiadlo allí y aquí.
 - **Quién:** «Todos» es votación general; un rol significa que solo ese rol puede elegir la opción (y solo aparece si ese rol está en la partida).
 - **Sol+N:** el efecto se aplica N Sols después.
 - Cada evento lleva su `id` de `events.json` para encontrarlo rápido.
@@ -214,7 +216,7 @@ Aún no están en `events.json` como eventos: las reglas de la ayuda están en e
 | Enviar un mensaje rápido | Todos | Sin coste. Respuesta lenta. | El mensaje salió corto y sin detalles. Houston responderá lo que pueda. |
 | Cancelar y decidir vosotros | Todos | Vuelve el evento normal; no se puede pedir ayuda sobre él ese Sol. | — |
 
-Una vez por Sol. Qué devuelve exactamente la Tierra y cuánto tarda está en [decisiones pendientes](diseno.md#decisiones-pendientes).
+Una vez por Sol. En la versión entregada la Tierra devuelve una pista y tarda 1 o 2 Sols (ver [decisiones de diseño](diseno.md#decisiones-de-diseño)).
 
 ### Alerta solar en tiempo real
 **API activa:** DONKI `/DONKI/FLR`; `/DONKI/CME` no se consulta. La partida busca llamaradas M/X de los últimos 3 días al iniciarse.

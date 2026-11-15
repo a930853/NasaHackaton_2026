@@ -82,7 +82,7 @@ During **decision**, choices arrive via `Net`. `TurnManager` does not apply effe
 
 | Field | Type | Purpose |
 |---|---|---|
-| `id` | String | Event template. Protocol `eventId` identifies **one occurrence** (e.g. `solar-storm#1`); see [networking.md](networking.md#eventid-identifies-an-occurrence). |
+| `id` | String | Event template. Protocol `eventId` identifies **one occurrence** (e.g. `solar-storm#1`); see [networking.md](networking.md). |
 | `category` | `"random"` · `"objective"` | Random event or part of an objective chain. |
 | `objective` | String | Objective ID (`sensors`, `moxie`). |
 | `title`, `description` | String | Screen text. |
@@ -129,7 +129,7 @@ var feedback: String
 
 `MissionEvent` holds event metadata, conditions and `Array[EventOption]`. Its `available_options(present_roles)` method includes general options and options whose roles are present. `MissionObjective.add_progress(amount)` returns true only on the turn it completes; `fail()` marks it failed unless already complete. `EarthTransmission` stores `event_id`, remaining Sols, discarded option and arrival message.
 
-## Astronauts and skills (undecided)
+## Astronauts and skills (dropped)
 
 The original class document proposed `AstronautData` per player with individual health and skill by area:
 
@@ -139,7 +139,7 @@ The original class document proposed `AstronautData` per player with individual 
 | 2 · Normal | 75% | ×1 |
 | 1 · Novice | 45% | ×1.5 |
 
-`events.json` has no areas or role probabilities, and health is shared. See [open decisions](../game-design.md#open-decisions). If approved, add event `category` and a skill table to `rules`.
+This was dropped (see [design decisions](../game-design.md#design-decisions)): health is shared and each `events.json` option has its own role and `success_chance`.
 
 ## Changes from the original class design
 

@@ -1,4 +1,6 @@
-# Event Catalog
+# Event Catalog (original design)
+
+> **This is the catalog the game was designed from.** Figures, conditions and some events were tuned during development (for example, the solar storm became a real-time event driven by NASA DONKI data). For the event families and rules of the **submitted version**, see the [project overview](overview.md); the exact figures are in [`game/Data/events.json`](../../game/Data/events.json).
 
 The game's event catalog. General rules (voting, roles and Earth help) are in [game-design.md](game-design.md).
 
@@ -160,7 +162,7 @@ Not yet an event in `events.json`; rules are in its `earth_help` block. Based on
 | Send a quick message | Everyone | No cost; slower reply |
 | Cancel and decide yourselves | Everyone | Return to normal event; cannot ask for help with it again this Sol |
 
-Once per Sol. Exact Earth response and delay remain [open decisions](game-design.md#open-decisions).
+Once per Sol. In the submitted version Earth replies with a hint after 1 or 2 Sols (see [design decisions](game-design.md#design-decisions)).
 
 ### Real-time solar alert
 

@@ -4,7 +4,7 @@ The **Vue 3 + Vite + Tailwind CSS 4** (JavaScript) app used by each player on a 
 
 ## Run
 
-From the repository root, `npm install && npm run dev` starts the backend and controller with backend message logging enabled (see the [root README](../../README.md#run-the-full-development-setup)). A Godot host must create the room.
+From the repository root, `npm install && npm run dev` starts the backend and controller with backend message logging enabled (see the [root README](../../README.md#run-the-development-environment)). A Godot host must create the room.
 
 Or run separately:
 

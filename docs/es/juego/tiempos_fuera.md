@@ -88,39 +88,13 @@ Dado que la partida dura **20 Sols**, las duraciones están equilibradas entre `
 
 ---
 
-## 4. Estructura de Código para Claude (GDScript)
+## 4. Implementación
 
-```gdscript
-# En GameState.gd
-var tripulacion = {
-	"INGENIERO": {"sols_ocupado": 0, "tarea": ""},
-	"BIOLOGA":   {"sols_ocupado": 0, "tarea": ""},
-	"MEDICO":    {"sols_ocupado": 0, "tarea": ""},
-	"COMANDANTE":{"sols_ocupado": 0, "tarea": ""}
-}
+Está en `GameState` (`game/Scripts/game_state.gd`); los Sols de cada opción salen de `away_sols` / `away_all` en `events.json`.
 
-# Llamar al amanecer de cada nuevo Sol
-func actualizar_tiempos_tripulacion() -> Array[String]:
-	var regresos: Array[String] = []
-	for rol in tripulacion.keys():
-		if tripulacion[rol]["sols_ocupado"] > 0:
-			tripulacion[rol]["sols_ocupado"] -= 1
-			if tripulacion[rol]["sols_ocupado"] == 0:
-				tripulacion[rol]["tarea"] = ""
-				regresos.append(rol)
-	return regresos
-
-# Comprobar si queda alguien en la base
-func hay_tripulacion_en_base() -> bool:
-	for rol in tripulacion.keys():
-		if tripulacion[rol]["sols_ocupado"] == 0:
-			return true
-	return false
-
-# Comprobar si toda la tripulación está libre (necesario para salidas EVA grupales)
-func toda_tripulacion_disponible() -> bool:
-	for rol in tripulacion.keys():
-		if tripulacion[rol]["sols_ocupado"] > 0:
-			return false
-	return true
-```
+| Función | Qué hace |
+|---|---|
+| `send_away(role, sols)` / `send_all_away(sols)` | Deja ocupado a un tripulante o a toda la tripulación |
+| `process_crew_return()` | Al amanecer, descuenta un Sol y devuelve quién vuelve a la base |
+| `is_away(role)`, `away_sols_left(role)`, `available_crew()` | Consultas para bloquear opciones y saber quién vota |
+| `base_is_empty()` | Si es `true`, ese Sol no sale evento |

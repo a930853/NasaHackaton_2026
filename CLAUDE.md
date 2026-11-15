@@ -38,10 +38,14 @@ dist/landing/      Build de la landing (generado, no se versiona)
 compose.yaml       Despliegue principal (Internet, Coolify): `web` (Nginx) y `backend` (Node), sin puertos. Sirve dist/game
 compose.local.yaml En local: añade `tls` (HTTPS autofirmado en 80/443)
 compose.dev.yaml   En local, desarrollo: GAME_EXPORT=game_debug y LOG_MESSAGES=1
-docs/protocol.md   Contrato de mensajes: FUENTE DE VERDAD compartida
-docs/controller.md, docs/backend.md, docs/deploy.md   Guías por componente
-docs/godot/        arquitectura.md (gestores, FSM, events.json) y red.md (autoload Net)
-docs/juego/        diseno.md (reglas y decisiones pendientes) y eventos.md (catálogo)
+docs/README_EN.md, docs/README_ES.md   Índices de la documentación en inglés y en español
+docs/es/           Documentación en español (originales); docs/en/ es la traducción al inglés, con la misma estructura
+docs/es/protocol.md   Contrato de mensajes: FUENTE DE VERDAD compartida
+docs/es/resumen.md    Resumen de la versión entregada (juego, eventos, fuentes de datos)
+docs/es/controller.md, backend.md, deploy.md   Guías por componente
+docs/es/godot/     arquitectura.md (gestores, FSM, events.json) y red.md (autoload Net)
+docs/es/juego/     diseno.md (reglas y decisiones de diseño), eventos.md (catálogo original) y tiempos_fuera.md
+docs/assets/, docs/proposal/   Imágenes y vídeo de la documentación; propuesta original en PDF
 game/Data/events.json  Cifras de eventos y reglas: fuente de verdad del diseño numérico
 ```
 
@@ -62,8 +66,8 @@ Los clientes construyen la URL del WebSocket a partir de `location` (`ws(s)://<h
 
 ## Protocolo
 
-- JSON con campo `type` obligatorio. Lista de mensajes, campos y quién valida cada uno: `docs/protocol.md`.
-- **Cualquier cambio de mensaje se hace primero en `docs/protocol.md`** y después en backend, Godot y mando. No inventar mensajes ni campos fuera del contrato.
+- JSON con campo `type` obligatorio. Lista de mensajes, campos y quién valida cada uno: `docs/es/protocol.md`.
+- **Cualquier cambio de mensaje se hace primero en `docs/es/protocol.md`** (y su traducción en `docs/en/`) y después en backend, Godot y mando. No inventar mensajes ni campos fuera del contrato.
 - `eventId` identifica una aparición concreta de un evento; `actionId` identifica una pulsación lógica (idempotencia: un reenvío devuelve la confirmación anterior sin repetir efectos).
 
 ## Modelo de sala (backend)
@@ -78,7 +82,7 @@ Los clientes construyen la URL del WebSocket a partir de `location` (`ws(s)://<h
 
 - Evento: `id`, `mode` (`individual` | `vote`), `eligiblePlayers`, `options`, `decisions`, `resolutionRule`.
 - Se puede jugar con 1–4 jugadores: nunca asignar una decisión obligatoria a un rol ausente.
-- Elección aceptada = bloqueada. Eventos antiguos rechazan decisiones. Empate → segunda votación entre empatadas → si persiste, se sortea entre ellas.
+- Elección aceptada = bloqueada. Eventos antiguos rechazan decisiones. Empate → segunda votación entre empatadas → si persiste, decide el voto del Comandante (primer jugador en entrar).
 - Si falta un jugador necesario, se espera; el anfitrión puede omitir ausentes explícitamente.
 
 ## Comandos
@@ -98,7 +102,7 @@ cd controller && npm install && npm run dev   # http://localhost:5173/controller
 cd controller && npm test                     # store contra el backend real
 cd controller && npm run build                # → dist/controller/
 
-# Despliegue principal: Coolify con compose.yaml (dominio en el servicio web). Ver docs/deploy.md
+# Despliegue principal: Coolify con compose.yaml (dominio en el servicio web). Ver docs/es/deploy.md
 # En local con Docker, por HTTPS autofirmado (antes exportar a web el proyecto de Godot que se sirve)
 npm run docker:local                          # sirve dist/game
 npm run docker:dev                            # sirve dist/game_debug, con log de mensajes
@@ -110,7 +114,7 @@ En Windows, Hyper-V/WSL pueden reservar el puerto 3000 (`listen EACCES`). Compro
 
 ## Convenciones
 
-- Código e identificadores en inglés. Textos del juego y del mando en inglés sencillo (niños de 7 a 12 años). Documentación en español y en inglés en `docs/en/`.
+- Código e identificadores en inglés. Textos del juego y del mando en inglés sencillo (niños de 7 a 12 años). Documentación en español en `docs/es/` y en inglés en `docs/en/`.
 - Commits con [Conventional Commits](https://www.conventionalcommits.org/es/): `tipo(ámbito): descripción`. Tipo en inglés (`feat`, `fix`, `refactor`, `docs`, `chore`, `style`, `test`, `build`), descripción en español, en minúscula y sin punto final. Ámbitos: `game`, `controller`, `backend`, `deploy`, `docs`. Ej.: `feat(backend): crear salas en memoria`.
 - Backend: Node ≥ 20, ES modules, dependencias de runtime `express` (HTTP) y `ws` (WebSocket); tests con `node:test` (`npm test`).
 - Mando: Vue 3 (`<script setup>`, JS) + `vue-router` + Tailwind 4, mobile-first. Estilos con utilidades de Tailwind; el color del rol va por variables CSS (`--role-color`…). Nada cargado de Internet (fuentes con `@fontsource`): la demo funciona en la LAN sin conexión exterior.
@@ -118,4 +122,4 @@ En Windows, Hyper-V/WSL pueden reservar el puerto 3000 (`listen EACCES`). Compro
 
 ## Primer hito
 
-Un botón real en un móvil cambia un texto en Godot exportado a web. Después, verificar los criterios de aceptación del contrato (`docs/protocol.md`).
+Un botón real en un móvil cambia un texto en Godot exportado a web. Después, verificar los criterios de aceptación del contrato (`docs/es/protocol.md`).

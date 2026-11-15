@@ -24,7 +24,7 @@ Implementation decisions:
 - **QR:** multiplayer lobby displays it beside instructions using `Net.controller_url(code)`. `game/Scripts/qr_code.gd` generates QR in GDScript without dependencies (byte mode, correction M, versions 1–10, up to 213 bytes). Keep the text code and URL visible as a fallback; the landing page also allows manual entry.
 - **Everyone votes on every option:** each phone receives all options; role-owned options are prefixed with the role and occupy that character. This avoids rarely selecting role-specific options. Missing roles never leave a decision without an eligible player. If everyone present is busy, the event waits until someone returns.
 - **Voting:** each connected crew member at base votes via `TurnManager.cast_vote`. The most-voted option wins once everyone who can vote has voted. An accepted vote is locked (`already_decided` for another `actionId`); phone shows “Vote sent!” and the count. Disconnected phones do not block voting.
-- **Ties:** hold a second vote only among tied options, with a new `eventId` (`<id>#<n>-tie`); a late first-round vote gets `event_closed`. A second tie is resolved randomly, with “It was a tie again, so luck decided!”. When a critical-event timer expires, the leading option wins, or the default option if nobody voted.
+- **Ties:** hold a second vote only among tied options, with a new `eventId` (`<id>#<n>-tie`); a late first-round vote gets `event_closed`. A second tie is decided by the Commander's vote (the first player who joined), with “It was a tie again, so the Commander's vote decided!”. When a critical-event timer expires, the leading option wins, or the default option if nobody voted.
 - **Rejections:** `choice_result` uses `event_closed`, `not_eligible` or `invalid_option`. Backend does not forward the result to the phone; the next `controller_view` updates it.
 - **Backend failure:** `PhoneBridge` is disabled and the game continues on the main screen (with the `Phone (debug)` panel).
 
@@ -99,7 +99,7 @@ Recommended `choose` validation order:
 
 Remember accepted **and rejected** `actionId` results for idempotency. Always respond with `choice_result`; the backend validates the flow, although the phone does not receive it directly. The identity and role supplied by Node are trusted; never read them from phone data. `already_decided` with a different `actionId` means the player cast a second vote; the same ID is a retry and must be handled at step 1.
 
-Resolve `individual` events when the assigned player decides. Resolve `vote` events when all **connected eligible players** have voted, choosing the most-voted option. Resolve ties with another round among tied options using a new `eventId`; if tied again, choose randomly. Close the event before applying effects. Apply consequences only during resolution, send `result` (or `waiting`) views, and emit game signals (`oxygen_level_changed`, etc.).
+Resolve `individual` events when the assigned player decides. Resolve `vote` events when all **connected eligible players** have voted, choosing the most-voted option. Resolve ties with another round among tied options using a new `eventId`; if tied again, the Commander's vote decides (or the first tied option if the Commander voted for none of them). Close the event before applying effects. Apply consequences only during resolution, send `result` (or `waiting`) views, and emit game signals (`oxygen_level_changed`, etc.).
 
 ### Absent players
 

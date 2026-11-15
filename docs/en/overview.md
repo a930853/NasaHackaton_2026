@@ -2,7 +2,7 @@
 
 Summary of what is **currently implemented**: game behavior, event types and data sources. Figures come from [`game/Data/events.json`](../../game/Data/events.json) and code in `game/Scripts/`; code takes precedence if it differs from this document.
 
-> More detail: [game rules](game-design.md), [Godot networking](godot/networking.md), [message protocol](protocol.md) and [deployment](deploy.md). Some design and event-catalog figures intentionally reflect earlier design values (30 Sols and Sol 20 sensor deadline) that differ from current runtime behavior.
+> More detail: [game rules](game-design.md), [Godot networking](godot/networking.md), [message protocol](protocol.md) and [deployment](deploy.md).
 
 ## What it is
 
@@ -69,7 +69,7 @@ Objectives include healthy crew (Health never below 50), stable colony (3 harves
 
 Selection priority: pending solar alert; due waiting event (Earth reply or waiting for crew); eligible automatic event; previously scheduled event; objective or random event (70% objective when available); filler.
 
-An event appears with a themed Mars-window effect. Its description types at 23 characters/second (2.5–12 seconds); until finished, players cannot choose, vote or ask Earth. NASA fact and options then appear. Solo mode uses mouse selection; multiplayer shows **all** options to connected players at base. A vote tie triggers another vote among tied options, then a random choice if tied again. Quakes have a 20-second timer starting after reading. Resolution rolls `success_chance`: costs apply even on failure, rewards are lost, and `on_fail` may add a penalty; `retry_on_fail` can reopen the event. Role tasks may occupy crew for 0–2 Sols (`away_sols`); group tasks occupy everyone (`away_all`). If all are away, no event occurs that Sol.
+An event appears with a themed Mars-window effect. Its description types at 23 characters/second (2.5–12 seconds); until finished, players cannot choose, vote or ask Earth. NASA fact and options then appear. Solo mode uses mouse selection; multiplayer shows **all** options to connected players at base. A vote tie triggers another vote among tied options; if tied again, the Commander's vote (the first player who joined) decides. Quakes have a 20-second timer starting after reading. Resolution rolls `success_chance`: costs apply even on failure, rewards are lost, and `on_fail` may add a penalty; `retry_on_fail` can reopen the event. Role tasks may occupy crew for 0–2 Sols (`away_sols`); group tasks occupy everyone (`away_all`). If all are away, no event occurs that Sol.
 
 Other `events.json` mechanics include immediate (`effects`) and delayed (`delayed`) effects, persistent conditions (`start_condition`), chance outcomes (`chance`), objective state (`set`, `add`), failures (`on_fail`), retries, scheduling (`schedule_event`), spawn effects (`on_start`), timers (`timer_seconds`, `timeout_option`), availability (`away_sols`, `away_all`) and selection weight (`weight`).
 

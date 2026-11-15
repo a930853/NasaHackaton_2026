@@ -4,9 +4,9 @@ Cómo organizar el código de `game/` para implementar el [diseño](../juego/dis
 
 ## Principios
 
-- **Guiado por datos:** los eventos, objetivos y reglas viven en [`game/Data/events.json`](../../game/Data/events.json). Para añadir o equilibrar un evento se edita el JSON, no el código.
+- **Guiado por datos:** los eventos, objetivos y reglas viven en [`game/Data/events.json`](../../../game/Data/events.json). Para añadir o equilibrar un evento se edita el JSON, no el código.
 - **Máquina de estados:** el turno (un Sol) pasa por fases fijas. Así no hay lógica repartida por las escenas.
-- **Godot es la autoridad:** solo Godot calcula consecuencias. Los móviles envían elecciones; ver la [regla fundamental](../../CLAUDE.md#regla-fundamental-no-romper-nunca).
+- **Godot es la autoridad:** solo Godot calcula consecuencias. Los móviles envían elecciones; ver la [regla fundamental](../../../CLAUDE.md#regla-fundamental-no-romper-nunca).
 - **Un sitio por responsabilidad:** solo `Net` toca el WebSocket, solo `GameState` cambia recursos y las escenas solo pintan y escuchan señales.
 
 ## Carpetas
@@ -236,7 +236,7 @@ func _init(_event_id: String, _delay: int, _discard: String, _msg: String) -> vo
 	arrival_message = _msg
 ```
 
-### Astronauta y habilidades (sin decidir)
+### Astronauta y habilidades (descartado)
 
 El documento original de clases proponía un `AstronautData` por jugador con salud individual y una **destreza por área** que cambia la probabilidad de éxito y el coste:
 
@@ -246,7 +246,7 @@ El documento original de clases proponía un `AstronautData` por jugador con sal
 | 2 · Normal | 75 % | ×1 |
 | 1 · Novato | 45 % | ×1,5 |
 
-`events.json` no tiene áreas ni probabilidades por rol, y la salud es común. Está en [decisiones pendientes](../juego/diseno.md#decisiones-pendientes). Si se aprueba, hay que añadir `category` a los eventos y la tabla de destrezas a `rules`.
+Se descartó (ver [decisiones de diseño](../juego/diseno.md#decisiones-de-diseño)): la salud es común y cada opción de `events.json` lleva su propio rol y su `success_chance`.
 
 ## Cambios respecto al documento original de clases
 

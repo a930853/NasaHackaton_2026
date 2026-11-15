@@ -4,7 +4,7 @@ App **Vue 3 + Vite + Tailwind CSS 4** (JavaScript) que usa cada jugador en su m�
 
 ## Ejecutar
 
-La forma rápida, desde la raíz del repo: `npm install && npm run dev`. Levanta backend y mando, con el log de mensajes del backend activado (ver el [README](../README.md#probarlo-todo-con-un-comando)). Hace falta un anfitrión (Godot) que cree la sala.
+La forma rápida, desde la raíz del repo: `npm install && npm run dev`. Levanta backend y mando, con el log de mensajes del backend activado (ver el [README](../../README.md#run-the-development-environment)). Hace falta un anfitrión (Godot) que cree la sala.
 
 Por separado:
 
