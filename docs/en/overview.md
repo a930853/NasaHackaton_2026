@@ -1,4 +1,4 @@
-# Project Overview: Mars Survival
+# Project Overview: Red Planet Survivors
 
 Summary of what is **currently implemented**: game behavior, event types and data sources. Figures come from [`game/Data/events.json`](../../game/Data/events.json) and code in `game/Scripts/`; code takes precedence if it differs from this document.
 
@@ -47,13 +47,13 @@ Godot autoloads divide game logic:
 SOL START ─► EVENT SELECTION ─► DECISION ─► RESOLUTION ─► SOL END ─► (next Sol or ending)
 ```
 
-At dawn, crew members whose tasks are complete return. Automatic bar changes are Oxygen −4 until MOXIE is complete, Energy +7 (+6 from Sol 8 due to dust), Integrity −3 and, from Sol 4, Health −6. Apply active conditions and today's delayed effects. Select one event, read it, choose/vote, resolve and check for defeat or victory. Any resource at 0 means defeat; victory is reaching Sol 20 in the implemented version.
+At dawn, crew members whose tasks are complete return. Automatic bar changes are Oxygen −3 until MOXIE is complete, Energy +7 (+6 from Sol 8 due to dust), Integrity −2 and, from Sol 4, Health −4. Apply active conditions and today's delayed effects. Select one event, read it, choose/vote, resolve and check for defeat or victory. Any resource at 0 means defeat; victory is reaching Sol 20 in the implemented version.
 
-All bars start at 80 and range from 0 to 100. Roles: `engineer` (yellow; hardware, panels, rover, sensors, MOXIE, shields), `biologist` (green; greenhouse and probiotics), `doctor` (red; medicine and memory games), and `generalist` (white; generalist in avatars/phones, Commander on some option cards).
+All bars start at 80 and range from 0 to 100. Roles: `engineer` (yellow; hardware, panels, rover, sensors, MOXIE, shields), `biologist` (green; greenhouse and probiotics), `doctor` (red; medicine and memory games), and `generalist` (white; shown as Generalist on screen and phones, called the Commander in some outcome texts).
 
 ### Objectives and scoring
 
-Objectives include healthy crew (Health never below 50), stable colony (3 harvests), rover rescue, seismic network (3 sensors; early completion warns of quake) and MOXIE (100%, stopping Oxygen loss). Victory requires all resources above zero until the final Sol. Score is 200 per completed objective plus the average of the four bars.
+Objectives include healthy crew (Health always above 50), stable colony (3 harvests), rover rescue, seismic network (3 sensors; early completion warns of quake) and MOXIE (100%, stopping Oxygen loss). Victory requires all resources above zero until the final Sol. Score is 200 per completed objective plus the average of the four bars.
 
 ## Event selection and resolution
 
@@ -82,7 +82,7 @@ Other `events.json` mechanics include immediate (`effects`) and delayed (`delaye
 - **Real-time:** Solar Storm Alert from NASA DONKI (M/X class flare in the last three days); provides date/class and has a debug trigger.
 - **Earth help:** pauses the event, returning it with Mission Control's `earth_hint` after 1 Sol for a full Commander report or 2 Sols for a quick message. Radio cooldown is 4 Sols. Unavailable during reading, quakes, solar alerts, MOXIE completion and an active solar-alert period.
 
-See the detailed [event catalog](event-catalog.md).
+The full list of delivered events, with their figures, is in the Spanish [resumen §6](../es/resumen.md#6-catálogo-de-eventos) and in [`events.json`](../../game/Data/events.json). The English [event catalog](event-catalog.md) is the original design, with NASA sources for each event.
 
 ## Word Book and data sources
 

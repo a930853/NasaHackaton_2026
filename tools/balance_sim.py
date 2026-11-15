@@ -6,7 +6,7 @@
 Las constantes de `Cfg` repiten las de game/Scripts/game_state.gd: si se cambian allí, hay que cambiarlas aquí.
 Dos tipos de jugador: ATENTO (mira costes y objetivos y protege la barra más baja) y AL AZAR. Las personas
 reales están entre los dos. Se comprobó que el juego real (Godot) reparte las derrotas igual que este
-simulador cuando juega al azar. Documentación: docs/juego/diseno.md (apartado «Equilibrio»).
+simulador cuando juega al azar. Documentación: docs/es/juego/diseno.md (apartado «Equilibrio»).
 """
 import copy, json, random, sys
 from collections import Counter
@@ -22,14 +22,14 @@ class Cfg:
     def __init__(self, **kw):
         self.max_sols = 20
         self.start = 80
-        self.o2_loss = 4              # PASSIVE_OXYGEN_LOSS
+        self.o2_loss = 3              # PASSIVE_OXYGEN_LOSS
         self.energy_gain = 7          # PASSIVE_ENERGY_GAIN
         self.objective_priority = 0.7
         self.moxie_weight = 2.0       # "weight" de los eventos MOXIE en events.json
         self.cost_mult = {"health": 1.0, "oxygen": 1.0, "energy": 1.0, "integrity": 1.0}
         self.seismic_deadline = 13
-        self.i_loss = 3               # PASSIVE_INTEGRITY_LOSS
-        self.h_loss = 6               # PASSIVE_HEALTH_LOSS
+        self.i_loss = 2               # PASSIVE_INTEGRITY_LOSS
+        self.h_loss = 4               # PASSIVE_HEALTH_LOSS
         self.h_start = 4              # HEALTH_LOSS_FROM_SOL
         self.i_start = 1
         self.e_late_gain = 6          # PASSIVE_ENERGY_GAIN_DUSTY

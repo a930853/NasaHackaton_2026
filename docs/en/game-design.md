@@ -1,4 +1,4 @@
-# Game Design: Mars Survival
+# Game Design: Red Planet Survivors
 
 The rules defined by the team, with the figures used by the submitted version. The event catalog is in [event-catalog.md](event-catalog.md); implementation details for Godot are in [Godot architecture](godot/architecture.md).
 
@@ -32,7 +32,7 @@ SOL START ──► EVENT SELECTION ──► DECISION ──► RESOLUTION ─�
 
 | Phase | What happens |
 |---|---|
-| **Sol start** | Advance the Sol counter. Automatic resource changes (see [Balancing](#difficulty-balance)): Oxygen −4 until MOXIE is complete, Energy +7 (+6 from Sol 8), Base Integrity −3 and, from Sol 4, Health −6. Apply persistent-event and scheduled effects due today. Query the space-weather API; a flare triggers the [real-time event](#real-time-solar-alert). |
+| **Sol start** | Advance the Sol counter. Automatic resource changes (see [Balancing](#difficulty-balance)): Oxygen −3 until MOXIE is complete, Energy +7 (+6 from Sol 8), Base Integrity −2 and, from Sol 4, Health −4. Apply persistent-event and scheduled effects due today. The space-weather API is queried once, when the game starts; a flare triggers the [real-time event](#real-time-solar-alert). |
 | **Event selection** | Choose a valid event based on its conditions (objective chains or random events). Unlock its terms in the [Glossary](#glossary). |
 | **Decision** | Show title, description, NASA fact and options. Players vote or the assigned role chooses. Players may [ask Earth for help](#ask-earth-for-help). |
 | **Resolution** | Apply immediate effects, schedule delayed effects and show the outcome text. |
@@ -50,7 +50,7 @@ SOL START ──► EVENT SELECTION ──► DECISION ──► RESOLUTION ─�
 The English IDs are used by the [message contract](protocol.md) and `events.json`. Event options are either:
 
 - **General vote** (`role: null`): everyone present may vote.
-- **Role option** (`role: "engineer"`…): only that role may choose it. It is **offered only if that role is in the game**. Each event has at least one general-vote option so play can always continue.
+- **Role option** (`role: "engineer"`…): that role carries it out (and is the one who becomes busy), but **anyone can vote for it**. It is blocked while that role is away from the base. Each event has at least one general-vote option so play can always continue.
 
 ## Base resources
 
@@ -59,9 +59,9 @@ Four bars range from 0 to 100 and start at 80. **If any reaches 0, the game is l
 | Resource | ID | Notes |
 |---|---|---|
 | Energy | `energy` | Batteries and solar panels. Gains **+7 per Sol** (+6 from Sol 8, when dust covers the panels). |
-| Oxygen | `oxygen` | Passively loses **4 per Sol** until MOXIE is complete. |
+| Oxygen | `oxygen` | Passively loses **3 per Sol** until MOXIE is complete. |
 | Integrity | `integrity` | Condition of the base structure and equipment. |
-| Health | `health` | Crew health. Extra goal: never drop below 50%. |
+| Health | `health` | Crew health. Extra goal: always keep it above 50. |
 
 ### Difficulty balance
 
@@ -69,10 +69,10 @@ Bars change not only because of player choices: each is under **automatic pressu
 
 | Bar | Change each Sol | Reason |
 |---|---|---|
-| Oxygen | −4 until MOXIE reaches 100% | Breathing; the game's race against time. |
+| Oxygen | −3 until MOXIE reaches 100% | Breathing; the game's race against time. |
 | Energy | +7 (+6 from Sol 8) | Dust accumulates on solar panels. |
-| Base Integrity | −3 | Wind and dust wear down the walls. |
-| Health | −6 from Sol 4 | Stress and radiation; the crew starts rested. |
+| Base Integrity | −2 | Wind and dust wear down the walls. |
+| Health | −4 from Sol 4 | Stress and radiation; the crew starts rested. |
 
 With the earlier rules (Oxygen −5 and no other automatic changes), an attentive player lost every game to oxygen: 95 points lost over 20 Sols against 80 starting points. Health and Integrity were never lethal.
 
@@ -81,13 +81,13 @@ The simulator `tools/balance_sim.py` repeats the game rules and can be run with 
 | Player | Wins | Oxygen losses | Energy losses | Health losses | Integrity losses |
 |---|---:|---:|---:|---:|---:|
 | Attentive, before | 41% | 59% | 0% | 0% | 0% |
-| Attentive, current | 47% | 19% | 13% | 9% | 11% |
+| Attentive, current | 72% | 10% | 18% | 0% | 1% |
 | Random, before | 6% | 94% | 0% | 0% | 0% |
-| Random, current | 3% | 55% | 3% | 33% | 7% |
+| Random, current | 21% | 57% | 5% | 15% | 3% |
 
-For an attentive player, losses are distributed fairly evenly; oxygen and health still dominate for random choices. MOXIE is completed in 82% of attentive games (previously 51%).
+“Current” figures are for the submitted version (3,000 games per row). The final tuning softened the daily pressure (Oxygen −3 instead of −4, Base Integrity −2 instead of −3 and Health −4 instead of −6), so the game is more forgiving: a careful player wins most games and, when they lose, it is usually through Energy or Oxygen; random choices still lose mostly through Oxygen and Health. MOXIE is completed in 90% of attentive games (previously 51%).
 
-To adjust difficulty: increasing `PASSIVE_OXYGEN_LOSS` or lowering MOXIE's weight makes the game harder and shifts losses toward Oxygen; `PASSIVE_HEALTH_LOSS` and `HEALTH_LOSS_FROM_SOL` are very sensitive; lowering `PASSIVE_ENERGY_GAIN` pressures Energy. Re-run `tools/balance_sim.py` after changes (its `Cfg` class mirrors the constants).
+To adjust difficulty: increasing `PASSIVE_OXYGEN_LOSS` or lowering MOXIE's weight makes the game harder and shifts losses toward Oxygen; `PASSIVE_HEALTH_LOSS` and `HEALTH_LOSS_FROM_SOL` are very sensitive; lowering `PASSIVE_ENERGY_GAIN` pressures Energy. Re-run `tools/balance_sim.py` after changes (its `Cfg` class copies the constants: if you change them in `game_state.gd`, change them there too).
 
 ## End screens; victory and defeat
 
@@ -113,15 +113,18 @@ The themed `EndScreen` (`game/Scripts/end_screen.gd`) shows a blue button frame,
 
 | Mechanic | Example | `events.json` field |
 |---|---|---|
-| Immediate effects | Oxygen −10 | `effects` |
-| Delayed effects | Eat sprouts: Oxygen −10 next Sol | `delayed_effects` |
-| Persistent event | If postponed, Space Tummy Ache causes −5, −5 and −10 Health | `persistent`, `decay`, `defer` |
-| Random chance | 50% chance of finding a special rock (+10 Energy) | `chance_effects` |
-| Objective progress | MOXIE +33% | `progress` |
-| Chained events | Duct-tape sensors trigger a later failure | `triggers_event`, `condition`, `reopen_event` |
-| NFC tool | Activate an option with a tag | `nfc_tool` |
-
-At most **2 events** can be pending at once (`max_pending_events`).
+| Immediate effects | Energy −15, Oxygen +10 | `effects` |
+| Delayed effects | Eat sprouts: Oxygen −10 next Sol | `delayed` |
+| Multi-Sol problem | Dust storm: Energy −10 for 2 Sols | `start_condition` (`daily` or `sequence`) |
+| Extra chance | 50% chance of finding a special rock (+10 Energy) | `chance` |
+| Objective progress | MOXIE to 33%, +1 harvest | `set`, `add` |
+| Failure penalty | The repair fails: Base Integrity −10 | `on_fail` |
+| Retry | Rover, sensors and MOXIE come back after a failure | `retry_on_fail` |
+| Chained events | Duct-tape sensors trigger “The dusty sensor” 1–2 Sols later | `schedule_event` |
+| Effect on appearance | Unwarned quake: Base Integrity −20 before deciding | `on_start` |
+| Countdown | Quakes: 20 s | `timer_seconds`, `timeout_option` |
+| Busy crew | The Engineer is busy for 2 Sols | `away_sols`, `away_all` |
+| Selection weight | MOXIE events appear twice as often among objectives | `weight` |
 
 ## Crew away from the base
 
@@ -138,9 +141,9 @@ Each option keeps its actor busy for 0, 1 or 2 Sols (`away_sols` in `events.json
 
 The event description is typed out at 23 characters per second (2.5–12 seconds; current events take 3.3–8.6 seconds, about 5.8 seconds on average). Players cannot decide until it finishes: options appear after the text in solo mode; phones show “Read the story!” until then; Earth help is also unavailable. NASA facts and Earth's hint appear afterward. Critical-event countdowns (quakes) start **after** the reading. Constants are in `TurnManager` (`READING_CHARS_PER_SECOND`, `READING_MIN_SECONDS`, `READING_MAX_SECONDS`). A voting tie-break does not repeat the reading. `Texting_SFX` loops during reading and fades out when reading ends, the event resolves or the game ends.
 
-The tutorial has six illustrated pages: welcome, the four bars and daily changes, reading/choosing/voting, jobs and busy crew, tools (Earth help, glossary and menu), and objectives. Content is in `intro.gd` (`PAGES`: title, BBCode text and images with `paths`, `caption`, `max` and `pixel`). Update text and screenshots when mechanics or UI change. Tutorial pages type at 55 characters per second (1.5–10 seconds); pressing *Next* while typing reveals the rest, and the next press advances.
+The tutorial has six illustrated pages: welcome, the four bars and daily changes, reading/choosing/voting, jobs and busy crew, tools (Earth help, glossary and menu), and objectives. Content is in `intro.gd` (`PAGES`: `title`, BBCode `body` and `images` with `paths`, `caption`, `max` and `pixel`). Update text and screenshots when mechanics or UI change. Tutorial pages type at 55 characters per second (1.5–10 seconds); pressing *Next* while typing reveals the rest, and the next press advances.
 
-Dawn updates (“the Engineer returned”, “Oxygen dropped by 4”…) no longer appear over the event: changes appear on the bars and in their history, while crew availability appears in the avatars.
+Dawn updates (“the Engineer returned”, “Oxygen dropped by 3”…) no longer appear over the event: changes appear on the bars and in their history, while crew availability appears in the avatars.
 
 ## What appears where
 
@@ -170,12 +173,12 @@ This mechanic is based on real communication delays: 4–24 minutes per message 
 
 - At the start of a game, query NASA DONKI for solar flares from the previous three days.
 - An M- or X-class flare interrupts the turn with a special event showing the real date.
-- During that Sol and the next, Earth help is unavailable and radiation increases. The crew can be protected with probiotics (Biologist) or shields (Engineer).
-- A debug button should simulate a flare without relying on the API.
+- During that Sol and the next, Earth help is unavailable and radiation increases. The crew can be protected with probiotics (Biologist), shields (Engineer) or the general `shelter` option.
+- The `Flare (debug)` button simulates a flare without relying on the API (for example, for a demo).
 
 ## Glossary
 
-The educational glossary unlocks technical terms (Sol, MOXIE, Jezero Crater, regolith, coronal mass ejection, probiotics…) when their events appear. Players can view a simple definition and a NASA fact without pausing the game. New terms trigger a notification.
+The educational glossary unlocks technical terms (Sol, MOXIE, Jezero Crater, regolith, coronal mass ejection, probiotics…) when their events appear. Players can view a simple definition and a NASA fact without pausing the game. New terms trigger a notification (“New word added to the Word Book: …”).
 
 The Word Book displays one pixel-art tile per word (`game/Images/Glossary/<term-id>.png`, 32×32). Unknown words are dimmed with a “?”; unseen new words have an orange border. The details panel shows the illustration, title, explanation and NASA fact, with a discovered/total counter. Icons are generated by `tools/make_glossary_icons.py`; add a drawing there and regenerate icons when adding a term to `glossary.json`.
 
@@ -214,4 +217,4 @@ Converting the source PDFs to Markdown revealed contradictions between them. Sou
 | Role skill chance/cost | Only in the classes PDF | Dropped: each option has its own `success_chance` and role |
 | Health, colony and rover objectives | In the design | **Implemented**: they count toward the score |
 | Victory condition | 3 of 4 objectives, or score by objectives | **Survive 20 Sols**; objectives add points |
-| Rover location | Jezero Crater or Rocknest dunes (Gale Crater) | Rocknest |
+| Rover location | Jezero Crater or Rocknest dunes (Gale Crater) | **Jezero Crater** (the dunes of Jezero) |

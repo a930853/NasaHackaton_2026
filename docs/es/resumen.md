@@ -1,4 +1,4 @@
-# Resumen del proyecto: Supervivencia en Marte
+# Resumen del proyecto: Red Planet Survivors
 
 Resumen de lo que hay **implementado** hoy: cómo funciona el juego, todos los tipos de evento y de dónde salen los datos. Las cifras vienen de [`game/Data/events.json`](../../game/Data/events.json) y del código de `game/Scripts/`; si algo no coincide con este documento, manda el código.
 
@@ -34,7 +34,7 @@ Juego cooperativo y educativo para el NASA Hackathon 2026, pensado para **niños
 | Backend | `backend/` (Node, `express` + `ws`) | **Autoridad de la sesión**: salas, jugadores, roles y reenvío de mensajes por un único WebSocket (`/ws`). |
 | Mando | `controller/` (Vue 3 + Vite + Tailwind) | Pantalla del móvil. Solo envía la opción elegida; no calcula nada. |
 | Inicio | `landing/` | Página `/`: crear partida o entrar con código. |
-| Despliegue | `deploy/`, `compose.yaml` | Nginx con HTTPS sirve todo en la LAN con Docker Compose. |
+| Despliegue | `deploy/`, `compose.yaml` | Nginx sirve todo con Docker Compose: en Internet con Coolify (principal) o en la LAN con HTTPS autofirmado. |
 
 Dentro de Godot, la lógica está repartida en *autoloads*:
 
@@ -65,7 +65,7 @@ INICIO DEL SOL ─► SELECCIÓN DEL EVENTO ─► DECISIÓN ─► RESOLUCIÓN 
 
 | Fase | Qué pasa |
 |---|---|
-| Inicio del Sol | Vuelven los tripulantes que terminan su tarea. Cambios automáticos de las barras (oxígeno −4 hasta acabar MOXIE, energía +7, base −3, y desde el Sol 4 salud −6). Se aplican los problemas activos y los efectos diferidos de hoy. |
+| Inicio del Sol | Vuelven los tripulantes que terminan su tarea. Cambios automáticos de las barras (oxígeno −3 hasta acabar MOXIE, energía +7 (+6 desde el Sol 8), base −2, y desde el Sol 4 salud −4). Se aplican los problemas activos y los efectos diferidos de hoy. |
 | Selección | Se elige el evento del día (ver [orden de selección](#orden-de-selección)). Se desbloquean sus palabras del libro. |
 | Decisión | Se lee el evento y se elige una opción (clic o votación). |
 | Resolución | Se tira el éxito o fallo, se aplican los efectos y se muestra qué cambió. |
@@ -77,12 +77,12 @@ Cuatro barras de 0 a 100 que empiezan en **80**. Si cualquiera llega a **0**, se
 
 | Recurso | Id | Cambio automático cada Sol |
 |---|---|---|
-| Salud | `health` | −6 desde el Sol 4 (estrés y radiación) |
-| Oxígeno | `oxygen` | −4 hasta que MOXIE está al 100 % |
+| Salud | `health` | −4 desde el Sol 4 (estrés y radiación) |
+| Oxígeno | `oxygen` | −3 hasta que MOXIE está al 100 % |
 | Energía | `energy` | +7 (paneles solares), +6 desde el Sol 8 (polvo) |
-| Fuerza de la base | `integrity` | −3 (viento y polvo) |
+| Fuerza de la base | `integrity` | −2 (viento y polvo) |
 
-Estas presiones reparten las derrotas entre las cuatro barras (ver [Equilibrio de la dificultad](juego/diseno.md#equilibrio-de-la-dificultad)): un jugador atento pierde un ~19 % por oxígeno, ~13 % por energía, ~9 % por salud y ~11 % por integridad, y gana ~47 %.
+Estas presiones reparten las derrotas entre las cuatro barras (ver [Equilibrio de la dificultad](juego/diseno.md#equilibrio-de-la-dificultad)): un jugador atento gana ~72 % de las partidas y, cuando pierde, suele ser por energía (~18 %) u oxígeno (~10 %); quien elige al azar gana ~21 %.
 
 ### Roles
 
@@ -97,7 +97,7 @@ Estas presiones reparten las derrotas entre las cuatro barras (ver [Equilibrio d
 
 | Objetivo | Se cumple cuando | Qué da |
 |---|---|---|
-| Tripulación sana | La salud no baja nunca de 50 | Puntos |
+| Tripulación sana | La salud se mantiene siempre por encima de 50 | Puntos |
 | Colonia estable | 3 cosechas | Puntos |
 | Rescate del rover | El rover queda libre | Puntos |
 | Red de sensores | 3 sensores colocados | Puntos. Si se completa **antes del Sol 13**, el terremoto avisa |

@@ -1,4 +1,4 @@
-# Diseño del juego: Supervivencia en Marte
+# Diseño del juego: Red Planet Survivors
 
 Reglas del juego tal y como las ha definido el equipo, con las cifras que usa la versión entregada. El catálogo de eventos está en [eventos.md](eventos.md) y cómo se implementa en Godot, en [../godot/arquitectura.md](../godot/arquitectura.md).
 
@@ -32,7 +32,7 @@ INICIO DEL SOL ──► SELECCIÓN DEL EVENTO ──► DECISIÓN ──► RES
 
 | Fase | Qué pasa |
 |---|---|
-| **Inicio del Sol** | Avanza el contador de Sol. Cambios automáticos de las barras (ver [Equilibrio](#equilibrio-de-la-dificultad)): Oxígeno −4 (hasta completar MOXIE), Energía +7 (+6 desde el Sol 8), Fuerza de la base −3 y, desde el Sol 4, Salud −6. Se aplican los efectos de eventos persistentes y los efectos diferidos que tocan hoy. Se consulta la API de clima espacial: si hay llamarada, salta el [evento en tiempo real](#evento-en-tiempo-real-alerta-solar). |
+| **Inicio del Sol** | Avanza el contador de Sol. Cambios automáticos de las barras (ver [Equilibrio](#equilibrio-de-la-dificultad)): Oxígeno −3 (hasta completar MOXIE), Energía +7 (+6 desde el Sol 8), Fuerza de la base −2 y, desde el Sol 4, Salud −4. Se aplican los efectos de eventos persistentes y los efectos diferidos que tocan hoy. La API de clima espacial se consulta una vez, al empezar la partida: si hay llamarada, salta el [evento en tiempo real](#evento-en-tiempo-real-alerta-solar). |
 | **Selección del evento** | Se elige un evento válido según sus condiciones (cadenas de objetivos o aleatorios). Se desbloquean sus términos en el [Libro de tecnicismos](#libro-de-tecnicismos). |
 | **Decisión** | Se muestran título, descripción, dato NASA y opciones. Los jugadores votan o decide el rol indicado. Se puede [pedir ayuda a la Tierra](#pedir-ayuda-a-la-tierra). |
 | **Resolución** | Se aplican los efectos inmediatos, se programan los diferidos y se muestra el texto de resultado. |
@@ -42,15 +42,15 @@ INICIO DEL SOL ──► SELECCIÓN DEL EVENTO ──► DECISIÓN ──► RES
 
 | Rol (id en el código) | Nombre en pantalla | En qué destaca (según los eventos) |
 |---|---|---|
-| `engineer` | Ingeniero | Hardware, paneles, rover, sensores, MOXIE. Es el rol con más opciones propias. |
-| `biologist` | Bióloga | Invernadero, cultivos, probióticos. |
-| `doctor` | Médico | Salud, botiquín, estrés. |
-| `generalist` | Polivalente | Puede participar en decisiones y tareas generales como cualquier otro rol. |
+| `engineer` | Engineer (ingeniero) | Hardware, paneles, rover, sensores, MOXIE. Es el rol con más opciones propias. |
+| `biologist` | Biologist (bióloga) | Invernadero, cultivos, probióticos. |
+| `doctor` | Doctor (médico) | Salud, botiquín, estrés. |
+| `generalist` | Generalist (polivalente; en algunos textos, el Comandante) | Puede participar en decisiones y tareas generales como cualquier otro rol. |
 
 Los ids en inglés son los del [contrato de mensajes](../protocol.md) y los de `events.json`. Cada opción de un evento es de dos tipos:
 
 - **Votación general** (`role: null`): votan todos los presentes.
-- **Opción de rol** (`role: "engineer"`…): solo puede elegirla ese rol. **Solo se ofrece si ese rol está en la partida.** Todo evento tiene al menos una opción de votación general, para que siempre se pueda avanzar.
+- **Opción de rol** (`role: "engineer"`…): la lleva a cabo ese rol (y es quien queda ocupado), pero **la puede votar cualquiera**. Sale bloqueada mientras ese rol está fuera de la base. Todo evento tiene al menos una opción de votación general, para que siempre se pueda avanzar.
 
 ## Recursos de la base
 
@@ -59,9 +59,9 @@ Cuatro barras de 0 a 100. Empiezan en 80. **Si cualquiera llega a 0, se pierde l
 | Recurso | Id | Notas |
 |---|---|---|
 | Energía | `energy` | Baterías y paneles solares. Gana **+7 por Sol** (+6 desde el Sol 8, cuando el polvo cubre los paneles). |
-| Oxígeno | `oxygen` | Pierde **4 por Sol** de forma pasiva hasta que MOXIE está terminado. |
+| Oxígeno | `oxygen` | Pierde **3 por Sol** de forma pasiva hasta que MOXIE está terminado. |
 | Integridad | `integrity` | Estado de la estructura y los equipos. |
-| Salud | `health` | Salud de la tripulación. Objetivo extra: no bajar nunca del 50 %. |
+| Salud | `health` | Salud de la tripulación. Objetivo extra: mantenerla siempre por encima de 50. |
 
 ### Equilibrio de la dificultad
 
@@ -69,10 +69,10 @@ Las barras no solo cambian por las decisiones: cada una tiene una **presión aut
 
 | Barra | Qué pasa cada Sol | Por qué |
 |---|---|---|
-| Oxígeno | −4, hasta que MOXIE está al 100 % | Respirar. Es la carrera contra el reloj del juego. |
+| Oxígeno | −3, hasta que MOXIE está al 100 % | Respirar. Es la carrera contra el reloj del juego. |
 | Energía | +7 (+6 desde el Sol 8) | Paneles solares que se llenan de polvo. |
-| Fuerza de la base | −3 | El viento y el polvo desgastan los muros. |
-| Salud | −6 desde el Sol 4 | Estrés y radiación; los primeros Sols la tripulación está descansada. |
+| Fuerza de la base | −2 | El viento y el polvo desgastan los muros. |
+| Salud | −4 desde el Sol 4 | Estrés y radiación; los primeros Sols la tripulación está descansada. |
 
 **Por qué se cambió:** con las reglas anteriores (oxígeno −5 y nada más), un jugador atento perdía el 100 % de sus derrotas por oxígeno: 95 puntos de pérdida en 20 Sols contra 80 de partida, así que o se terminaba MOXIE a tiempo o se perdía. Salud e integridad no mataban nunca.
 
@@ -81,13 +81,13 @@ Las barras no solo cambian por las decisiones: cada una tiene una **presión aut
 | Jugador | Gana | Pierde por oxígeno | energía | salud | integridad |
 |---|---|---|---|---|---|
 | Atento, antes | 41 % | 59 % | 0 % | 0 % | 0 % |
-| Atento, ahora | 47 % | 19 % | 13 % | 9 % | 11 % |
+| Atento, ahora | 72 % | 10 % | 18 % | 0 % | 1 % |
 | Al azar, antes | 6 % | 94 % | 0 % | 0 % | 0 % |
-| Al azar, ahora | 3 % | 55 % | 3 % | 33 % | 7 % |
+| Al azar, ahora | 21 % | 57 % | 5 % | 15 % | 3 % |
 
-Para el jugador atento el reparto es parejo; para quien elige sin pensar sigue pesando el oxígeno y la salud, que es lo esperable. MOXIE se completa en el 82 % de las partidas atentas (antes el 51 %).
+Las cifras de «ahora» son las de la versión entregada (3000 partidas por fila). En los últimos retoques se suavizó la presión diaria (oxígeno −3 en vez de −4, base −2 en vez de −3 y salud −4 en vez de −6), así que la partida es más asequible: quien juega con cuidado gana casi siempre y, si pierde, suele ser por energía u oxígeno; quien elige sin pensar sigue perdiendo sobre todo por oxígeno y salud. MOXIE se completa en el 90 % de las partidas atentas (antes el 51 %).
 
-**Cómo retocarlo:** subir `PASSIVE_OXYGEN_LOSS` o bajar el peso de MOXIE endurece la partida y la carga hacia el oxígeno; `PASSIVE_HEALTH_LOSS` y `HEALTH_LOSS_FROM_SOL` son muy sensibles (pasar de −5 a −6 multiplica por 3 las derrotas por salud); bajar `PASSIVE_ENERGY_GAIN` carga la energía. Tras cambiar algo, repetir `tools/balance_sim.py`, que usa las mismas constantes (están copiadas en su clase `Cfg`).
+**Cómo retocarlo:** subir `PASSIVE_OXYGEN_LOSS` o bajar el peso de MOXIE endurece la partida y la carga hacia el oxígeno; `PASSIVE_HEALTH_LOSS` y `HEALTH_LOSS_FROM_SOL` son muy sensibles (pasar de −5 a −6 multiplica por 3 las derrotas por salud); bajar `PASSIVE_ENERGY_GAIN` carga la energía. Tras cambiar algo, repetir `tools/balance_sim.py`, que usa las mismas constantes (están copiadas en su clase `Cfg`: si se cambian en `game_state.gd`, hay que cambiarlas también allí).
 
 ## Pantallas de final
 
@@ -116,15 +116,20 @@ Al acabar la partida sale una pantalla con la temática del juego (`EndScreen`, 
 
 | Mecánica | Ejemplo | Campo en `events.json` |
 |---|---|---|
-| **Efectos inmediatos** | −10 Oxígeno | `effects` |
-| **Efectos diferidos**: se aplican dentro de N Sols | Comerse los brotes: −10 Oxígeno al Sol siguiente | `delayed_effects` |
-| **Evento persistente**: si se pospone, castiga cada Sol | Barrigas espaciales: −5, −5 y −10 Salud | `persistent`, `decay`, `defer` |
-| **Azar** | 50 % de encontrar una roca especial (+10 Energía) | `chance_effects` |
-| **Progreso de objetivo** | +33 % de MOXIE | `progress` |
-| **Eventos encadenados** | Montar los sensores con cinta provoca un fallo después | `triggers_event`, `condition`, `reopen_event` |
-| **Herramienta NFC**: la opción se puede activar con una etiqueta | Escudos magnéticos | `nfc_tool` |
+| **Efecto inmediato** | Energía −15, Oxígeno +10 | `effects` |
+| **Efecto diferido**: se aplica dentro de N Sols | Comerse los brotes: −10 Oxígeno al Sol siguiente | `delayed` |
+| **Problema de varios Sols** | Tormenta de polvo: −10 Energía durante 2 Sols | `start_condition` (`daily` o `sequence`) |
+| **Azar extra** | 50 % de encontrar una roca especial (+10 Energía) | `chance` |
+| **Progreso de objetivo** | MOXIE al 33 %, +1 cosecha | `set`, `add` |
+| **Castigo al fallar** | El refuerzo falla: −10 Fuerza de la base | `on_fail` |
+| **Reintento** | Rover, sensores y MOXIE vuelven si fallan | `retry_on_fail` |
+| **Eventos encadenados** | Montar los sensores con cinta provoca «El sensor con polvo» 1–2 Sols después | `schedule_event` |
+| **Efecto al aparecer** | Terremoto sin aviso: −20 Fuerza de la base antes de decidir | `on_start` |
+| **Cuenta atrás** | Terremotos: 20 s | `timer_seconds`, `timeout_option` |
+| **Ocupación** | El ingeniero, ocupado 2 Sols | `away_sols`, `away_all` |
+| **Peso al elegir** | Los eventos de MOXIE salen el doble entre los objetivos | `weight` |
 
-Como máximo puede haber **2 eventos pendientes** a la vez (`max_pending_events`).
+La lista completa, con un ejemplo de cada una, está en el [resumen](../resumen.md#mecánicas-disponibles-en-eventsjson).
 
 ## Tripulación fuera de la base
 
@@ -143,7 +148,7 @@ Al aparecer un evento, su descripción **se escribe poco a poco** (23 letras por
 
 El **tutorial** tiene 6 páginas (bienvenida, las 4 barras y su cambio diario, leer y elegir y votar, trabajos y tripulación ocupada, herramientas —ayuda de la Tierra, libro y menú— y objetivos) y cada una lleva **imágenes**: capturas reales del juego recortadas en `game/Images/Tutorial/` y el pixel art de los planetas. Las páginas son datos en `intro.gd` (`PAGES`: título, texto con BBCode e `images` con `paths`, `caption`, `max` y `pixel`); si cambia una mecánica o la interfaz, hay que actualizar el texto y volver a recortar la imagen. El **tutorial** (la intro) también escribe cada página poco a poco, más rápido (55 letras por segundo, de 1,5 a 10 s) porque las páginas son largas. Allí sí se puede saltar: si se pulsa *Next* mientras se escribe, se enseña el resto de la página y la siguiente pulsación pasa de página.
 
-Las noticias del amanecer («el ingeniero ha vuelto», «el oxígeno bajó −4»…) **ya no se escriben encima del evento**: los cambios se ven en las barras (números flotantes y su historial) y quién está en la base, en los avatares.
+Las noticias del amanecer («el ingeniero ha vuelto», «el oxígeno bajó −3»…) **ya no se escriben encima del evento**: los cambios se ven en las barras (números flotantes y su historial) y quién está en la base, en los avatares.
 
 ## Qué se ve dónde
 
@@ -156,7 +161,7 @@ Las noticias del amanecer («el ingeniero ha vuelto», «el oxígeno bajó −4�
 
 Al pulsar *Start Game* se elige el modo: **individual** (una persona, una sola pantalla, sin móviles ni red; las opciones se eligen con el ratón) o **multijugador** (lobby con móviles y votación). En individual, la elección es directa (`TurnManager.submit_choice`), sin votación.
 
-El botón `Phone (debug)` (simulador de móvil) ya no se enseña: en solitario las opciones salen en pantalla y en multijugador hay móviles de verdad (su código sigue en `main_ui.gd`). Solo queda `Flare (debug)`, que simula la alerta solar. `TurnManager.controller_view_for(role)` prepara lo que recibirá cada mando y `submit_choice_from(role, eventId, optionId)` valida su elección. Las opciones llevan además de `id` y `label` los campos opcionales `detail` (costes), `disabled` y `reason`, ya recogidos en `docs/protocol.md`. Con móviles reales, `PhoneBridge` envía esas vistas y valida las elecciones (ver [../godot/red.md](../godot/red.md)).
+El botón `Phone (debug)` (simulador de móvil) ya no se enseña: en solitario las opciones salen en pantalla y en multijugador hay móviles de verdad (su código sigue en `main_ui.gd`). Solo queda `Flare (debug)`, que simula la alerta solar. `TurnManager.controller_view_for(role)` prepara lo que recibirá cada mando, `choice_reject_reason` valida su elección y `cast_vote` la registra. Las opciones llevan además de `id` y `label` los campos opcionales `detail` (costes), `disabled` y `reason`, ya recogidos en el [contrato de mensajes](../protocol.md). Con móviles reales, `PhoneBridge` envía esas vistas y valida las elecciones (ver [../godot/red.md](../godot/red.md)).
 
 ## Pedir ayuda a la Tierra
 
@@ -181,14 +186,14 @@ Se basa en el retraso real de las comunicaciones: entre 4 y 24 minutos por mensa
 
 ## Evento en tiempo real: alerta solar
 
-- Al empezar cada Sol se consulta la API DONKI de la NASA (llamaradas solares o eyecciones de masa coronal recientes).
+- Al empezar la partida se consulta la API DONKI de la NASA (`/DONKI/FLR`, llamaradas solares de los últimos 3 días).
 - Si hay una llamarada de clase M o X, el juego **interrumpe el turno** con un evento especial que muestra la fecha real: *«📡 ¡Dato en vivo de la NASA! El [fecha] el Sol lanzó una llamarada que acaba de alcanzar Marte.»*
-- Durante ese Sol y el siguiente: no se puede pedir ayuda a la Tierra y sube la radiación. Hay que proteger a la tripulación con probióticos (Bióloga) o escudos (Ingeniero).
-- Debe haber un botón de depuración para simular la llamarada sin depender de la API.
+- Durante ese Sol y el siguiente: no se puede pedir ayuda a la Tierra y sube la radiación. Hay que proteger a la tripulación con probióticos (Bióloga), escudos (Ingeniero) o la opción general de refugiarse (`shelter`).
+- El botón `Flare (debug)` simula la llamarada sin depender de la API (por ejemplo, para una demostración).
 
 ## Libro de tecnicismos
 
-Glosario educativo. Cuando aparece un evento con términos técnicos (Sol, MOXIE, cráter Jezero, regolito, eyección de masa coronal, probióticos…), se desbloquean y los jugadores pueden consultarlos desde un botón, sin pausar la partida. Cada término tiene un título, una definición sencilla para estudiantes y un dato de la NASA. Al desbloquear uno aparece un aviso: *«Nuevo término en el Libro de tecnicismos»*.
+Glosario educativo. Cuando aparece un evento con términos técnicos (Sol, MOXIE, cráter Jezero, regolito, eyección de masa coronal, probióticos…), se desbloquean y los jugadores pueden consultarlos desde un botón, sin pausar la partida. Cada término tiene un título, una definición sencilla para estudiantes y un dato de la NASA. Al desbloquear uno aparece un aviso: *«New word added to the Word Book: …»* (en el juego, el libro se llama **WORD BOOK**).
 
 **Cómo se ve:** el libro enseña una rejilla con una tarjeta por palabra, con su dibujo en pixel art (`game/Images/Glossary/<id del término>.png`, 32×32, uno por término). Las que aún no se han descubierto salen apagadas con un «?»; las nuevas llevan un borde naranja hasta que se miran. A la derecha, el dibujo grande sobre una placa clara, el título, la explicación y el dato de la NASA en una caja destacada. Arriba de la rejilla hay un contador («9 / 18»). Los dibujos los genera `tools/make_glossary_icons.py` (una función por término): si se añade una palabra a `glossary.json`, hay que añadir su dibujo ahí y volver a ejecutarlo; sin dibujo, la tarjeta usa el icono del libro.
 
@@ -227,4 +232,4 @@ Al pasar los PDF de partida a Markdown aparecieron contradicciones entre ellos. 
 | **Habilidad por rol** (probabilidad y coste según destreza) | Solo en las clases | Descartada: cada opción tiene su `success_chance` y su rol |
 | **Objetivos de salud, colonia y rover** | En el diseño | **Implementados**: cuentan para la puntuación |
 | **Condición de victoria** | 3 de 4 objetivos, o puntuación por objetivos | **Sobrevivir 20 Sols**; los objetivos suman puntos |
-| **Dónde está el rover** | Cráter Jezero o dunas de Rocknest (cráter Gale) | Rocknest |
+| **Dónde está el rover** | Cráter Jezero o dunas de Rocknest (cráter Gale) | **Cráter Jezero** (dunas de Jezero) |

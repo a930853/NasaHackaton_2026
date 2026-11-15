@@ -24,9 +24,9 @@ const STAT_MAX: int = 100
 const HEALTH_GOAL: int = 50
 
 ## --- Cambios automáticos de las barras al amanecer de cada Sol ---
-## Están elegidos con el simulador de tools/balance_sim.py para que las derrotas de un jugador atento
-## se repartan entre las cuatro barras (oxígeno ~19 %, energía ~13 %, salud ~10 %, integridad ~12 %,
-## con ~46 % de victorias). Antes casi todas las derrotas eran por oxígeno. Ver docs/es/juego/diseno.md.
+## Medidos con el simulador de tools/balance_sim.py (copia estas constantes en su clase Cfg): un jugador
+## atento gana ~72 % de las partidas y, si pierde, suele ser por energía u oxígeno. Antes casi todas las
+## derrotas eran por oxígeno. Ver docs/es/juego/diseno.md.
 const PASSIVE_OXYGEN_LOSS: int = 3            # hasta que MOXIE esté al 100 %
 const PASSIVE_ENERGY_GAIN: int = 7            # paneles solares...
 const PASSIVE_ENERGY_GAIN_DUSTY: int = 6      # ...que dan menos cuando se llenan de polvo
