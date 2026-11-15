@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://cb0fgqbl4efdi"]
 
-[ext_resource type="PackedScene" path="res://Scenes/MainUI.tscn" id="1_mainui"]
+[ext_resource type="PackedScene" uid="uid://cn3cpbs4gnocq" path="res://Scenes/MainUI.tscn" id="1_mainui"]
 
-[node name="Gameplay" type="Control"]
+[node name="Gameplay" type="Control" unique_id=263750539]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,5 +11,5 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="MainUI" parent="." instance=ExtResource("1_mainui")]
+[node name="MainUI" parent="." unique_id=388159872 instance=ExtResource("1_mainui")]
 layout_mode = 1

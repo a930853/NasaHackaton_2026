@@ -27,12 +27,12 @@ const HEALTH_GOAL: int = 50
 ## Están elegidos con el simulador de tools/balance_sim.py para que las derrotas de un jugador atento
 ## se repartan entre las cuatro barras (oxígeno ~19 %, energía ~13 %, salud ~10 %, integridad ~12 %,
 ## con ~46 % de victorias). Antes casi todas las derrotas eran por oxígeno. Ver docs/juego/diseno.md.
-const PASSIVE_OXYGEN_LOSS: int = 4            # hasta que MOXIE esté al 100 %
+const PASSIVE_OXYGEN_LOSS: int = 3            # hasta que MOXIE esté al 100 %
 const PASSIVE_ENERGY_GAIN: int = 7            # paneles solares...
 const PASSIVE_ENERGY_GAIN_DUSTY: int = 6      # ...que dan menos cuando se llenan de polvo
 const DUSTY_PANELS_FROM_SOL: int = 8
-const PASSIVE_INTEGRITY_LOSS: int = 3         # el viento y el polvo desgastan la base
-const PASSIVE_HEALTH_LOSS: int = 6            # el estrés y la radiación cansan a la tripulación...
+const PASSIVE_INTEGRITY_LOSS: int = 2         # el viento y el polvo desgastan la base
+const PASSIVE_HEALTH_LOSS: int = 4            # el estrés y la radiación cansan a la tripulación...
 const HEALTH_LOSS_FROM_SOL: int = 4           # ...una vez pasados los primeros Sols
 const SEISMIC_DEADLINE_SOL: int = 13
 const HARVEST_GOAL: int = 3
