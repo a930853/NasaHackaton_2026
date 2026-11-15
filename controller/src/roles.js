@@ -36,7 +36,7 @@ export const ROLES = {
   },
 }
 
-export const ROLE_IDS = Object.keys(ROLES)
+export const ROLE_IDS = ['engineer', 'biologist', 'doctor']
 
 /** Variables CSS del color de un rol. */
 export const roleStyle = (role) =>

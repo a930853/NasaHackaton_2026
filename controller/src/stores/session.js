@@ -74,6 +74,7 @@ export function createSession({ url, storage = browserStorage(), WebSocketImpl, 
     code: '',
     playerId: '',
     role: null,
+    commander: false,
     players: [],
     roomStatus: null,
     /** Última controller_view recibida */
@@ -95,7 +96,9 @@ export function createSession({ url, storage = browserStorage(), WebSocketImpl, 
 
   function applyPlayers(players) {
     state.players = players
-    state.role = players.find((p) => p.id === state.playerId)?.role ?? null
+    const mine = players.find((p) => p.id === state.playerId)
+    state.role = mine?.role ?? null
+    state.commander = mine?.commander === true
   }
 
   function sendChoose(pending) {
@@ -107,7 +110,7 @@ export function createSession({ url, storage = browserStorage(), WebSocketImpl, 
     saved = null
     write(SESSION_KEY, null)
     Object.assign(state, {
-      code: '', playerId: '', role: null, players: [], roomStatus: null, view: null, choice: idleChoice(),
+      code: '', playerId: '', role: null, commander: false, players: [], roomStatus: null, view: null, choice: idleChoice(),
     })
   }
 

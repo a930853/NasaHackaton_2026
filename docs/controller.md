@@ -31,7 +31,7 @@ La app se sirve bajo `/controller/` (`base` de Vite y del router).
 |---|---|
 | `/controller/` | Entrada normal: pide código y nombre; después, elegir rol en pantalla. |
 | `/controller/?room=K7MP` | Igual, con el código precargado (lo que abre el QR). |
-| `/controller/engineer` · `/biologist` · `/doctor` · `/generalist` | **Entrada directa a un rol** (tablero físico con NFC). Pide código y nombre si no viene `?room=` y reserva ese rol al entrar. |
+| `/controller/engineer` · `/biologist` · `/doctor` | **Entrada directa a un rol** (tablero físico con NFC). Pide código y nombre si no viene `?room=` y reserva ese rol al entrar. El Comandante es una capacidad adicional del primer jugador. |
 | `/controller/<rol>?room=K7MP` | Entrada directa con sala y rol. |
 
 La ruta expresa la **intención** del jugador; el rol real lo confirma el backend en `lobby_state`:
@@ -52,7 +52,7 @@ controller/
     main.js                crea la sesión, la inyecta (provide) y conecta al resolverse la URL
     router.js              rutas home + una por rol (meta.role)
     App.vue                solo <RouterView />
-    roles.js               datos de los 4 roles (nombre, colores) con las claves del contrato
+    roles.js               datos de los roles principales y la capacidad de Comandante
     messages.js            textos para los códigos de error, rechazo y cierre
     styles.css             Tailwind: tema (@theme) y clases compartidas
     net/socket.js          WebSocket: URL desde location, reconexión con backoff
@@ -83,7 +83,7 @@ Reglas de la arquitectura:
 |---|---|
 | `connection` | `connecting` · `online` · `offline` (reconectando) · `replaced` (otro dispositivo tomó la sesión) |
 | `phase` | `connecting` · `enter` · `joining` · `lobby` · `playing` · `closed` |
-| `code`, `playerId`, `name`, `role` | Identidad confirmada por el backend |
+| `code`, `playerId`, `name`, `role`, `commander` | Identidad confirmada por el backend |
 | `players`, `roomStatus` | Último `lobby_state` |
 | `view` | Última `controller_view` |
 | `choice` | `{ status: idle · sending · registered · rejected, eventId, optionId, reason }` |

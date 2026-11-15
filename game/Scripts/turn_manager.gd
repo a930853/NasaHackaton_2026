@@ -230,6 +230,7 @@ func option_block_reason(option: Dictionary) -> String:
 	var role: Variant = option.get("role")
 	if role != null:
 		var role_id: String = str(role)
+		role_id = _effective_crew_role(role_id)
 		if GameState.is_away(role_id):
 			var sols_left: int = GameState.away_sols_left(role_id)
 			return "The %s is busy (back in %d Sol%s)." % [
@@ -290,9 +291,15 @@ var connected_roles: Array[String] = []
 
 # Votación de los móviles (docs/juego/diseno.md, docs/godot/red.md):
 # cada jugador presente vota una opción; cuando han votado todos los que pueden, gana la más votada.
-# Empate -> segunda votación solo entre las empatadas; si vuelve a empatar, se sortea entre ellas.
+# Empate -> segunda votación solo entre las empatadas; si vuelve a empatar, decide el Comandante.
 var _votes: Dictionary = {}               # role -> option_id
 var _tie_options: Array[String] = []      # en el desempate, las únicas opciones que se pueden votar
+var commander_role: String = ""
+
+func _effective_crew_role(role_id: String) -> String:
+	if role_id == "generalist" and not commander_role.is_empty():
+		return commander_role
+	return role_id
 
 
 ## Roles que tienen que votar en el evento actual: conectados, en la base y con alguna opción libre.
@@ -325,6 +332,10 @@ func set_connected_roles(roles: Array[String]) -> void:
 	connected_roles = roles
 	if phase == Phase.DECISION and not _votes.is_empty() and not _try_resolve_votes():
 		votes_changed.emit()
+
+
+func set_commander_role(role: String) -> void:
+	commander_role = role
 
 
 ## Voto de un móvil. Devuelve "" si se acepta o el motivo del rechazo (choice_result).
@@ -360,8 +371,9 @@ func _try_resolve_votes() -> bool:
 	elif _tie_options.is_empty():
 		_start_tiebreak(winners)
 	else:
-		# Segundo empate: se sortea entre las empatadas.
-		submit_choice(winners.pick_random(), "It was a tie again, so luck decided!")
+		var commander_vote: String = str(_votes.get(commander_role, ""))
+		var decided_option: String = commander_vote if commander_vote in winners else winners[0]
+		submit_choice(decided_option, "It was a tie again, so the Commander's vote decided!")
 	return true
 
 
@@ -503,7 +515,7 @@ func submit_choice(option_id: String, note: String = "") -> bool:
 	if busy_sols > 0:
 		var plural: String = "" if busy_sols == 1 else "s"
 		if option.get("role") != null:
-			var worker: String = str(option["role"])
+			var worker: String = _effective_crew_role(str(option["role"]))
 			GameState.send_away(worker, busy_sols)
 			lines.append("The %s will be busy for %d Sol%s." % [GameState.ROLE_NAMES[worker], busy_sols, plural])
 		else:

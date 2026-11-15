@@ -55,7 +55,7 @@ Comprobación: `curl http://localhost:3000/api/health` → `{"ok":true,"rooms":0
 ```text
 Room    { code, status: lobby|playing|finished, hostConnection, hostToken,
           players: Map<playerId, Player>, nextPlayer }
-Player  { id, name, role, resumeToken, connection, connected, lastView }
+Player  { id, name, role, commander, resumeToken, connection, connected, lastView }
 ```
 
 - Códigos de 4 caracteres sobre `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`, regenerados hasta que no colisionan con una sala viva.
@@ -77,7 +77,7 @@ Un mensaje enviado por el tipo equivocado devuelve `not_host` / `not_player`. La
 ## Flujo interno
 
 - **Registro de anfitrión:** `create_room` crea la sala, guarda la conexión y responde `room_created` + `lobby_state`.
-- **Entrada:** `join_room` crea el `Player` (sin rol) y difunde `lobby_state`.
+- **Entrada:** `join_room` crea el `Player` (sin rol); el primero recibe `commander: true`, además de su futuro rol principal, y difunde `lobby_state`.
 - **Roles:** `selectRole` comprueba que la sala está en lobby y que nadie más tiene ese rol.
 - **Inicio:** exige 1–4 jugadores, todos con rol; pasa a `playing` y envía `game_started`.
 - **Vistas:** `controller_view` guarda `lastView` y la entrega si el jugador está conectado.

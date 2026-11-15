@@ -223,7 +223,9 @@ function restart() {
             aria-hidden="true"
           />
           <div>
-            <p class="mb-0.5 font-mono text-[11px] font-medium tracking-[.14em] text-outline/75">YOUR MISSION</p>
+            <p class="mb-0.5 font-mono text-[11px] font-medium tracking-[.14em] text-outline/75">
+              YOUR MISSION<span v-if="s.commander"> · COMMANDER</span>
+            </p>
             <h1 id="role-title" class="text-[clamp(28px,4.5vw,50px)] leading-[.98] font-bold tracking-[-.04em]">
               {{ roleInfo.name }}
             </h1>

@@ -3,7 +3,7 @@ import { randomBytes, randomInt } from 'node:crypto';
 import { MAX_PLAYERS } from './protocol.js';
 
 /**
- * @typedef {{ id: string, name: string, role: string|null, resumeToken: string,
+ * @typedef {{ id: string, name: string, role: string|null, commander: boolean, resumeToken: string,
  *             connection: import('ws').WebSocket|null, connected: boolean, lastView: object|null }} Player
  * @typedef {{ code: string, status: 'lobby'|'playing'|'finished', hostConnection: import('ws').WebSocket,
  *             hostToken: string, players: Map<string, Player>, nextPlayer: number }} Room
@@ -44,6 +44,7 @@ export function addPlayer(room, name, connection) {
     id: `p${room.nextPlayer++}`,
     name: name.trim(),
     role: null,
+    commander: room.players.size === 0,
     resumeToken: token(),
     connection,
     connected: true,
@@ -70,7 +71,9 @@ export function findByResumeToken(room, resumeToken) {
 
 /** Vista pública de los jugadores: nunca incluye tokens ni conexiones. */
 export function publicPlayers(room) {
-  return [...room.players.values()].map(({ id, name, role, connected }) => ({ id, name, role, connected }));
+  return [...room.players.values()].map(({ id, name, role, commander, connected }) => ({
+    id, name, role, commander, connected,
+  }));
 }
 
 export function closeRoom(code) {
