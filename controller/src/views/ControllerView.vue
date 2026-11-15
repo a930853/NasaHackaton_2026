@@ -115,7 +115,7 @@ watch(() => s.phase, syncMusic)
 onMounted(() => {
   music = new Audio()
   music.loop = true
-  music.volume = 0.25
+  music.volume = 1
   window.addEventListener('pointerdown', unlockMusic, { once: true })
   window.addEventListener('keydown', unlockMusic, { once: true })
   syncMusic()
