@@ -1,6 +1,6 @@
 <script setup>
 // Portada: Marte visto por la ventana de la nave. Nombre y logo del juego, de qué va, los recursos,
-// la tripulación y un dato real de la NASA. La indicación señala el canto de la puerta (a la derecha).
+// la tripulación y un dato real de la NASA. Arriba, un banner con el logo y el nombre; «Play» abre la puerta.
 import { randomFact } from '../facts.js'
 import logo from '../assets/logo.png'
 import health from '../assets/health.png'
@@ -22,31 +22,31 @@ const CREW = [
   { name: 'Generalist', color: '#ffffff' },
 ]
 const fact = randomFact()
+// «Play» abre la puerta (App.vue); al cerrarla, el foco vuelve a este botón
+import { ref } from 'vue'
+const emit = defineEmits(['play'])
+const playEl = ref(null)
+defineExpose({ focusPlay: () => playEl.value?.focus() })
 </script>
 
 <template>
-  <main
-    class="intro-shade flex min-h-dvh flex-col justify-center gap-[clamp(18px,3.4vh,40px)] py-[clamp(20px,4vh,64px)] pr-[calc(var(--hatch-w)+clamp(24px,4vw,64px))] pl-[clamp(24px,6vw,96px)] text-[clamp(17px,calc(.5vw+11px),22px)] max-md:justify-start max-md:px-6 max-md:pt-8 max-md:pb-[calc(var(--hatch-h)+32px)]"
-  >
-    <h1
-      class="outline-text m-0 flex items-center gap-[.3em] font-display text-[clamp(34px,4.4vw,76px)] leading-[1.05] font-normal tracking-[-.03em] text-white max-md:flex-col max-md:items-start max-md:gap-3.5 max-md:text-[min(9vw,40px)]"
-    >
-      <img :src="logo" alt="" class="size-[1.6em] shrink-0 drop-shadow-[4px_4px_0_var(--color-ink)] [image-rendering:pixelated] max-md:size-[72px]">
-      <!-- Corta en «Red Planet / Survivors»: Sixtyfour es muy ancha -->
-      <span class="max-w-[10.5em]">Red Planet Survivors</span>
-    </h1>
+  <div class="flex min-h-dvh flex-col">
+    <!-- Banner: franja con degradado de izquierda (opaco) a derecha (transparente), con el logo y
+         el nombre en una sola línea en PC; abajo, una línea naranja que se desvanece igual -->
+    <header class="relative z-[1] flex items-center gap-[clamp(12px,1.6vw,24px)] bg-linear-to-r from-screen via-screen/75 to-screen/0 px-[clamp(24px,6vw,96px)] py-[clamp(12px,2vh,20px)] max-md:px-6">
+      <span class="absolute right-0 bottom-0 left-[clamp(24px,6vw,96px)] h-[3px] max-md:left-6 bg-linear-to-r from-energy via-energy/60 to-energy/0" aria-hidden="true" />
+      <img :src="logo" alt="" class="size-[clamp(48px,5vw,84px)] shrink-0 drop-shadow-[3px_3px_0_var(--color-ink)] [image-rendering:pixelated]">
+      <h1 class="outline-text m-0 font-display text-[clamp(20px,3.1vw,54px)] leading-[1.1] font-normal tracking-[-.03em] text-white md:whitespace-nowrap max-md:text-[min(6.6vw,30px)]">
+        Red Planet Survivors
+      </h1>
+    </header>
 
+  <main
+    class="intro-shade flex flex-1 flex-col justify-center gap-[clamp(18px,3.4vh,40px)] py-[clamp(20px,4vh,64px)] pr-[clamp(24px,4vw,64px)] pl-[clamp(24px,6vw,96px)] text-[clamp(17px,calc(.5vw+11px),22px)] max-md:justify-start max-md:px-6 max-md:pt-7 max-md:pb-[calc(var(--hatch-h)+32px)]"
+  >
     <p class="m-0 max-w-[25em] text-[1.4em] leading-[1.4] text-pretty text-glass">
       Your crew just landed in Jezero Crater, on Mars. Work together to keep your base alive for 20 Sols.
       <small class="mt-1.5 block text-[.72em] text-glass-dim">A Sol is one day on Mars. It is a little longer than a day on Earth.</small>
-    </p>
-
-    <!-- Indicación (no es un botón): señala el canto de la puerta, que es el que la abre -->
-    <p class="outline-text-sm m-0 flex items-center gap-3.5 font-display text-[1.05em] tracking-[-.01em] whitespace-nowrap text-white max-md:hidden">
-      Press the bar to play
-      <svg viewBox="0 0 64 36" class="h-9 w-16 shrink-0 drop-shadow-[0_4px_0_var(--color-ink)]" aria-hidden="true">
-        <path d="M3 12h36V3l22 15-22 15v-9H3z" fill="#ffa826" stroke="#1a2030" stroke-width="3.5" stroke-linejoin="round" />
-      </svg>
     </p>
 
     <div class="flex max-w-[36em] items-center gap-[18px] max-md:flex-col max-md:items-start max-md:gap-3">
@@ -81,7 +81,16 @@ const fact = randomFact()
       <b class="text-glass">Real NASA science:</b> {{ fact }}
     </p>
 
-    <!-- El canto de la puerta tapa el crédito que trae la imagen -->
+    <!-- Abre la puerta con las dos formas de jugar: grande y al final, después de saber de qué va.
+         Solo en PC: en el móvil abre la barra gris de abajo (SlidingDoor). -->
+    <button ref="playEl" class="key flex w-fit items-center gap-5 py-4 pr-14 pl-4 font-display text-[1.7em] font-normal max-md:hidden" type="button" aria-controls="door-panel" @click="emit('play')">
+      <span class="grid size-16 shrink-0 place-items-center rounded-full bg-ink max-md:size-14" aria-hidden="true">
+        <svg viewBox="0 0 14 16" class="ml-1 h-6 w-[21px]"><path d="M1 1l12 7-12 7z" fill="#ffa826" /></svg>
+      </span>
+      Play
+    </button>
+
     <p class="m-0 text-[13px] text-glass-dim/70">Mars photo: ESA/DLR/FU Berlin, processed by J. Cowart.</p>
   </main>
+  </div>
 </template>

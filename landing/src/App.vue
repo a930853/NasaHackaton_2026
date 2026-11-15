@@ -1,7 +1,7 @@
 <script setup>
 // Página de inicio: la portada (IntroView) y la puerta con las dos formas de jugar (SlidingDoor).
 //
-// La puerta se abre con su canto y se cierra con «Back» (o Escape). Abierta, la portada queda
+// La puerta se abre con «Play» de la portada (en el móvil, con la barra de abajo) y se cierra con «Back» (o Escape). Abierta, la portada queda
 // inerte (ni el teclado ni los lectores de pantalla entran en ella) y no hace scroll.
 // /#play abre la puerta directamente.
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
@@ -10,6 +10,7 @@ import SlidingDoor from './components/SlidingDoor.vue'
 
 const open = ref(location.hash === '#play')
 const door = ref(null)
+const intro = ref(null)
 
 function sync(isOpen) {
   document.documentElement.classList.toggle('overflow-hidden', isOpen)
@@ -21,7 +22,9 @@ watch(open, async (isOpen) => {
   sync(isOpen)
   await nextTick()
   if (isOpen) door.value.focusTitle()
-  else door.value.focusHatch()
+  // Al cerrar, el foco vuelve a lo que la abrió: «Play» en PC, la barra de abajo en el móvil
+  else if (matchMedia('(width < 48rem)').matches) door.value.focusHatch()
+  else intro.value.focusPlay()
 })
 
 const onHashChange = () => { open.value = location.hash === '#play' }
@@ -40,6 +43,6 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <IntroView :inert="open || undefined" />
+  <IntroView ref="intro" :inert="open || undefined" @play="open = true" />
   <SlidingDoor ref="door" :open="open" @open="open = true" @close="open = false" />
 </template>
