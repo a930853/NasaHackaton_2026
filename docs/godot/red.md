@@ -19,7 +19,7 @@ Decisiones tomadas:
 
 - **Dirección del servidor:** en web, `location` (nunca IP fija). En el editor, `ws://localhost:3000/ws`; se puede cambiar con el argumento `--ws-url=ws://localhost:3100/ws` o la variable de entorno `NASA_WS_URL`.
 - **Dirección del mando que se enseña:** en web, `location.origin`; en el editor, `http://localhost:5173` (Vite). Si contiene `localhost` el lobby avisa de que los móviles no podrán usarla.
-- **QR:** pendiente. Godot no trae generador y de momento se muestran el **código en texto** y la dirección completa (plan B del contrato). La landing (`/`) también permite entrar escribiendo el código.
+- **QR:** el lobby multijugador lo enseña a la derecha de las instrucciones, con `Net.controller_url(code)`. Lo genera `game/Scripts/qr_code.gd` (`QrCode.to_texture(texto)`), un generador en GDScript sin dependencias (modo byte, corrección M, versiones 1–10, hasta 213 bytes). El **código en texto** y la dirección siguen visibles como plan B, y la landing (`/`) permite entrar escribiendo el código.
 - **Todos votan todas las opciones:** cada móvil recibe todas las opciones del evento. Las que tienen un rol dueño llevan su nombre delante (`(Engineer) …`) y quien la haga queda ocupado. Si solo votara el dueño del rol, su opción casi nunca saldría elegida. Un rol ausente (menos de 4 jugadores) no deja ninguna decisión sin dueño. Si todos los presentes están ocupados fuera, el evento espera a que vuelva alguien.
 - **Quién decide (votación):** cada jugador conectado y en la base vota una opción (`TurnManager.cast_vote`). Cuando han votado todos los que pueden, gana la más votada. Un voto aceptado queda bloqueado (otro `actionId` → `already_decided`) y el móvil pasa a una vista `waiting` «Vote sent!» con el recuento. Un móvil desconectado no bloquea la votación.
 - **Empates:** segunda votación solo entre las empatadas, con nuevo `eventId` (`<id>#<n>-tie`), así que un voto tardío de la primera ronda recibe `event_closed`. Si vuelve a empatar, se sortea entre las empatadas y el resultado lo dice («It was a tie again, so luck decided!»). Si se acaba la cuenta atrás de un evento crítico, gana lo más votado hasta ese momento (o la opción por defecto si no hay votos).
@@ -179,7 +179,7 @@ Detalles que suelen fallar:
 El QR debe contener `<dirección-LAN>/controller/?room=<código>`.
 
 - Usad `location.origin` como base **solo si no es `localhost`/`127.0.0.1`**: esos nombres no sirven a los móviles. Si el anfitrión abrió el juego por `localhost`, mostrad un aviso y permitid escribir la IP de la LAN a mano (p. ej. `http://192.168.1.50`).
-- Godot no trae generador de QR. Opciones: un addon/script GDScript de QR (que sea local, la demo no puede depender de Internet), o generarlo con una librería JS pequeña servida desde `dist/` y llamada mediante `JavaScriptBridge`. Elegid una y dejadla registrada en este documento.
+- Godot no trae generador de QR: se usa `game/Scripts/qr_code.gd`, en GDScript y sin dependencias (funciona igual en escritorio y en web).
 - Mostrad siempre también el código en texto: es el plan B si falla el QR.
 
 ```gdscript
@@ -333,7 +333,7 @@ Al resolver:
 
 - [ ] `Net` hace `poll()` cada frame y centraliza el socket.
 - [ ] Lobby pintado desde `lobby_state` completo, con jugadores desconectados diferenciados.
-- [ ] QR (o enlace) con dirección de LAN, nunca `localhost`; código visible también en texto.
+- [x] QR (o enlace) con dirección de LAN, nunca `localhost`; código visible también en texto.
 - [ ] Cada evento tiene `eventId` único por aparición.
 - [ ] Un evento nunca depende de un rol ausente.
 - [ ] `actionId` repetido → misma respuesta, sin efectos duplicados.
