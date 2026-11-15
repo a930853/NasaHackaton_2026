@@ -1,7 +1,7 @@
 <script setup>
 // Orquesta el mando: decide qué pantalla mostrar a partir del estado de la sesión
 // y traduce la ruta (/controller/<rol>) en una petición de rol al backend.
-import { computed, inject, ref, watch } from 'vue'
+import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ROLES, roleStyle } from '../roles.js'
 import { closedText, errorText } from '../messages.js'
@@ -32,6 +32,26 @@ const roleInfo = computed(() => ROLES[activeRole.value] ?? null)
 const decided = computed(
   () => s.view?.screen === 'choice' && s.choice.status === 'registered' && s.choice.eventId === s.view.eventId,
 )
+
+const preGameTrack = '/controller/audio/Chill_MN.mp3'
+const gameTrack = '/controller/audio/Chill_Space2026.mp3'
+let music = null
+let musicUnlocked = false
+
+function syncMusic() {
+  if (!music) return
+  const nextTrack = s.phase === 'playing' ? gameTrack : preGameTrack
+  if (music.src !== new URL(nextTrack, window.location.href).href) {
+    music.src = nextTrack
+    music.load()
+  }
+  if (musicUnlocked) music.play().catch(() => {})
+}
+
+function unlockMusic() {
+  musicUnlocked = true
+  syncMusic()
+}
 
 function goTo(name, { push = false } = {}) {
   const location = { name, query: s.code ? { room: s.code } : {} }
@@ -89,6 +109,24 @@ watch(
     message.value = errorText(error.code)
   },
 )
+
+watch(() => s.phase, syncMusic)
+
+onMounted(() => {
+  music = new Audio()
+  music.loop = true
+  music.volume = 0.25
+  window.addEventListener('pointerdown', unlockMusic, { once: true })
+  window.addEventListener('keydown', unlockMusic, { once: true })
+  syncMusic()
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('pointerdown', unlockMusic)
+  window.removeEventListener('keydown', unlockMusic)
+  music?.pause()
+  music = null
+})
 
 function join({ code, name }) {
   message.value = ''
