@@ -93,18 +93,20 @@ Reglas de la arquitectura:
 Pantalla según el estado (`ControllerView.vue`):
 
 ```text
-connection = replaced                → «Sesión en otro dispositivo» + «Usar este dispositivo»
-phase = connecting | joining         → «Conectando…»
-phase = enter                        → EnterView
-phase = closed                       → «Sala cerrada» + «Volver al inicio»
-phase = lobby, sin rol en la ruta    → RolePicker
-phase = lobby, con rol               → «Reservando…» o «Rol reservado, esperando inicio»
+connection = replaced                → «Opened somewhere else» + «Use this device»
+phase = connecting | joining         → «Connecting…»
+phase = enter                        → EnterView + «Back to home» (la landing, /)
+phase = closed                       → «Room closed» + «Join another room»
+phase = lobby, sin rol en la ruta    → RolePicker + «Keep my job» (si ya tenía rol)
+phase = lobby, con rol               → «Saving your job…» o «You are in!» + «Change job» y «Leave the room»
 phase = playing
-  view = null                        → «La misión está comenzando»
-  view.screen = choice               → ChoiceView (o «Decisión registrada» si ya se aceptó)
-  view.screen = result               → resultado
+  view = null                        → «Lift-off!»
+  view.screen = choice               → ChoiceView (o «Vote sent!» si ya se aceptó)
+  view.screen = result               → resultado + «Continue»
   view.screen = waiting / otro       → espera
 ```
+
+**Salidas (ir atrás):** antes de entrar, «Back to home»; al elegir rol, «Keep my job» si ya tenía uno; con el rol guardado, «Change job» y «Leave the room». «Leave the room» envía `leave_room` ([protocolo](protocol.md#leave_room)): Node borra al jugador y libera su rol, y el mando vuelve a la entrada con el código precargado. Con la partida empezada no se puede salir.
 
 ## Recuperación y elecciones
 
@@ -121,9 +123,10 @@ phase = playing
 
 ## Estilos
 
-- Tailwind 4 con `@tailwindcss/vite`. El tema (`@theme` en `styles.css`) define la paleta (`navy`, `panel`, `line`, `ink`, `muted`, `amber`…) y las fuentes (`font-sans` Space Grotesk, `font-mono` DM Mono).
-- El color del rol activo llega por variables CSS (`--role-color`, `--role-pale`, `--role-dark`), que fija `roleStyle()` de `roles.js`. En las clases: `text-(--role-color)`, `bg-(--role-pale)`…
-- Clases compartidas en `@layer components`: `screen-w`, `eyebrow`, `notice`, `notice-error`, `btn-primary`, `btn-secondary`. El resto, utilidades en la plantilla.
+- El mando es un **aparato de la cabina del juego** sobre la foto de Marte del menú: carcasa (`device`) con tornillos recortados de `hud_frame.png`, placa de identidad (`DevicePlate.vue`, con el casco del juego teñido del color del rol), pantallas con bisel (`screen`) y teclas que se hunden al pulsar (`key`; `key-quiet` para acciones secundarias, `key-off` para opciones bloqueadas).
+- Tailwind 4 con `@tailwindcss/vite`. El tema (`@theme` en `styles.css`) define la paleta (`hull`, `ink`, `screen`, `glass`, `key-red/cyan/orange/purple`…) y las fuentes: `font-display` Sixtyfour (la del título del juego, solo textos cortos) y `font-sans` Chakra Petch.
+- El color del rol activo llega por la variable CSS `--role-color`, que fija `roleStyle()` de `roles.js`.
+- Imágenes en `src/assets/` (casco, foto de Marte, tornillo), copiadas de `game/Images`.
 - Fuentes empaquetadas con `@fontsource`. **Nada se carga de Internet**: la demo debe funcionar en la LAN sin conexión exterior.
 
 ## Despliegue

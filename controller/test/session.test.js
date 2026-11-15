@@ -156,6 +156,19 @@ test('una decisión registrada se mantiene tras recargar', async () => {
   assert.equal(s2.state.choice.status, 'registered')
 })
 
+test('salir de la sala en el lobby vuelve a la entrada y olvida las credenciales', async () => {
+  const h = await host()
+  const storage = memoryStorage()
+  const s = await joinedPlayer(h, 'Ana', 'engineer', storage)
+  s.leaveRoom()
+  await until(() => s.state.phase === 'enter', 'vuelta a la entrada')
+  assert.equal(storage.getItem('nasa.controller.session'), null)
+  assert.equal(s.state.role, null)
+  assert.equal(s.state.prefillCode, h.code) // el código sigue puesto por si quiere volver
+  const lobby = await h.next('lobby_state')
+  assert.ok(lobby)
+})
+
 test('rol ocupado: el error llega al store y el rol no cambia', async () => {
   const h = await host()
   await joinedPlayer(h, 'Ana', 'engineer')

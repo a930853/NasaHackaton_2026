@@ -143,6 +143,15 @@ function changeRole() {
   goTo('home', { push: true })
 }
 
+/** Sale de la sala (lobby): vuelve a la entrada con el código precargado, sin rol en la ruta. */
+function leaveRoom() {
+  message.value = ''
+  requestedRole = null
+  goToOwnRole = true
+  router.replace({ name: 'home', query: s.code ? { room: s.code } : {} })
+  session.leaveRoom()
+}
+
 // Placa de arriba: con rol, quién eres; sin rol, el nombre del juego.
 const plateTitle = computed(() => (showRoleScreen.value && roleInfo.value ? roleInfo.value.name : 'Mars Mission'))
 const plateSubtitle = computed(() => {
@@ -226,6 +235,7 @@ function restart() {
             <CrewList :players="s.players" :player-id="s.playerId" />
             <template #actions>
               <button class="key key-quiet text-center" type="button" @click="changeRole">Change job</button>
+              <button class="key key-quiet text-center" type="button" @click="leaveRoom">Leave the room</button>
             </template>
           </StatusCard>
         </template>

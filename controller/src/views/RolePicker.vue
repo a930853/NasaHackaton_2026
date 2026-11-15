@@ -19,6 +19,9 @@ const roleList = computed(() =>
   }),
 )
 
+/** Rol que ya tenía el jugador (si vuelve aquí desde «Change job»). */
+const myRole = computed(() => roleList.value.find((role) => role.mine) ?? null)
+
 const caption = (role) => {
   if (role.mine) return 'This is you'
   return role.available ? role.subtitle : `${role.holder.name} has it`
@@ -54,6 +57,13 @@ const caption = (role) => {
           <span class="text-[19px] leading-tight">{{ role.name }}</span>
           <span class="text-[15px] font-normal text-ink/80">{{ caption(role) }}</span>
         </span>
+      </button>
+    </div>
+
+    <!-- Volver sin cambiar de rol (si llegó aquí desde «Change job») -->
+    <div v-if="myRole" class="flex flex-col gap-4 pb-1.5">
+      <button class="key key-quiet text-center" type="button" @click="emit('pick', myRole.id)">
+        Keep my job ({{ myRole.name }})
       </button>
     </div>
   </section>

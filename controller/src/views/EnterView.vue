@@ -70,5 +70,8 @@ function submit() {
     </form>
 
     <p v-if="message" class="alert" role="alert">{{ message }}</p>
+
+    <!-- Volver a la página de inicio (crear partida o entrar con otro código) -->
+    <a class="key key-quiet text-center no-underline" href="/">Back to home</a>
   </section>
 </template>

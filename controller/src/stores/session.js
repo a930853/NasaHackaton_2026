@@ -201,6 +201,10 @@ export function createSession({ url, storage = browserStorage(), WebSocketImpl, 
       }
       persist()
     },
+    left_room() {
+      forget() // el código sigue precargado (prefillCode) por si quiere volver a entrar
+      state.phase = 'enter'
+    },
     room_closed(m) {
       forget()
       state.phase = 'closed'
@@ -253,6 +257,11 @@ export function createSession({ url, storage = browserStorage(), WebSocketImpl, 
 
     selectRole(role) {
       if (!socket.send({ type: 'select_role', role })) setError('offline', 'select_role')
+    },
+
+    /** Sale de la sala (solo en el lobby). La confirmación (left_room) devuelve a la entrada. */
+    leaveRoom() {
+      if (!socket.send({ type: 'leave_room' })) setError('offline', 'leave_room')
     },
 
     choose(optionId) {
