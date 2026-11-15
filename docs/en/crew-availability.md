@@ -1,0 +1,85 @@
+# Crew Availability and Task Durations
+
+This document defines how long each character (Engineer, Biologist, Doctor and Commander) takes to perform actions in a **20-Sol** game, and what happens when everyone is away from the base.
+
+## 1. Occupation and an empty base
+
+- **Task lock:** when a player chooses an option assigned to their role (or a group expedition), that character is marked **Busy / Away from base** for a specified number of Sols (`0`, `1` or `2`).
+- **Unavailable for selection:** while `sols_busy > 0`, that character cannot be selected for role-specific options on later turns.
+- **Empty-base rule:** at the start of a Sol, count characters with `sols_busy == 0`. If **all four are busy (`available == 0`)**, nobody is at the base to receive or handle problems: **no event is generated that day**. Normal daily consumption applies, and the turn advances automatically with an informational message.
+
+## 2. Durations by role and task type
+
+The game lasts **20 Sols**. Durations range from 0 to 2 Sols to keep the pace without blocking play for too long.
+
+| Role | Instant task (`0 Sols`) | Standard task (`1 Sol`) | Expedition / long task (`2 Sols`) |
+|---|---|---|---|
+| **Commander** | Quick communications and reports to Earth. | Morale, emergency protocols and scheduling. | None; always supervises command. |
+| **Doctor** | First aid and quick treatments. | Cognitive therapy, relaxation and in-depth medical follow-up. | None; remains in the infirmary. |
+| **Biologist** | Biological processes take at least one Sol. | Probiotic shakes, rationing and light schedules. | Intensive crop growing and full laboratory cycles. |
+| **Engineer** | Repairs take at least one Sol. | Remote console operations (telemetry, lights, panel vibration, 3D printing). | Long EVAs: placing seismic sensors or assembling heavy MOXIE phases. |
+| **General vote** | Passive decisions, postponing problems or rationing resources inside the base. | **Group EVAs:** everyone leaves in suits (rover rescue, panel cleaning or group sensor placement). The base is empty the following Sol. | Not applicable. |
+
+## 3. Durations by event
+
+### General events
+
+- **E1 (Greenhouse):** eat sprouts, 0 Sols; Biologist protects crops, 2 Sols busy; Engineer uses grow lights, 1 Sol busy.
+- **E2 (Space Tummy Ache):** Biologist makes probiotic shakes, 1 Sol; Doctor uses the medicine kit, 0; general option postpones, 0.
+- **E3 (Mental Fog):** Commander holds a video-game tournament, 1 Sol; Doctor runs memory exercises, 1; general option ignores it, 0.
+- **E4 (Rover Stuck):** Engineer remote-controls it, 1 Sol; group EVA rescue, 1 Sol for everyone (base empty next day); abandon it, 0.
+- **E5 (Dust on Panels):** group EVA cleaning, 1 Sol for everyone (base empty next day); Engineer vibrates panels, 1; ration power, 0.
+
+### Objective 1: InSight seismic sensors
+
+- **S1 (Build sensors):** Engineer uses 3D printer, 1 Sol; everyone recycles rover parts, 1 Sol for the whole crew; general duct-tape option, 0.
+- **S2 (Place all three):** group long EVA, 1 Sol for everyone (base empty next day); Engineer's precision EVA, 2 Sols away; two separate group trips, 0 today but everyone is busy for 1 Sol tomorrow.
+- **S3 (Dusty sensor):** group repair EVA, 1 Sol for everyone; Engineer remote clean-up, 1; abandon it, 0.
+- **S4 (Marsquake):** Engineer reinforces structure, 1; group evacuates to safe room, 0. Unwarned quake repair is a group task for 1 Sol.
+
+### Objective 2: MOXIE generator
+
+- **M1 (First MOXIE phase):** general fast assembly, 1 Sol for everyone; Engineer careful assembly, 2 Sols; general greenhouse-parts option, 0.
+- **M2 (MOXIE vs. greenhouse):** prioritize MOXIE, 0; Biologist schedules shifts, 1; Commander shuts down the lab, 1.
+- **M3 (Filter failure):** group hand-cleaning EVA, 1 Sol for everyone; Engineer swaps the filter, 1; ignore it, 0.
+
+### Special events
+
+- **Ask Earth for help:** 0 Sols, both for the Commander and a general vote.
+- **Solar alert (DONKI):** the selected role (Biologist or Engineer) is busy for 1 Sol.
+
+## 4. Suggested GDScript structure
+
+```gdscript
+# In GameState.gd
+var crew = {
+    "ENGINEER":  {"sols_busy": 0, "task": ""},
+    "BIOLOGIST": {"sols_busy": 0, "task": ""},
+    "DOCTOR":    {"sols_busy": 0, "task": ""},
+    "COMMANDER": {"sols_busy": 0, "task": ""}
+}
+
+# Call at dawn at the start of each new Sol.
+func update_crew_timers() -> Array[String]:
+    var returns: Array[String] = []
+    for role in crew.keys():
+        if crew[role]["sols_busy"] > 0:
+            crew[role]["sols_busy"] -= 1
+            if crew[role]["sols_busy"] == 0:
+                crew[role]["task"] = ""
+                returns.append(role)
+    return returns
+
+func is_crew_at_base() -> bool:
+    for role in crew.keys():
+        if crew[role]["sols_busy"] == 0:
+            return true
+    return false
+
+# Required before group EVAs.
+func is_entire_crew_available() -> bool:
+    for role in crew.keys():
+        if crew[role]["sols_busy"] > 0:
+            return false
+    return true
+```

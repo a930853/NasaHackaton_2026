@@ -1,14 +1,14 @@
-# Mando web
+# Web Controller
 
-App Vue 3 + Vite + Tailwind CSS que usa cada jugador en su móvil. Se conecta al backend por el WebSocket `/ws`.
+Vue 3 + Vite + Tailwind CSS 4 app (JavaScript) used by each player on their phone. It connects to the backend over the `/ws` WebSocket.
 
 ```bash
 npm install
-npm run dev     # http://localhost:5173/controller/  (necesita el backend en marcha)
-npm test        # tests del store contra el backend real
-npm run build   # genera ../dist/controller/
+npm run dev     # http://localhost:5173/controller/ (backend must be running)
+npm test        # store tests against the real backend
+npm run build   # generates ../dist/controller/
 ```
 
-Rutas: `/controller/` (elegir rol en pantalla) y `/controller/<engineer|biologist|doctor|generalist>` (entrada directa a un rol, p. ej. desde el tablero NFC). `?room=K7MP` precarga el código de sala.
+Routes: `/controller/` (choose a role on screen) and `/controller/<engineer|biologist|doctor|generalist>` (direct entry to a role, e.g. from the NFC board). `?room=K7MP` preloads a room code.
 
-Documentación completa (arquitectura, estados, recuperación de sesión, estilos y despliegue): [`docs/controller.md`](../docs/controller.md). Contrato de mensajes: [`docs/protocol.md`](../docs/protocol.md).
+Full documentation (architecture, states, session recovery, styling and deployment): [`docs/en/controller.md`](../docs/en/controller.md). Message contract: [`docs/en/protocol.md`](../docs/en/protocol.md). Spanish documentation remains available at [`docs/controller.md`](../docs/controller.md).

@@ -1,5 +1,7 @@
 # Documentación
 
+Las versiones en inglés están en [`docs/en/`](en/README.md).
+
 ## Qué leer según lo que vayas a hacer
 
 | Si vas a… | Lee |
