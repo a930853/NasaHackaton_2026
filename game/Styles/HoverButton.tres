@@ -1,0 +1,11 @@
+[gd_resource type="StyleBoxTexture" format=3 uid="uid://cnxh25n4enanc"]
+
+[ext_resource type="Texture2D" uid="uid://c11cf6tvd6lp5" path="res://Images/MarcoBoton.png" id="1_5car1"]
+
+[resource]
+texture = ExtResource("1_5car1")
+texture_margin_left = 32.0
+texture_margin_top = 32.0
+texture_margin_right = 32.0
+texture_margin_bottom = 32.0
+modulate_color = Color(0.5689727, 0.56897277, 0.5689727, 1)

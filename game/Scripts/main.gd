@@ -90,7 +90,7 @@ func _change_music(new_stream: AudioStream) -> void:
 	_music_tween.tween_callback(func() -> void:
 		music.stream = new_stream
 		music.play())
-	_music_tween.tween_property(music, "volume_db", 0.0, MUSIC_FADE_SECONDS)
+	_music_tween.tween_property(music, "volume_db", 1.0, MUSIC_FADE_SECONDS)
 
 
 func _fade(target_alpha: float) -> void:
@@ -99,3 +99,7 @@ func _fade(target_alpha: float) -> void:
 		.set_trans(Tween.TRANS_SINE)\
 		.set_ease(Tween.EASE_IN_OUT)
 	await tween.finished
+	
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		Events.sfx_requested.emit("click",0)

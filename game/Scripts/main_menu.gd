@@ -65,6 +65,7 @@ func _on_start_button_pressed() -> void:
 	mainButtons.visible = false
 	lobby.visible = false
 	_mode_box.visible = true
+	
 
 
 func _build_mode_box() -> void:

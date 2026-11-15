@@ -10,7 +10,7 @@ const SOUNDS: Dictionary = {
 	"failure": preload("res://Sound/SFX/Failure_SFX.mp3"),
 	"door": preload("res://Sound/SFX/Door_SFX.mp3"),
 	"intercom": preload("res://Sound/SFX/IntercomsMessage_SFX.mp3"),
-	#"click": preload("res://Sounds/SFX/click.ogg"),
+	"click": preload("res://Sound/SFX/Click.mp3"),
 	#"alert": preload("res://Sounds/SFX/alert.ogg"),
 	#"nfc_scan": preload("res://Sounds/SFX/nfc_scan.ogg"),
 	#"success": preload("res://Sounds/SFX/success.ogg")
