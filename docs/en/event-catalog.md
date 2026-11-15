@@ -10,7 +10,7 @@ The game's event catalog. General rules (voting, roles and Earth help) are in [g
 ## Random events
 
 ### Solar Radiation Storm — `solar-storm`
-**NASA source:** DONKI, coronal mass ejection (CME).
+**NASA source:** DONKI, coronal mass ejection (CME) as a design reference; the game does not query the CME endpoint.
 
 > Sensors detect a CME approaching Mars. Protect the crew before the radiation arrives.
 
@@ -56,7 +56,7 @@ The game's event catalog. General rules (voting, roles and Earth help) are in [g
 | Ignore it and work quietly | Everyone | Health −10; Sol+1: Integrity −5 |
 
 ### Rover Stuck in the Sand — `rover-stuck`
-**NASA source:** Curiosity landing area, Rocknest dunes. **API:** recent Perseverance photos.
+**NASA source:** Curiosity landing area, Rocknest dunes. **Planned API only:** recent Perseverance photos; the game does not currently request these images.
 
 > Your small exploration robot is stuck in a dune and has lost its signal. It has valuable data inside.
 
@@ -67,7 +67,7 @@ The game's event catalog. General rules (voting, roles and Earth help) are in [g
 | Abandon it | Everyone | Energy +5, Integrity −10 (no rover to inspect outside) |
 
 ### Dust on the Panels — `dust-panels`
-**NASA source:** Opportunity mission and Martian dust storms. **API:** InSight Weather; strong wind gusts grant +5 Energy.
+**NASA source:** Opportunity mission and Martian dust storms. **Planned API only:** InSight Weather/MEDA data; live wind does not currently grant Energy.
 
 > A dust storm has covered the base's solar panels. They produce less electricity and batteries are dropping.
 
@@ -152,7 +152,7 @@ Automatically triggers at 100%; no choice. Celebrates success and **removes pass
 
 ### Ask Earth for help
 
-Not yet an event in `events.json`; rules are in its `earth_help` block. Based on the 4–24-minute Earth–Mars communication delay and Mission Control operations. JPL Horizons provides distance.
+Not yet an event in `events.json`; rules are in its `earth_help` block. Based on the 4–24-minute Earth–Mars communication delay and Mission Control operations. JPL Horizons distance lookup is planned, not currently used.
 
 | Option | Who | Effects |
 |---|---|---|
@@ -164,7 +164,7 @@ Once per Sol. Exact Earth response and delay remain [open decisions](game-design
 
 ### Real-time solar alert
 
-**API:** DONKI (`/DONKI/FLR` or `/DONKI/CME`). A recent class M or X flare interrupts the turn and displays its real date. Earth help is blocked during this Sol and the next.
+**API:** DONKI `/DONKI/FLR` only. At game start, the game checks flares from the previous three days; a recent class M or X flare interrupts the turn and displays its real date. `/DONKI/CME` is not queried. Earth help is blocked during this Sol and the next.
 
 | Option | Who | Effects |
 |---|---|---|

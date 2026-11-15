@@ -370,14 +370,14 @@ Glosario de **18 términos** (`game/Data/glossary.json`). Cada uno tiene título
 
 ### Datos en vivo (APIs de la NASA)
 
-Las dos llamadas tienen un tiempo de espera de 3 s y un plan B, así que el juego funciona sin Internet.
+Las dos integraciones activas se ejecutan desde Godot (no desde el mando ni el backend) y usan un tiempo de espera de 3 s con alternativa local. La imagen se precarga al iniciar el juego; DONKI se consulta al comenzar la partida.
 
 | Fuente | Dirección | Para qué se usa | Sin conexión |
 |---|---|---|---|
-| **DONKI** (clima espacial), llamaradas solares | `https://api.nasa.gov/DONKI/FLR` | Al empezar la partida se piden las llamaradas de los últimos 3 días. Si hay una de clase M o X, salta «Solar Storm Alert!» con su clase y fecha reales. | No hay alerta (o se simula con el botón de depuración). |
-| **NASA Image and Video Library** | `https://images-api.nasa.gov/search?q=jezero crater` | Imagen real del cráter Jezero como fondo de la intro, con su título como crédito. | Imagen guardada de ESA Mars Express. |
+| **DONKI** (clima espacial), llamaradas solares | `https://api.nasa.gov/DONKI/FLR?startDate=…&api_key=…` | `game/Scripts/turn_manager.gd`: al comenzar la partida consulta los últimos 3 días. Una llamarada M/X activa «Solar Storm Alert!» y muestra su clase y fecha reales. | No hay alerta (o se simula con el botón de depuración). |
+| **NASA Image and Video Library** | `https://images-api.nasa.gov/search?q=jezero%20crater&media_type=image` | `game/Scripts/nasa_api.gd` la consulta al inicio; `game/Scripts/intro.gd` usa la imagen de Jezero como fondo y muestra su título como crédito. | Imagen local de ESA Mars Express. |
 
-DONKI se consulta con la clave pública `DEMO_KEY`, que tiene un límite bajo de peticiones; para la demo conviene una clave gratuita de `api.nasa.gov`.
+DONKI se consulta con la clave pública `DEMO_KEY`, que tiene un límite bajo de peticiones; para la demo conviene una clave gratuita de `api.nasa.gov`. La consulta de imágenes no usa esa clave.
 
 ### Datos de misiones reales en los eventos
 
@@ -417,7 +417,7 @@ Cada evento lleva un «NASA fact» y varios añaden términos al libro. Estos te
 
 ### Fuentes previstas y todavía no conectadas
 
-Aparecen en el diseño (`juego/diseno.md`) pero el juego aún no las consulta:
+Estas APIs aparecen en el diseño, pero el juego todavía no las consulta:
 
 | Fuente | Para qué se pensó | Qué se usa ahora |
 |---|---|---|

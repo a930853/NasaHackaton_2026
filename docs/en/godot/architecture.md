@@ -18,7 +18,7 @@ game/
   Data/events.json          events, objectives and rules
   Scripts/
     events.gd               Events autoload: signal bus (exists)
-    nasa_api.gd             NASA API queries (exists)
+    nasa_api.gd             NASA Image and Video Library query for the intro image
     net.gd                  Net autoload: WebSocket backend connection (see networking.md)
     autoload/
       game_state.gd         resources, objectives, current Sol, active conditions
@@ -44,7 +44,8 @@ game/
 | `ActiveConditions` | Multi-Sol events (storms, deferred events) and their daily penalties. | May be part of `GameState`. |
 | `DelayedEffectsQueue` | Effects scheduled for a future Sol (crops, Earth replies). | May be part of `GameState`. |
 | `GlossaryManager` | Science terms: title, simple definition and NASA fact. Stores unlocked terms. | At least 10 terms initially. |
-| `NasaDataFetcher` | Queries DONKI, Horizons, etc.; 3-second timeout and fallback data. | Currently `nasa_api.gd`. |
+| `NasaApi` (`game/Scripts/nasa_api.gd`) | Searches for and downloads a Jezero image from NASA Image and Video Library at startup; the intro displays the image and title. | 3-second timeout; local image fallback. |
+| `TurnManager` (`game/Scripts/turn_manager.gd`) | Queries DONKI `/DONKI/FLR` when a game starts to detect M/X flares from the previous three days. | 3-second timeout; no alert on failure, with a debug trigger available. |
 | `Net` | Room, lobby, controller views and choices. | See [networking.md](networking.md). |
 
 ## Sol state machine

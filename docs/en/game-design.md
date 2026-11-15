@@ -162,12 +162,12 @@ This mechanic is based on real communication delays: 4–24 minutes per message 
 - The event becomes **“Waiting for Earth”** and the reply arrives **2–3 Sols** later. Persistent events continue applying their penalties while waiting.
 - According to `events.json`, the reply **removes a bad option** (`earth_discard` identifies it).
 - Planned choices: **Send the full report** (Commander, −5 Energy, faster answer); **send a quick message** (general vote, free, slower answer); **cancel and decide yourselves** (cannot request help for that event again this Sol).
-- JPL Horizons provides the day's Earth–Mars distance. Godot can show the estimated distance and radio delay. Offline fallback: 225 million km and 12 minutes.
+- JPL Horizons is a planned integration for showing the day's Earth–Mars distance and radio delay; it is not queried by the game yet. Current design fallback: 225 million km and 12 minutes.
 - Earth help is unavailable during a solar alert.
 
 ## Real-time solar alert
 
-- At the start of each Sol, query NASA DONKI for recent solar flares or coronal mass ejections.
+- At the start of a game, query NASA DONKI for solar flares from the previous three days.
 - An M- or X-class flare interrupts the turn with a special event showing the real date.
 - During that Sol and the next, Earth help is unavailable and radiation increases. The crew can be protected with probiotics (Biologist) or shields (Engineer).
 - A debug button should simulate a flare without relying on the API.
@@ -180,16 +180,22 @@ The Word Book displays one pixel-art tile per word (`game/Images/Glossary/<term-
 
 ## NASA APIs
 
-The demo must work **offline**; each API has a fallback.
+Only the following NASA APIs are queried by the current game. Requests run directly from Godot, not the web controller or Node backend; the demo remains playable offline.
 
-| API | Use | Offline fallback |
+| Active API | Where it is used | Purpose and offline fallback |
 |---|---|---|
-| [DONKI](https://api.nasa.gov/) (`/DONKI/FLR`, `/DONKI/CME`) | Real-time solar alert | No alert (or debug button) |
-| [JPL Horizons](https://ssd.jpl.nasa.gov/api/horizons.api) | Earth–Mars distance for Earth help | 225 million km, 12 minutes |
-| [Mars Rover Photos](https://api.nasa.gov/) (`/mars-photos/.../perseverance/latest_photos`) | Real photos in intro and rover event | Images bundled in the game |
-| [InSight Weather](https://api.nasa.gov/insight_weather/) / MEDA data | Wind gust: +5 Energy in “Dust on the Solar Panels” | No bonus |
+| [NASA DONKI](https://api.nasa.gov/) (`/DONKI/FLR`) | `game/Scripts/turn_manager.gd`, when a game starts | Checks flares from the previous three days. An M/X flare triggers Solar Storm Alert with its real class and date. Offline or on request failure, no live alert is triggered; the debug button can simulate one. Uses `DEMO_KEY` (low quota). |
+| [NASA Image and Video Library](https://images-api.nasa.gov/search?q=jezero%20crater&media_type=image) | Requested by `game/Scripts/nasa_api.gd` at startup; displayed by `game/Scripts/intro.gd` | Loads a Jezero image and its title for the intro background and credit. If unavailable, the local ESA Mars Express image is used. |
 
-Use a short timeout (3 seconds) so the game is not blocked.
+Both requests use a 3-second timeout. The image library request does not require the DONKI API key.
+
+### Planned NASA API integrations (not currently queried)
+
+| API | Planned use | Current behavior |
+|---|---|---|
+| [JPL Horizons](https://ssd.jpl.nasa.gov/api/horizons.api) | Earth–Mars distance and radio delay for Earth help | Fixed design values: 225 million km and 12 minutes |
+| [Mars Rover Photos](https://api.nasa.gov/) | Perseverance photos for the intro or rover event | Local art; no API request |
+| InSight Weather / MEDA | Wind bonus in “Dust on the Solar Panels” | No bonus from live weather data |
 
 ## Open decisions
 

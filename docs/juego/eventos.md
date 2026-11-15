@@ -21,7 +21,7 @@ Todos los eventos de la partida. Las reglas generales (votación, roles, ayuda d
 ## Eventos aleatorios
 
 ### Tormenta de radiación solar
-`solar-storm` · **Fuente NASA:** DONKI, eyección de masa coronal (CME)
+`solar-storm` · **Fuente NASA de diseño:** DONKI, eyección de masa coronal (CME); la partida no consulta ese endpoint
 
 > Los sensores detectan una CME acercándose a Marte. Hay que proteger a la tripulación antes de que llegue la radiación.
 
@@ -69,7 +69,7 @@ Todos los eventos de la partida. Las reglas generales (votación, roles, ayuda d
 **Dato real:** los vuelos espaciales alteran programas moleculares del cerebro humano, según estudios con organoides cerebrales.
 
 ### Rover atrapado en la arena
-`rover-stuck` · **Fuente NASA:** zona de aterrizaje de Curiosity, dunas de Rocknest · **API:** fotos recientes de Perseverance (Mars Rover Photos)
+`rover-stuck` · **Fuente NASA:** zona de aterrizaje de Curiosity, dunas de Rocknest · **API prevista, no conectada:** fotos recientes de Perseverance (Mars Rover Photos)
 
 > Vuestro pequeño robot explorador se ha quedado atascado en una duna y ha perdido la señal. Tiene datos valiosos dentro.
 
@@ -80,7 +80,7 @@ Todos los eventos de la partida. Las reglas generales (votación, roles, ayuda d
 | Abandonar el robot | Todos | +5 Energía, −10 Integridad (sin rover no hay quien inspeccione el exterior) | La base está a salvo, pero perdimos un valioso explorador. |
 
 ### Polvo en los paneles
-`dust-panels` · **Fuente NASA:** misión Opportunity y tormentas de polvo marcianas · **API:** InSight Weather; si hay rachas fuertes de viento, +5 Energía gratis
+`dust-panels` · **Fuente NASA:** misión Opportunity y tormentas de polvo marcianas · **API prevista, no conectada:** InSight Weather; el juego no aplica una bonificación por viento en vivo
 
 > Una tormenta de polvo ha cubierto los paneles solares de la base. Producen cada vez menos electricidad y las baterías bajan. Si no hacéis algo, mañana habrá aún menos luz.
 
@@ -180,7 +180,7 @@ MOXIE se monta en **3 fases** (33 + 33 + 34 %). Al llegar al 100 % desaparece el
 | Apagar laboratorio e invernadero un Sol | Comandante (`generalist`) | −5 Energía, −10 Salud · MOXIE +33 % | Un sacrificio duro, pero nadie discute las órdenes del Comandante. |
 
 ### M3. Fallo en el filtro
-`moxie-phase-3` · **Condición:** M2 completado · **Fuente NASA:** MOXIE usa un filtro de partículas para limpiar el aire antes de convertirlo · **API:** InSight Weather o datos de MEDA (Perseverance)
+`moxie-phase-3` · **Condición:** M2 completado · **Fuente NASA:** MOXIE usa un filtro de partículas para limpiar el aire antes de convertirlo · **API prevista, no conectada:** InSight Weather o datos de MEDA (Perseverance)
 
 > El filtro de MOXIE se ha atascado con polvo marciano. Si no se limpia, la máquina se estropeará.
 
@@ -204,7 +204,7 @@ Sin elección, solo celebración: **elimina el consumo pasivo de oxígeno**. *«
 Aún no están en `events.json` como eventos: las reglas de la ayuda están en el bloque `earth_help`.
 
 ### Pedir ayuda a la Tierra
-**Fuente NASA:** retraso de las comunicaciones Tierra–Marte (4 a 24 minutos por mensaje) y operaciones del Control de Misión · **API:** JPL Horizons (distancia del día)
+**Fuente NASA:** retraso de las comunicaciones Tierra–Marte (4 a 24 minutos por mensaje) y operaciones del Control de Misión · **API prevista, no conectada:** JPL Horizons (distancia del día)
 
 > Estáis ante un problema que no sabéis resolver. Podéis llamar al Control de Misión en la Tierra, pero Marte está muy lejos: el mensaje tarda en llegar, los ingenieros necesitan tiempo para estudiarlo y la respuesta tarda otro tanto en volver. Mientras esperáis, el problema sigue ahí.
 
@@ -217,7 +217,7 @@ Aún no están en `events.json` como eventos: las reglas de la ayuda están en e
 Una vez por Sol. Qué devuelve exactamente la Tierra y cuánto tarda está en [decisiones pendientes](diseno.md#decisiones-pendientes).
 
 ### Alerta solar en tiempo real
-**API:** DONKI (`/DONKI/FLR` o `/DONKI/CME`)
+**API activa:** DONKI `/DONKI/FLR`; `/DONKI/CME` no se consulta. La partida busca llamaradas M/X de los últimos 3 días al iniciarse.
 
 Si la API detecta una llamarada reciente de clase M o X, se interrumpe el turno:
 

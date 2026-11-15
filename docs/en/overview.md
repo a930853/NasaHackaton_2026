@@ -90,9 +90,9 @@ The game glossary has 18 terms in `game/Data/glossary.json`, each with title, si
 
 | API | Use | Offline fallback |
 |---|---|---|
-| NASA DONKI (`/DONKI/FLR`, `/DONKI/CME`) | Solar alert | No alert / debug button |
-| JPL Horizons | Earth–Mars distance for Earth help | 225 million km, 12 minutes |
-| Mars Rover Photos (Perseverance) | Intro and rover event | Bundled images |
-| InSight Weather / MEDA | Wind bonus in panel-dust event | No bonus |
+| NASA DONKI (`/DONKI/FLR`) — `game/Scripts/turn_manager.gd` | At game start, checks the previous three days for M/X solar flares and triggers Solar Storm Alert with the real class/date | No live alert; a debug button can simulate one |
+| NASA Image and Video Library — requested by `game/Scripts/nasa_api.gd`, displayed in `game/Scripts/intro.gd` | Loads a Jezero image and title for the intro background/credit | Local ESA Mars Express image |
 
-API requests use short timeouts; the LAN demo works without Internet access.
+These are the only NASA APIs currently queried. Requests originate in Godot, use a 3-second timeout, and the LAN demo works without Internet access. DONKI uses `DEMO_KEY` (low quota); the image library needs no API key.
+
+JPL Horizons (Earth–Mars distance), Mars Rover Photos, and InSight Weather/MEDA are design ideas only and are not currently queried. Earth-help distance uses fixed values; rover imagery is local, and live weather adds no bonus.

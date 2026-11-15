@@ -18,7 +18,7 @@ game/
   Data/events.json          eventos, objetivos y reglas
   Scripts/
     events.gd               autoload Events: bus de señales (ya existe)
-    nasa_api.gd             consultas a las APIs de la NASA (ya existe)
+    nasa_api.gd             búsqueda NASA Image and Video Library para la imagen de intro
     net.gd                  autoload Net: WebSocket con el backend (ver red.md)
     autoload/
       game_state.gd         recursos, objetivos, Sol actual, condiciones activas
@@ -44,7 +44,8 @@ game/
 | `ActiveConditions` | Eventos que duran varios Sols (tormentas, eventos pospuestos) y aplican su castigo cada mañana. | Puede ser una parte de `GameState`. |
 | `DelayedEffectsQueue` | Efectos programados para un Sol futuro (cosechas, respuestas de la Tierra). | Puede ser una parte de `GameState`. |
 | `GlossaryManager` | Términos científicos: título, definición sencilla y dato NASA. Guarda los desbloqueados. | Mínimo 10 términos para empezar. |
-| `NasaDataFetcher` | Consulta DONKI, Horizons y demás, con 3 s de espera máxima y datos de respaldo. | Hoy es `nasa_api.gd`. |
+| `NasaApi` (`game/Scripts/nasa_api.gd`) | Busca y descarga una imagen de Jezero en NASA Image and Video Library al iniciar el juego; la intro muestra la imagen y su título. | 3 s de espera; usa la imagen local si falla. |
+| `TurnManager` (`game/Scripts/turn_manager.gd`) | Consulta DONKI `/DONKI/FLR` al comenzar una partida para detectar llamaradas M/X de los últimos 3 días. | 3 s de espera; sin alerta en caso de fallo y botón de depuración para simularla. |
 | `Net` | Sala, lobby, vistas de los mandos y elecciones. | [red.md](red.md) |
 
 ## Máquina de estados del Sol

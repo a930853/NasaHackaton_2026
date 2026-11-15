@@ -123,7 +123,7 @@ Call `Net.finish_game()` when the mission ends. Show Godot results **before** ca
 - The custom loading screen (`game/web/loading_shell.template.html`) animates a pixel-art rocket from Earth via the Moon to Mars. `tools/build_loading_shell.py` embeds images and fonts and generates `game/web/loading_shell.html`; run it after changing the template or images and before export. Preview using `index.html?fakeload=10` on localhost. The journey lasts at least about 3 seconds.
 - Export to `dist/game/` before `npm run docker:local`.
 - `JavaScriptBridge` and `OS.has_feature("web")` only work in web exports; guard them so the editor still works.
-- Bundle all fonts, audio and images; the demo must not depend on Internet access. NASA API requests in `main.gd` must fail gracefully when offline.
+- Bundle all fonts, audio and images; the demo must not depend on Internet access. NASA API requests in `nasa_api.gd` and `turn_manager.gd` must fail gracefully when offline.
 
 ## Testing checklist
 

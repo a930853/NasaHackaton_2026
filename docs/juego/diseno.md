@@ -192,16 +192,22 @@ Glosario educativo. Cuando aparece un evento con términos técnicos (Sol, MOXIE
 
 ## APIs de la NASA
 
-La demo debe funcionar **sin Internet**: cada API tiene un dato de respaldo.
+Solo estas dos APIs se consultan en la versión actual. Las peticiones salen directamente de Godot (no del mando ni del backend); la demo debe funcionar **sin Internet**.
 
 | API | Para qué | Sin conexión |
 |---|---|---|
-| [DONKI](https://api.nasa.gov/) (`/DONKI/FLR`, `/DONKI/CME`) | Alerta solar en tiempo real | No hay alerta (o botón de depuración) |
-| [JPL Horizons](https://ssd.jpl.nasa.gov/api/horizons.api) | Distancia Tierra–Marte en la ayuda de la Tierra | 225 millones de km, 12 minutos |
-| [Mars Rover Photos](https://api.nasa.gov/) (`/mars-photos/.../perseverance/latest_photos`) | Fotos reales en la intro y en el rover atrapado | Imágenes incluidas en el juego |
-| [InSight Weather](https://api.nasa.gov/insight_weather/) / datos MEDA | Racha de viento: +5 Energía en «Polvo en los paneles» | Sin bonificación |
+| [NASA DONKI](https://api.nasa.gov/) (`/DONKI/FLR`) | `game/Scripts/turn_manager.gd`: al iniciar la partida busca llamaradas M/X de los últimos 3 días para activar la alerta solar y mostrar su clase y fecha. Usa `DEMO_KEY` (cuota baja). | Sin alerta (o botón de depuración) |
+| [NASA Image and Video Library](https://images-api.nasa.gov/search?q=jezero%20crater&media_type=image) | `game/Scripts/nasa_api.gd` la consulta al inicio; `game/Scripts/intro.gd` muestra la imagen de Jezero y su título como crédito. | Imagen local de ESA Mars Express |
 
-Usad un tiempo de espera corto (3 s) para no bloquear la partida.
+Ambas peticiones tienen un tiempo de espera de 3 s. La búsqueda de imágenes no necesita la clave de DONKI.
+
+### Integraciones previstas, todavía no conectadas
+
+| API | Uso previsto | Qué hace ahora el juego |
+|---|---|---|
+| [JPL Horizons](https://ssd.jpl.nasa.gov/api/horizons.api) | Distancia Tierra–Marte y demora de radio para la ayuda de la Tierra | Valores fijos: 225 millones de km y 12 minutos |
+| [Mars Rover Photos](https://api.nasa.gov/) | Fotos de Perseverance para la intro o el evento del rover | Imágenes locales; no se consulta la API |
+| InSight Weather / MEDA | Bonificación por viento en «Polvo en los paneles» | No hay bonificación basada en datos meteorológicos en vivo |
 
 ## Decisiones pendientes
 
