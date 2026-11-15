@@ -13,6 +13,10 @@ Players work together to keep a Mars base alive for 20 Sols. One shared Godot ga
 
 This is an independent hackathon project and is not an official NASA product or affiliated with or endorsed by NASA.
 
+### Test the game
+
+- The game is currently running on a member's server -> https://red-planet-survivors.karu.es/
+
 ## At a glance
 
 - **Cooperative gameplay:** discuss trade-offs and protect the crew, oxygen, energy and base integrity.
@@ -44,10 +48,6 @@ Mobile web controllers ───┘                         │
 | Hosting | Nginx, Docker Compose; Coolify for the primary Internet deployment |
 
 ## Get started
-
-### Test the game
-
-- The game is currently running on a member's server -> https://red-planet-survivors.karu.es/
 
 ### Requirements
 
