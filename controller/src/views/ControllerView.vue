@@ -33,8 +33,8 @@ const decided = computed(
   () => s.view?.screen === 'choice' && s.choice.status === 'registered' && s.choice.eventId === s.view.eventId,
 )
 
-const preGameTrack = '/controller/audio/Chill_MN.mp3'
-const gameTrack = '/controller/audio/Chill_Space2026.mp3'
+const preGameTrack = '/controller/audio/Chill_Space2026.mp3'
+const gameTrack = '/controller/audio/Chill_MN.mp3'
 let music = null
 let musicUnlocked = false
 
@@ -280,11 +280,22 @@ function restart() {
           />
           <StatusCard
             v-else-if="s.view.screen === 'result'"
+            class="mission-status-card"
             mark="★"
             eyebrow="RESULT"
             :title="s.view.title || 'Result'"
             :text="s.view.text"
-          />
+          >
+            <button
+              v-if="s.view.canContinue !== false"
+              class="role-change-button"
+              type="button"
+              :disabled="s.continueStatus === 'sending'"
+              @click="session.continueMission()"
+            >
+              <span>{{ s.continueStatus === 'sending' ? 'Waiting…' : 'Continue' }}</span>
+            </button>
+          </StatusCard>
           <StatusCard v-else eyebrow="PLEASE WAIT" :title="s.view.title || 'Waiting…'" :text="s.view.text" />
         </div>
       </template>

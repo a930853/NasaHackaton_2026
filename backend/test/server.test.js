@@ -96,14 +96,17 @@ test('no entran cinco jugadores', async () => {
   assert.equal((await fifth.next('error')).code, 'room_full');
 });
 
-test('el primer jugador recibe el rol de Comandante y no puede cambiarlo', async () => {
+test('el primer jugador recibe la capacidad de Comandante y puede elegir rol', async () => {
   const { code } = await host();
   const first = await player(code, 'Ana');
   const initialLobby = await first.p.next('lobby_state');
-  assert.equal(initialLobby.players.find((p) => p.id === first.joined.playerId).role, 'generalist');
+  const mine = initialLobby.players.find((p) => p.id === first.joined.playerId);
+  assert.equal(mine.role, null);
+  assert.equal(mine.commander, true);
 
   first.p.send({ type: 'select_role', role: 'engineer' });
-  assert.equal((await first.p.next('error')).code, 'commander_required');
+  const lobby = await first.p.next('lobby_state');
+  assert.equal(lobby.players.find((p) => p.id === first.joined.playerId).role, 'engineer');
 });
 
 test('el primer jugador conserva su comandante al elegir un rol principal', async () => {
@@ -139,6 +142,20 @@ test('dos salas reciben solo sus propias decisiones', async () => {
   assert.equal(got.playerId, pa.joined.playerId);
   assert.equal(got.role, 'engineer');
   await b.h.none('choose');
+});
+
+test('el mando puede pedir continuar y Node añade su identidad', async () => {
+  const { h, code } = await host();
+  const p = await player(code, 'Ana', 'engineer');
+  h.send({ type: 'start_game' });
+  await h.next('game_started');
+
+  p.p.send({ type: 'continue', actionId: 'p1-continue-1' });
+  const got = await h.next('continue');
+  assert.deepEqual(
+    { playerId: got.playerId, role: got.role, actionId: got.actionId },
+    { playerId: p.joined.playerId, role: 'engineer', actionId: 'p1-continue-1' },
+  );
 });
 
 test('un móvil no puede suplantar a otro con playerId', async () => {

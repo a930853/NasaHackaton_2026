@@ -167,6 +167,9 @@ func _handle(text: String) -> void:
 				str(msg.get("playerId", "")), str(msg.get("role", "")),
 				str(msg.get("actionId", "")), str(msg.get("eventId", "")),
 				str(msg.get("optionId", "")))
+		"continue":
+			Events.player_continue_received.emit(
+				str(msg.get("playerId", "")), str(msg.get("role", "")), str(msg.get("actionId", "")))
 		"room_closed":
 			Events.room_closed.emit(str(msg.get("reason", "")))
 		"error":

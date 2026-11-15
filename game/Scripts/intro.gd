@@ -17,7 +17,7 @@ const PAGES: Array[Dictionary] = [
 	},
 	{
 		"title": "Every choice has a price",
-		"body": "[b]Nothing is free![/b] Every choice uses something, like energy or air. You can see the costs on each button before you choose.\n\nSome jobs can [b]fail[/b], just like in real space missions. If a job fails, you still pay the costs, but you do not get the reward. Then you can try again!\n\nEach of you has a job: [b]Engineer, Biologist, Doctor[/b] or [b]Commander[/b]. Experts are better at their own tasks, so they have a bigger chance to succeed.\n\nEach Sol brings a new event. Sometimes a real event from space happens too, and you must solve it together!",
+		"body": "[b]Nothing is free![/b] Every choice uses something, like energy or air. You can see the costs on each button before you choose.\n\nSome jobs can [b]fail[/b], just like in real space missions. If a job fails, you still pay the costs, but you do not get the reward. Then you can try again!\n\nEach of you has a job: [b]Engineer, Biologist, Doctor[/b] or [b]Generalist[/b]. Experts are better at their own tasks, so they have a bigger chance to succeed. The first player is also the Commander and decides a second tie.\n\nEach Sol brings a new event. Sometimes a real event from space happens too, and you must solve it together!",
 	},
 	{
 		"title": "Your goals",

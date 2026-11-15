@@ -7,6 +7,7 @@ extends Control
 
 const MEMBERS_TOP_SPACE: float = 48.0     # hueco para el título "Members"
 const OFFLINE_COLOR: Color = Color(0.55, 0.55, 0.6)
+const QR_SIZE: float = 186.0              # lado del QR del lobby en pantalla
 
 @onready var mainButtons: Control = $MenuButtons
 @onready var lobby: Control = $Lobby
@@ -18,6 +19,8 @@ const OFFLINE_COLOR: Color = Color(0.55, 0.55, 0.6)
 var _mode_box: VBoxContainer     # "How do you want to play?": solo o multijugador
 var _local_button: Button        # en el lobby: pasar a jugar solo (p. ej. si no hay servidor)
 var _back_button: Button         # en el lobby: volver a la elección de modo
+var _qr_box: VBoxContainer       # en el lobby: QR con la dirección del mando para los móviles
+var _qr_rect: TextureRect
 var _starting: bool = false
 
 
@@ -30,6 +33,7 @@ func _ready() -> void:
 	PhoneBridge.end_session()
 
 	_build_mode_box()
+	_build_qr_box()
 
 	_back_button = Button.new()
 	_back_button.text = "Back"
@@ -217,6 +221,33 @@ func _go_to_intro() -> void:
 
 func _show_info(bbcode: String) -> void:
 	info_label.text = bbcode
+	_qr_box.visible = false
+
+
+## QR a la derecha de las instrucciones del lobby. El texto se estrecha para dejarle sitio.
+func _build_qr_box() -> void:
+	info_label.offset_right = 266.0
+	_qr_box = VBoxContainer.new()
+	_qr_box.set_anchors_preset(Control.PRESET_CENTER)
+	_qr_box.offset_left = 280.0
+	_qr_box.offset_right = 280.0 + QR_SIZE
+	_qr_box.offset_top = -142.0
+	_qr_box.offset_bottom = -142.0 + QR_SIZE + 30.0
+	_qr_box.add_theme_constant_override("separation", 6)
+	_qr_box.visible = false
+	$Lobby/Panel.add_child(_qr_box)
+
+	_qr_rect = TextureRect.new()
+	_qr_rect.custom_minimum_size = Vector2(QR_SIZE, QR_SIZE)
+	_qr_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_qr_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_qr_rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST  # bordes nítidos al escalar
+	_qr_box.add_child(_qr_rect)
+
+	var caption := Label.new()
+	caption.text = "Scan to join"
+	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_qr_box.add_child(caption)
 
 
 func _show_room_info(code: String, note: String = "") -> void:
@@ -224,10 +255,9 @@ func _show_room_info(code: String, note: String = "") -> void:
 	lines.append("[b]Room code:[/b]  [font_size=44][b]%s[/b][/font_size]" % code)
 	lines.append("")
 	lines.append("[b]How to join (on a phone):[/b]")
-	lines.append("1. Connect the phone to the same Wi-Fi.")
-	lines.append("2. Open  [b]%s[/b]" % Net.controller_url(code))
-	lines.append("    (or open the home page and type the code).")
-	lines.append("3. Pick a role. When everybody is ready, press Start expedition.")
+	lines.append("1. Scan the QR code or open")
+	lines.append("    [b]%s[/b]" % Net.controller_url(code))
+	lines.append("2. Pick a role. When everybody is ready, press Start expedition.")
 	if Net.controller_url_is_local():
 		lines.append("")
 		lines.append("[color=#ffd27a]Heads up: this address says \"localhost\", so phones cannot use it. Open the game with the computer's network address.[/color]")
@@ -235,6 +265,8 @@ func _show_room_info(code: String, note: String = "") -> void:
 		lines.append("")
 		lines.append(note)
 	_show_info("\n".join(PackedStringArray(lines)))
+	_qr_rect.texture = QrCode.to_texture(Net.controller_url(code), 4)
+	_qr_box.visible = _qr_rect.texture != null
 
 
 func _refresh_members(players: Array) -> void:

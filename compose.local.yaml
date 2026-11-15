@@ -1,0 +1,27 @@
+# Desplegar en local (un PC en la LAN hace de servidor): añade el servicio "tls",
+# que pone el HTTPS con un certificado autofirmado, como hace Traefik en Coolify.
+#
+#   npm run docker:local   →  docker compose -f compose.yaml -f compose.local.yaml up --build
+#
+#   Pantalla:  https://<IP-del-PC>/game/
+#   Móviles:   https://<IP-del-PC>/  (misma Wi-Fi)
+#
+# La primera vez cada navegador avisa del certificado y hay que aceptarlo
+# (Configuración avanzada → Continuar).
+
+services:
+  tls:
+    build: ./deploy/tls
+    restart: unless-stopped
+    depends_on:
+      web:
+        condition: service_healthy
+    # Si el 80 o el 443 están ocupados: HTTP_PORT=8080 HTTPS_PORT=8443 npm run docker:local
+    ports:
+      - "${HTTP_PORT:-80}:80"     # solo redirige a HTTPS
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - certs:/etc/nginx/certs   # el certificado sobrevive a los reinicios
+
+volumes:
+  certs:

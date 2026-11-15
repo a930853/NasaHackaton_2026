@@ -16,17 +16,24 @@ const MAX_SOLS: int = 20
 const EARTH_HELP_COOLDOWN_SOLS: int = 4
 const ROLES: Array[String] = ["engineer", "biologist", "doctor", "generalist"]
 const ROLE_NAMES: Dictionary = {
-	"engineer": "Engineer", "biologist": "Biologist", "doctor": "Doctor", "generalist": "Commander",
+	"engineer": "Engineer", "biologist": "Biologist", "doctor": "Doctor", "generalist": "Generalist",
 }
 const STAT_NAMES: Array[String] = ["health", "oxygen", "energy", "integrity"]
 const STAT_START: int = 80
 const STAT_MAX: int = 100
 const HEALTH_GOAL: int = 50
-const PASSIVE_OXYGEN_LOSS: int = 5
-## AJUSTE DE EQUILIBRIO (no está en el spec): energía que dan los paneles solares cada Sol.
-## Sin ella la energía solo baja y la partida es casi imposible de ganar (simulado).
-## Poner a 0 para seguir el spec al pie de la letra.
-const PASSIVE_ENERGY_GAIN: int = 10
+
+## --- Cambios automáticos de las barras al amanecer de cada Sol ---
+## Están elegidos con el simulador de tools/balance_sim.py para que las derrotas de un jugador atento
+## se repartan entre las cuatro barras (oxígeno ~19 %, energía ~13 %, salud ~10 %, integridad ~12 %,
+## con ~46 % de victorias). Antes casi todas las derrotas eran por oxígeno. Ver docs/juego/diseno.md.
+const PASSIVE_OXYGEN_LOSS: int = 4            # hasta que MOXIE esté al 100 %
+const PASSIVE_ENERGY_GAIN: int = 7            # paneles solares...
+const PASSIVE_ENERGY_GAIN_DUSTY: int = 6      # ...que dan menos cuando se llenan de polvo
+const DUSTY_PANELS_FROM_SOL: int = 8
+const PASSIVE_INTEGRITY_LOSS: int = 3         # el viento y el polvo desgastan la base
+const PASSIVE_HEALTH_LOSS: int = 6            # el estrés y la radiación cansan a la tripulación...
+const HEALTH_LOSS_FROM_SOL: int = 4           # ...una vez pasados los primeros Sols
 const SEISMIC_DEADLINE_SOL: int = 13
 const HARVEST_GOAL: int = 3
 const SENSOR_GOAL: int = 3
@@ -342,6 +349,18 @@ func process_delayed_effects() -> Array[String]:
 
 func passive_oxygen_loss() -> int:
 	return 0 if moxie_progress >= 100 else PASSIVE_OXYGEN_LOSS
+
+
+func passive_energy_gain() -> int:
+	return PASSIVE_ENERGY_GAIN_DUSTY if current_sol >= DUSTY_PANELS_FROM_SOL else PASSIVE_ENERGY_GAIN
+
+
+func passive_integrity_loss() -> int:
+	return PASSIVE_INTEGRITY_LOSS
+
+
+func passive_health_loss() -> int:
+	return PASSIVE_HEALTH_LOSS if current_sol >= HEALTH_LOSS_FROM_SOL else 0
 
 
 # --- Fin de partida y objetivos ---

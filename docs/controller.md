@@ -31,7 +31,7 @@ La app se sirve bajo `/controller/` (`base` de Vite y del router).
 |---|---|
 | `/controller/` | Entrada normal: pide código y nombre; después, elegir rol en pantalla. |
 | `/controller/?room=K7MP` | Igual, con el código precargado (lo que abre el QR). |
-| `/controller/engineer` · `/biologist` · `/doctor` | **Entrada directa a un rol** (tablero físico con NFC). Pide código y nombre si no viene `?room=` y reserva ese rol al entrar. El Comandante es una capacidad adicional del primer jugador. |
+| `/controller/engineer` · `/biologist` · `/doctor` · `/generalist` | **Entrada directa a un rol** (tablero físico con NFC). Pide código y nombre si no viene `?room=` y reserva ese rol al entrar. El Comandante es una capacidad adicional del primer jugador. |
 | `/controller/<rol>?room=K7MP` | Entrada directa con sala y rol. |
 
 La ruta expresa la **intención** del jugador; el rol real lo confirma el backend en `lobby_state`:
@@ -114,6 +114,7 @@ phase = playing
 - Al pulsar una opción se crea un `actionId` (`<playerId>-<aleatorio>`, con `crypto.getRandomValues`, que funciona en http) y se guarda como **pendiente**. Los botones se bloquean y se muestra «Enviando…».
 - Si se recarga o se corta la red antes del `choice_result`, al recuperar la sesión llega la misma vista y se **reenvía el mismo `actionId`**. Godot responde igual sin repetir efectos.
 - El mando no recibe `choice_result`: permanece enviando hasta que Godot mande una nueva `controller_view`, que puede ser de resultado, espera o una nueva pregunta.
+- En una vista `result` con `canContinue: true`, el botón `Continue` envía una confirmación; la partida avanza cuando todos los mandos conectados confirman o el anfitrión pulsa el botón de la pantalla principal.
 - Llegar a una vista que no es la de la elección pendiente descarta la elección pendiente.
 - `room_closed` borra las credenciales. «Volver al inicio» abre una conexión nueva (la anterior queda asociada a la sala cerrada).
 - Si otro dispositivo recupera la misma sesión, Node cierra esta conexión con el código `4000`: el mando no reconecta solo y ofrece «Usar este dispositivo».

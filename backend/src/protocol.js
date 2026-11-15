@@ -1,7 +1,7 @@
 // Tipos de mensaje y validación de entrada. Contrato: docs/protocol.md
 import { logMessage } from './log.js';
 
-export const ROLES = ['engineer', 'biologist', 'doctor'];
+export const ROLES = ['engineer', 'biologist', 'doctor', 'generalist'];
 export const MAX_PLAYERS = 4;
 
 const isStr = (v, max = 64) => typeof v === 'string' && v.length > 0 && v.length <= max;
@@ -18,6 +18,7 @@ const validators = {
   select_role: (m) => (ROLES.includes(m.role) ? null : 'invalid_role'),
   resume_player: (m) => (isStr(m.code, 8) && isStr(m.resumeToken, 128) ? null : 'invalid_token'),
   choose: (m) => (isStr(m.actionId) && isStr(m.eventId) && isStr(m.optionId) ? null : 'invalid_choice'),
+  continue: (m) => (isStr(m.actionId) ? null : 'invalid_continue'),
   controller_view: (m) => (isStr(m.playerId) && m.view && typeof m.view === 'object' ? null : 'invalid_view'),
   choice_result: (m) =>
     isStr(m.playerId) && isStr(m.actionId) && typeof m.accepted === 'boolean' ? null : 'invalid_result',

@@ -502,6 +502,7 @@
     {
       "id": "moxie-phase-1",
       "kind": "objective",
+      "weight": 2,
       "cooldown_sols": 999,
       "retry_on_fail": true,
       "title": "Build MOXIE: Part 1",
@@ -550,6 +551,7 @@
     {
       "id": "moxie-phase-2",
       "kind": "objective",
+      "weight": 2,
       "cooldown_sols": 2,
       "retry_on_fail": true,
       "title": "MOXIE vs. the Greenhouse",
@@ -598,6 +600,7 @@
     {
       "id": "moxie-phase-3",
       "kind": "objective",
+      "weight": 2,
       "cooldown_sols": 2,
       "retry_on_fail": true,
       "title": "MOXIE: The Last Step",

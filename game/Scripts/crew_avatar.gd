@@ -6,7 +6,7 @@ extends Control
 
 const HELMET_PATH: String = "res://Images/Astronauta.png"
 
-## Albedo de cada rol. El polivalente (Commander) se queda en blanco, sin teñir.
+## Albedo de cada rol. El polivalente (Generalist) se queda en blanco, sin teñir.
 const ROLE_ALBEDO: Dictionary = {
 	"engineer": Color(1.0, 0.85, 0.2),     # amarillo
 	"biologist": Color(0.4, 0.9, 0.5),     # verde

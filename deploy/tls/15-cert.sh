@@ -4,7 +4,7 @@
 # La imagen de Nginx ejecuta los scripts de /docker-entrypoint.d/ antes de
 # arrancar (por orden de nombre: este va antes del 20-envsubst-on-templates.sh).
 #
-# /etc/nginx/certs es un volumen (compose.yaml), así que el certificado se
+# /etc/nginx/certs es un volumen (compose.local.yaml), así que el certificado se
 # conserva entre reinicios y el navegador solo avisa la primera vez.
 # Para usar uno propio (p. ej. de mkcert, sin avisos), deja cert.pem y key.pem
 # en ese volumen.

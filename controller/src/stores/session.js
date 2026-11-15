@@ -81,6 +81,8 @@ export function createSession({ url, storage = browserStorage(), WebSocketImpl, 
     view: null,
     /** Estado de la pulsación: idle | sending | registered | rejected */
     choice: idleChoice(),
+    /** Estado de la confirmación para continuar: idle | sending. */
+    continueStatus: 'idle',
     /** Último error: { code, requestType, seq }. `seq` cambia en cada error para poder observarlo. */
     error: null,
     closedReason: null,
@@ -110,12 +112,14 @@ export function createSession({ url, storage = browserStorage(), WebSocketImpl, 
     saved = null
     write(SESSION_KEY, null)
     Object.assign(state, {
-      code: '', playerId: '', role: null, commander: false, players: [], roomStatus: null, view: null, choice: idleChoice(),
+      code: '', playerId: '', role: null, commander: false, players: [], roomStatus: null, view: null,
+      choice: idleChoice(), continueStatus: 'idle',
     })
   }
 
   function setView(view) {
     state.view = view
+    state.continueStatus = 'idle'
     const pending = saved?.pending
     if (view?.screen === 'choice') {
       // Había una elección sin confirmar para este evento: se reenvía con el MISMO actionId.
@@ -260,6 +264,13 @@ export function createSession({ url, storage = browserStorage(), WebSocketImpl, 
       persist()
       state.choice = { status: 'sending', eventId: view.eventId, optionId, reason: null }
       sendChoose(pending) // si no hay conexión, se reenviará al recuperar la sesión
+    },
+
+    continueMission() {
+      if (state.view?.screen !== 'result' || state.view.canContinue === false || state.continueStatus === 'sending') return
+      const actionId = `${state.playerId}-continue-${randomId()}`
+      if (!socket.send({ type: 'continue', actionId })) return setError('offline', 'continue')
+      state.continueStatus = 'sending'
     },
 
     /** Tras cerrarse la sala: conexión nueva y vuelta a la pantalla de entrada. */

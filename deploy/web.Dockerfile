@@ -4,8 +4,10 @@
 #   /controller/  el mando, compilado aquí mismo (no hace falta npm run build antes)
 #   /game/        la exportación web de Godot elegida con GAME_EXPORT
 #
-# GAME_EXPORT=game        producción (compose.yaml)
-# GAME_EXPORT=game_debug  desarrollo (compose.dev.yaml)
+# Sirve HTTP en el 80; el HTTPS lo pone el proxy de delante (Traefik o deploy/tls).
+#
+# GAME_EXPORT=game        el juego (compose.yaml)
+# GAME_EXPORT=game_debug  pantalla de depuración (compose.dev.yaml)
 #
 # Se construye desde la raíz del repo (context: .).
 
@@ -22,13 +24,7 @@ RUN npm run build
 FROM nginx:1.27-alpine
 ARG GAME_EXPORT=game
 
-# openssl para generar el certificado autofirmado al arrancar (15-cert.sh)
-RUN apk add --no-cache openssl
-
 COPY deploy/nginx/default.conf /etc/nginx/conf.d/default.conf
-COPY deploy/nginx/15-cert.sh /docker-entrypoint.d/
-# Por si Git en Windows lo dejó con finales CRLF (sh no lo entendería).
-RUN sed -i 's/\r$//' /docker-entrypoint.d/15-cert.sh && chmod +x /docker-entrypoint.d/15-cert.sh
 
 COPY landing/ /srv/www/
 COPY --from=controller /src/dist/controller/ /srv/www/controller/

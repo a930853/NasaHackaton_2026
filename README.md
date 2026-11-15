@@ -21,13 +21,14 @@ Juego cooperativo por salas para el NASA Hackathon 2026. Una **pantalla principa
 | [`backend/`](backend/) | Servidor Node (Express + `ws`) | Implementado, con tests |
 | [`controller/`](controller/) | Mando web (Vue 3 + Vite + Tailwind) | Implementado, con tests |
 | [`landing/`](landing/) | Página de inicio `/` | Provisional |
-| [`deploy/`](deploy/) | Imagen de Nginx (HTTPS y proxy) | Implementado |
+| [`deploy/`](deploy/) | Imagen de Nginx de la app y proxy HTTPS para local | Implementado |
 | [`scripts/`](scripts/) | `npm run dev` (backend + mando) | Herramientas de desarrollo |
 | `dist/game/` | Exportación web de Godot | Se genera al exportar (se versiona: hay que volver a exportar y subirla tras cambiar `game/`) |
 | `dist/game_debug/` | Exportación web de `game_debug` | Se genera al exportar (se versiona) |
 | `dist/controller/` | Build del mando | Se genera con `npm run build` (no se versiona) |
 | [`docs/`](docs/) | Documentación | Ver abajo |
-| `compose.yaml`, `compose.dev.yaml` | Nginx + backend (producción y desarrollo) | Implementado |
+| `compose.yaml` | Despliegue principal: Internet con Coolify | Implementado |
+| `compose.local.yaml`, `compose.dev.yaml` | Despliegue en local (juego o depuración) | Implementado |
 
 ## Documentación
 
@@ -42,7 +43,7 @@ Juego cooperativo por salas para el NASA Hackathon 2026. Una **pantalla principa
 | [`docs/godot/red.md`](docs/godot/red.md) | Equipo Godot | Cómo implementar el contrato: autoload `Net`, lobby, QR, eventos, idempotencia y votaciones. |
 | [`docs/controller.md`](docs/controller.md) | Mando web | Arquitectura Vue, rutas de rol (NFC), estados, recuperación de sesión, estilos y despliegue. |
 | [`docs/backend.md`](docs/backend.md) | Backend | Tecnologías, estructura, modelo de sala, reconexión y límites del MVP. |
-| [`docs/deploy.md`](docs/deploy.md) | Despliegue | Docker Compose, HTTPS en Nginx, desarrollo frente a producción y problemas habituales. |
+| [`docs/deploy.md`](docs/deploy.md) | Despliegue | Internet con Coolify, despliegue en local y problemas habituales. |
 | [`CLAUDE.md`](CLAUDE.md) | Claude Code | Contexto y convenciones del proyecto para el asistente. |
 
 ## Empezar
@@ -87,14 +88,18 @@ cd controller && npm run dev    # :5173/controller/ (BACKEND_PORT=<puerto del ba
 
 Abrir `game/project.godot` con Godot 4.7. Para exportar: **Proyecto → Exportar → Web** (genera `dist/game/index.html`).
 
-### Todo junto con Docker
+### Despliegue con Docker
+
+El despliegue principal es **en Internet con Coolify**: un recurso *Docker Compose* con `compose.yaml` y el dominio en el servicio `web`. Coolify pone el HTTPS (Let's Encrypt).
+
+En local, con HTTPS y certificado autofirmado:
 
 ```bash
-npm run docker:dev     # sirve game_debug (exportad antes game_debug a web)
-npm run docker:prod    # sirve game (exportad antes game a web)
+npm run docker:local   # el juego (dist/game)
+npm run docker:dev     # la pantalla de depuración (dist/game_debug), con log de mensajes
 ```
 
-Todo va por **HTTPS** (Godot no arranca en web sin él) con un certificado autofirmado: la primera vez cada navegador avisa y hay que aceptarlo. La pantalla se abre con la **IP de la LAN** (`https://192.168.1.50/game/`), no con `localhost`, para que los móviles puedan usar la dirección que enseña. Detalles: [`docs/deploy.md`](docs/deploy.md).
+En local la pantalla se abre con la **IP de la LAN** (`https://192.168.1.50/game/`), no con `localhost`, y la primera vez cada navegador avisa del certificado. Detalles: [`docs/deploy.md`](docs/deploy.md).
 
 ## Rutas
 

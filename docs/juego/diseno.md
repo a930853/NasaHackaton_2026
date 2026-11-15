@@ -32,7 +32,7 @@ INICIO DEL SOL ──► SELECCIÓN DEL EVENTO ──► DECISIÓN ──► RES
 
 | Fase | Qué pasa |
 |---|---|
-| **Inicio del Sol** | Avanza el contador de Sol. Consumo pasivo: −5 Oxígeno (hasta completar MOXIE). Se aplican los efectos de eventos persistentes y los efectos diferidos que tocan hoy. Se consulta la API de clima espacial: si hay llamarada, salta el [evento en tiempo real](#evento-en-tiempo-real-alerta-solar). |
+| **Inicio del Sol** | Avanza el contador de Sol. Cambios automáticos de las barras (ver [Equilibrio](#equilibrio-de-la-dificultad)): Oxígeno −4 (hasta completar MOXIE), Energía +7 (+6 desde el Sol 8), Fuerza de la base −3 y, desde el Sol 4, Salud −6. Se aplican los efectos de eventos persistentes y los efectos diferidos que tocan hoy. Se consulta la API de clima espacial: si hay llamarada, salta el [evento en tiempo real](#evento-en-tiempo-real-alerta-solar). |
 | **Selección del evento** | Se elige un evento válido según sus condiciones (cadenas de objetivos o aleatorios). Se desbloquean sus términos en el [Libro de tecnicismos](#libro-de-tecnicismos). |
 | **Decisión** | Se muestran título, descripción, dato NASA y opciones. Los jugadores votan o decide el rol indicado. Se puede [pedir ayuda a la Tierra](#pedir-ayuda-a-la-tierra). |
 | **Resolución** | Se aplican los efectos inmediatos, se programan los diferidos y se muestra el texto de resultado. |
@@ -45,7 +45,7 @@ INICIO DEL SOL ──► SELECCIÓN DEL EVENTO ──► DECISIÓN ──► RES
 | `engineer` | Ingeniero | Hardware, paneles, rover, sensores, MOXIE. Es el rol con más opciones propias. |
 | `biologist` | Bióloga | Invernadero, cultivos, probióticos. |
 | `doctor` | Médico | Salud, botiquín, estrés. |
-| `generalist` | Capacidad adicional de Comandante | Moral del equipo, órdenes difíciles, comunicaciones con la Tierra; la tiene el primer jugador además de su rol principal. |
+| `generalist` | Polivalente | Puede participar en decisiones y tareas generales como cualquier otro rol. |
 
 Los ids en inglés son los del [contrato de mensajes](../protocol.md) y los de `events.json`. Cada opción de un evento es de dos tipos:
 
@@ -58,10 +58,36 @@ Cuatro barras de 0 a 100. Empiezan en 80. **Si cualquiera llega a 0, se pierde l
 
 | Recurso | Id | Notas |
 |---|---|---|
-| Energía | `energy` | Baterías y paneles solares. |
-| Oxígeno | `oxygen` | Pierde **5 por Sol** de forma pasiva hasta que MOXIE está terminado. |
+| Energía | `energy` | Baterías y paneles solares. Gana **+7 por Sol** (+6 desde el Sol 8, cuando el polvo cubre los paneles). |
+| Oxígeno | `oxygen` | Pierde **4 por Sol** de forma pasiva hasta que MOXIE está terminado. |
 | Integridad | `integrity` | Estado de la estructura y los equipos. |
 | Salud | `health` | Salud de la tripulación. Objetivo extra: no bajar nunca del 50 %. |
+
+### Equilibrio de la dificultad
+
+Las barras no solo cambian por las decisiones: cada una tiene una **presión automática** al amanecer, para que las derrotas se repartan entre las cuatro y no solo por oxígeno. Las cifras son constantes de `GameState` (`PASSIVE_*`, `*_FROM_SOL`) y el peso de los eventos de MOXIE es el campo `weight` de `events.json` (los eventos de MOXIE pesan **2** frente a 1 al elegir entre objetivos).
+
+| Barra | Qué pasa cada Sol | Por qué |
+|---|---|---|
+| Oxígeno | −4, hasta que MOXIE está al 100 % | Respirar. Es la carrera contra el reloj del juego. |
+| Energía | +7 (+6 desde el Sol 8) | Paneles solares que se llenan de polvo. |
+| Fuerza de la base | −3 | El viento y el polvo desgastan los muros. |
+| Salud | −6 desde el Sol 4 | Estrés y radiación; los primeros Sols la tripulación está descansada. |
+
+**Por qué se cambió:** con las reglas anteriores (oxígeno −5 y nada más), un jugador atento perdía el 100 % de sus derrotas por oxígeno: 95 puntos de pérdida en 20 Sols contra 80 de partida, así que o se terminaba MOXIE a tiempo o se perdía. Salud e integridad no mataban nunca.
+
+**Cómo se midió:** el simulador `tools/balance_sim.py` repite las reglas del juego (se comprobó que el juego real y el simulador reparten las derrotas igual) y se ejecuta con `python tools/balance_sim.py`. Hay dos jugadores simulados: el **atento** (mira costes y objetivos y protege la barra más baja) y el **al azar**. Una persona real está entre los dos.
+
+| Jugador | Gana | Pierde por oxígeno | energía | salud | integridad |
+|---|---|---|---|---|---|
+| Atento, antes | 41 % | 59 % | 0 % | 0 % | 0 % |
+| Atento, ahora | 47 % | 19 % | 13 % | 9 % | 11 % |
+| Al azar, antes | 6 % | 94 % | 0 % | 0 % | 0 % |
+| Al azar, ahora | 3 % | 55 % | 3 % | 33 % | 7 % |
+
+Para el jugador atento el reparto es parejo; para quien elige sin pensar sigue pesando el oxígeno y la salud, que es lo esperable. MOXIE se completa en el 82 % de las partidas atentas (antes el 51 %).
+
+**Cómo retocarlo:** subir `PASSIVE_OXYGEN_LOSS` o bajar el peso de MOXIE endurece la partida y la carga hacia el oxígeno; `PASSIVE_HEALTH_LOSS` y `HEALTH_LOSS_FROM_SOL` son muy sensibles (pasar de −5 a −6 multiplica por 3 las derrotas por salud); bajar `PASSIVE_ENERGY_GAIN` carga la energía. Tras cambiar algo, repetir `tools/balance_sim.py`, que usa las mismas constantes (están copiadas en su clase `Cfg`).
 
 ## Victoria y derrota
 
@@ -102,6 +128,10 @@ Cada opción deja ocupado a quien la hace durante 0, 1 o 2 Sols (`away_sols` en 
 - **Base vacía:** al empezar un Sol, si los 4 están ocupados no se genera ningún evento. Se aplica el consumo diario normal y se avisa con un mensaje; el día pasa al pulsar Continue.
 - **Vuelve** al empezar el Sol indicado, con un aviso en las noticias del amanecer y el sonido de la puerta.
 - **Avatares:** la franja inferior derecha de la cabina muestra a los 4 astronautas con su casco (amarillo, verde, rojo y blanco): con color y «READY» en la base, grises y «BUSY - N Sols» si están ocupados.
+
+## Lectura del evento
+
+Al aparecer un evento, su descripción **se escribe poco a poco** (30 letras por segundo, entre 2 y 10 segundos según lo larga que sea; los eventos actuales tardan de 2,5 a 6,6 s) para animar a leerla. Hasta que acaba **no se puede decidir**: ni con el ratón en partida individual (las opciones aparecen al terminar), ni en los móviles (muestran «Read the story!» y reciben las opciones al terminar), ni pedir ayuda a la Tierra. El dato NASA y la pista de la Tierra salen también al terminar. La cuenta atrás de los eventos críticos (terremoto) empieza **después** de la lectura. Las constantes están en `TurnManager` (`READING_CHARS_PER_SECOND`, `READING_MIN_SECONDS`, `READING_MAX_SECONDS`). Un desempate de votación no repite la lectura.
 
 ## Qué se ve dónde
 
@@ -161,7 +191,7 @@ Fuentes que se comparan: **clases** (PDF «Clases Godot»), **eventos** (PDF «E
 | Tema | Lo que dice cada fuente | En `events.json` |
 |---|---|---|
 | **Duración de la partida** | 15 Sols (clases), 20 Sols (especificaciones), 30 Sols (eventos) | `max_sols: 30` |
-| **Nombre del 4.º rol** | Comandante (diseño); `generalist`, que el mando muestra como «Polivalente» | `generalist` |
+| **Capacidad adicional** | Comandante; la recibe el primer jugador además de su rol principal | `commander: true` |
 | **Salud** | Una barra común (especificaciones) o una barra por astronauta (clases) | Una común (`health`) |
 | **Fases de MOXIE** | 4 fases de 25 % (eventos) o 3 de 33 % (especificaciones) | 3 fases (33 + 33 + 34) |
 | **Plazo de los sensores** | Antes del Sol 20 (eventos) o del Sol 13 (especificaciones) | Sol 20 |

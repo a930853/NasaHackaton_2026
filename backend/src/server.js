@@ -10,6 +10,8 @@ import {
 } from './rooms.js';
 
 const HEARTBEAT_MS = 15_000;
+/** El mensaje más grande del contrato (una controller_view) ocupa pocos KB. */
+const MAX_MESSAGE_BYTES = 64 * 1024;
 
 /** Crea el servidor sin arrancarlo (los tests lo levantan en un puerto libre). */
 export function createApp() {
@@ -17,7 +19,7 @@ export function createApp() {
   app.get('/api/health', (_req, res) => res.json({ ok: true, rooms: rooms.size }));
 
   const server = createServer(app);
-  const wss = new WebSocketServer({ server, path: '/ws' });
+  const wss = new WebSocketServer({ server, path: '/ws', maxPayload: MAX_MESSAGE_BYTES });
 
   // ---------- helpers de difusión ----------
   const lobbyState = (room) => ({
@@ -112,6 +114,13 @@ export function createApp() {
       send(room.hostConnection, {
         type: 'choose', playerId: player.id, role: player.role,
         actionId: msg.actionId, eventId: msg.eventId, optionId: msg.optionId,
+      });
+    },
+
+    continue(ws, ctx, msg) {
+      if (ctx.kind !== 'player') return sendError(ws, 'not_player', 'continue');
+      send(ctx.room.hostConnection, {
+        type: 'continue', playerId: ctx.player.id, role: ctx.player.role, actionId: msg.actionId,
       });
     },
 

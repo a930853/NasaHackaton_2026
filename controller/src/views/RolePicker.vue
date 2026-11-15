@@ -12,7 +12,7 @@ const props = defineProps({
 const emit = defineEmits(['pick'])
 
 const roleList = computed(() =>
-  Object.entries(ROLES).filter(([id]) => id !== 'generalist').map(([id, role]) => {
+  Object.entries(ROLES).map(([id, role]) => {
     const holder = props.players.find((p) => p.role === id)
     const mine = holder?.id === props.playerId
     return { id, ...role, holder, mine, available: !holder || mine }
