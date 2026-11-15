@@ -171,6 +171,12 @@ Se basa en el retraso real de las comunicaciones: entre 4 y 24 minutos por mensa
 - **Dato real:** la API Horizons de JPL da la distancia Tierra–Marte del día. Godot puede mostrar: *«Hoy Marte está a X millones de km; vuestra señal tardará Y minutos en llegar a Houston»*. Si no hay conexión, se usan 225 millones de km y 12 minutos.
 - Durante una alerta solar no se puede pedir ayuda.
 
+**Cómo se ve en pantalla** (todo con la estética de la cabina: cajas oscuras de borde azul, fuente pixelada y los planetas en pixel art):
+
+- **Botón** (`EarthHelpFace`, `game/Scripts/earth_help_face.gd`): la Tierra con el nombre «ASK EARTH FOR HELP» y una línea de estado de color. Verde con ondas de radio animadas si está lista; ámbar con una batería que se llena un trozo por Sol mientras se recarga; rojo con las ondas tachadas si la alerta solar corta la señal; gris si no se puede usar con ese evento.
+- **Ventana** (`EarthPanel`, `game/Scripts/earth_panel.gd`): marco azul del menú, dibujo de Marte y la Tierra unidos por la señal (el mensaje va en azul y la respuesta vuelve en ámbar) con la distancia y los minutos, y una tarjeta por cada forma de pedir ayuda con sus etiquetas de coste y de espera. Se cierra con «Cancel» o Escape. Los textos de las tarjetas salen de `TurnManager.EARTH_HELP_OPTIONS` (`title`, `text`, `energy_cost`, `delay_sols`).
+- **Respuesta**: cuando el evento vuelve, la pista sale en una caja ámbar «MESSAGE FROM EARTH» con la Tierra al lado.
+
 ## Evento en tiempo real: alerta solar
 
 - Al empezar cada Sol se consulta la API DONKI de la NASA (llamaradas solares o eyecciones de masa coronal recientes).

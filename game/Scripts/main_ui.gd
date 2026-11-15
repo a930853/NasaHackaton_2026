@@ -147,7 +147,9 @@ var _leaving: bool = false
 var _view: int = View.DECISIONS
 var _selected_stat: String = "health"
 var _new_words: int = 0
-var _earth_panel: UiOverlay
+var _earth_panel: EarthPanel
+var _earth_face: EarthHelpFace            # cara del botón «Ask Earth for help»
+var _hint_box: PanelContainer             # caja «MESSAGE FROM EARTH» con la pista
 var _end_screen: EndScreen
 var _debug_panel: UiOverlay
 var _toast_tween: Tween = null
@@ -165,6 +167,7 @@ func _ready() -> void:
 	add_child(_menu_button)
 	_place_hud()
 	_build_buttons()
+	_build_hint_box()
 	_build_overlays()
 	_build_options_box()
 	_build_menu()
@@ -261,6 +264,11 @@ func _build_buttons() -> void:
 	words_button.button_group = group
 	words_button.pressed.connect(_show_glossary)
 	_build_words_face()
+
+	# Botón de la radio: la caja oscura de la pantalla con la Tierra, las ondas y el estado.
+	EarthHelpFace.style_button(earth_help_button)
+	_earth_face = EarthHelpFace.new()
+	earth_help_button.add_child(_earth_face)
 
 
 ## Estilo común: fondo oscuro de pantalla, borde de color al pasar el ratón y al estar elegido.
@@ -450,7 +458,8 @@ func _refresh_options_box() -> void:
 
 
 func _build_overlays() -> void:
-	_earth_panel = UiOverlay.new(Vector2(640, 420))
+	_earth_panel = EarthPanel.new()
+	_earth_panel.chosen.connect(_on_earth_choice)
 	add_child(_earth_panel)
 
 	_end_screen = EndScreen.new()
@@ -655,13 +664,19 @@ func _refresh_earth_help_button() -> void:
 	var available: bool = TurnManager.can_request_earth_help()
 	earth_help_button.disabled = not available
 	if available:
+		_earth_face.set_state(EarthHelpFace.State.READY)
 		earth_help_button.tooltip_text = "Ask Earth for a hint. The radio needs %d Sols to recharge after each message." % GameState.EARTH_HELP_COOLDOWN_SOLS
-	elif GameState.earth_help_blocked():
+		return
+	_earth_panel.close()   # ya no se puede pedir ayuda (p. ej. la tripulación decidió desde los móviles)
+	if GameState.earth_help_blocked():
+		_earth_face.set_state(EarthHelpFace.State.NO_SIGNAL)
 		earth_help_button.tooltip_text = "The solar storm is blocking radio messages."
 	elif GameState.earth_help_cooldown_left() > 0:
 		var left: int = GameState.earth_help_cooldown_left()
+		_earth_face.set_state(EarthHelpFace.State.RECHARGING, left, GameState.EARTH_HELP_COOLDOWN_SOLS)
 		earth_help_button.tooltip_text = "The radio is recharging. Ready in %d Sol%s." % [left, "" if left == 1 else "s"]
 	else:
+		_earth_face.set_state(EarthHelpFace.State.NOT_NOW)
 		earth_help_button.tooltip_text = "Not now. Earth cannot help with emergencies."
 
 
@@ -700,7 +715,7 @@ func _on_event_presented(event: Dictionary, hint: String) -> void:
 	_fact_to_show = not fact.is_empty()
 	_hint_to_show = not hint.is_empty()
 	nasa_fact_label.visible = _fact_to_show and not TurnManager.reading
-	hint_label.visible = _hint_to_show and not TurnManager.reading
+	_hint_box.visible = _hint_to_show and not TurnManager.reading
 	_start_typing(TurnManager.reading)
 
 	# Foto de cómo estaba todo antes de decidir, para enseñar después qué cambió.
@@ -755,7 +770,7 @@ func _exit_tree() -> void:
 func _on_reading_finished() -> void:
 	_stop_typing()
 	nasa_fact_label.visible = _fact_to_show
-	hint_label.visible = _hint_to_show
+	_hint_box.visible = _hint_to_show
 	waiting_label.text = _waiting_text()
 	_refresh_options_box()
 	_refresh_all()
@@ -848,7 +863,7 @@ func _on_option_pressed(option_id: String) -> void:
 func _on_decision_resolved(option: Dictionary, feedback: String, success: bool) -> void:
 	_stop_typing()
 	nasa_fact_label.visible = _fact_to_show
-	hint_label.visible = _hint_to_show
+	_hint_box.visible = _hint_to_show
 	waiting_label.visible = false
 	_refresh_options_box()   # ya no hay nada que elegir: se quitan las opciones
 	_debug_panel.close()
@@ -938,28 +953,54 @@ func _on_term_unlocked(_term_id: String, title: String) -> void:
 # ------------------------------------------------------------ Ayuda de la Tierra
 
 func _open_earth_panel() -> void:
+	Events.sfx_requested.emit("click", 0.05)
 	GlossaryManager.unlock("minutos_luz")
-	_earth_panel.clear_content()
-	_earth_panel.content.add_child(_earth_panel.make_title("Ask Earth for help"))
-	_earth_panel.content.add_child(_earth_panel.make_text(TurnManager.EARTH_DISTANCE_TEXT))
-	_earth_panel.content.add_child(_earth_panel.make_text(
-		"Today's problem will wait and you will move on to the next Sol. When Earth answers, the problem comes back with a hint."))
-	for choice in TurnManager.EARTH_HELP_OPTIONS:
-		var button := Button.new()
-		button.text = str(choice["label"])
-		button.custom_minimum_size = Vector2(0, 60)
-		button.pressed.connect(_on_earth_choice.bind(str(choice["id"])))
-		_earth_panel.content.add_child(button)
-	var cancel := Button.new()
-	cancel.text = "Cancel"
-	cancel.pressed.connect(_earth_panel.close)
-	_earth_panel.content.add_child(cancel)
-	_earth_panel.open()
+	_earth_panel.open(TurnManager.EARTH_HELP_OPTIONS, TurnManager.EARTH_DISTANCE_MILLION_KM,
+		TurnManager.EARTH_SIGNAL_MINUTES, GameState.EARTH_HELP_COOLDOWN_SOLS)
 
 
 func _on_earth_choice(choice_id: String) -> void:
-	_earth_panel.close()
 	TurnManager.request_earth_help(choice_id)
+
+
+## La pista que manda la Tierra sale en su propia caja: la Tierra, «MESSAGE FROM EARTH» y el texto.
+func _build_hint_box() -> void:
+	_hint_box = PanelContainer.new()
+	_hint_box.visible = false
+	var style: StyleBoxFlat = _make_box(Color(0.1, 0.08, 0.02), Color(1.0, 0.78, 0.3), 8, 2)
+	style.set_content_margin_all(8)
+	_hint_box.add_theme_stylebox_override("panel", style)
+	var parent: Node = hint_label.get_parent()
+	parent.add_child(_hint_box)
+	parent.move_child(_hint_box, hint_label.get_index())
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	_hint_box.add_child(row)
+
+	var planet := TextureRect.new()
+	planet.texture = EarthHelpFace.EARTH
+	planet.custom_minimum_size = Vector2(40.0, 40.0)
+	planet.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	planet.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	planet.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	planet.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(planet)
+
+	var texts := VBoxContainer.new()
+	texts.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	texts.add_theme_constant_override("separation", 3)
+	row.add_child(texts)
+
+	var caption := Label.new()
+	caption.text = "MESSAGE FROM EARTH"
+	caption.add_theme_font_override("font", MenuStyle.FONT)
+	caption.add_theme_font_size_override("font_size", 11)
+	caption.add_theme_color_override("font_color", Color(1.0, 0.78, 0.3))
+	texts.add_child(caption)
+
+	hint_label.reparent(texts)   # el texto de la pista pasa a vivir dentro de la caja
+	hint_label.visible = true
 
 
 # ---------------------------------------------------------------------- Final

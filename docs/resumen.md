@@ -343,8 +343,10 @@ Evento auxiliar basado en el retraso real de las comunicaciones con Marte.
 
 | Opción | Coste | La respuesta llega en |
 |---|---|---|
-| Send a full report (Commander) | Energía −5 | 1 Sol |
-| Send a quick message | Nada | 2 Sols |
+| Full report (lo cuenta el Comandante) | Energía −5 | 1 Sol |
+| Quick message | Nada | 2 Sols |
+
+- **En pantalla:** el botón es la radio de la base (la Tierra con ondas si está lista, una batería si se recarga, las ondas tachadas si no hay señal). La ventana enseña Marte y la Tierra unidos por la señal, con la distancia y los minutos, y una tarjeta por opción. La pista vuelve en una caja «MESSAGE FROM EARTH».
 
 - **Recarga:** la radio tarda **4 Sols** en poder usarse otra vez.
 - **No se puede pedir:** durante la lectura, en los terremotos (hay cuenta atrás), en la alerta solar, en «MOXIE Works!», ni mientras dure una alerta solar.

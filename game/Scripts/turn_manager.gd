@@ -35,12 +35,14 @@ const READING_MAX_SECONDS: float = 12.0
 const FLARE_LOOKBACK_DAYS: int = 3
 
 ## Distancia Tierra-Marte de respaldo (no se consulta JPL Horizons en este prototipo).
-const EARTH_DISTANCE_TEXT: String = "Mars is about 225 million km from Earth right now. A radio message takes about 12 minutes to get there!"
+const EARTH_DISTANCE_MILLION_KM: int = 225
+const EARTH_SIGNAL_MINUTES: int = 12
 
+## Formas de pedir ayuda a la Tierra. La ventana (EarthPanel) enseña el título, el texto, el coste y la espera.
 const EARTH_HELP_OPTIONS: Array[Dictionary] = [
-	{"id": "full-report", "label": "Send a full report (Commander)\nCosts: Energy -5  |  Answer in 1 Sol",
+	{"id": "full-report", "title": "Full report", "text": "The Commander tells Earth everything.",
 		"energy_cost": 5, "delay_sols": 1},
-	{"id": "quick-message", "label": "Send a quick message\nCosts: nothing  |  Answer in 2 Sols",
+	{"id": "quick-message", "title": "Quick message", "text": "A short note. The answer is slower.",
 		"energy_cost": 0, "delay_sols": 2},
 ]
 
