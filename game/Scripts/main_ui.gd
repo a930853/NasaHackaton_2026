@@ -35,7 +35,8 @@ const BUTTON_INSET: float = 2.0
 const BOOK_ICON_PATH: String = "res://Images/Libro.png"
 const MENU_BUTTON_FONT_SIZE: int = 24
 const MENU_ITEM_WIDTH: float = 360.0
-const CLOSE_BUTTON_SIZE: float = 44.0
+const CLOSE_BUTTON_SIZE: float = 64.0     # la X, cuadrada y con el estilo azul del inicio
+const CLOSE_BUTTON_MARGIN: float = 8.0
 
 const STAT_LABELS: Dictionary = {
 	"health": "Health", "oxygen": "Oxygen", "energy": "Energy", "integrity": "Base strength",
@@ -334,8 +335,8 @@ func _build_words_face() -> void:
 	texts.add_child(_words_label)
 
 
-## Botón MENU de la placa de arriba a la derecha y lo que despliega en la pantalla derecha: «Options»
-## (sonido), «Exit» (vuelve al menú principal) y una X arriba a la derecha para volver atrás.
+## Botón MENU de la placa de arriba a la derecha y lo que despliega: una capa que tapa TODA la pantalla
+## derecha con «Options» (sonido), «Exit» (vuelve al menú principal) y una X arriba a la derecha para volver atrás.
 ## Todos con el estilo azul del menú de inicio (MenuStyle).
 func _build_menu() -> void:
 	_menu_button.text = "MENU"
@@ -346,9 +347,7 @@ func _build_menu() -> void:
 
 	_menu_view = Control.new()
 	_menu_view.visible = false
-	_menu_view.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_menu_view.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	decisions_view.get_parent().add_child(_menu_view)
+	right_screen.add_child(_menu_view)   # el PanelContainer lo estira por toda la pantalla; el contenido normal se oculta
 
 	var center := CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -357,13 +356,6 @@ func _build_menu() -> void:
 	column.custom_minimum_size = Vector2(MENU_ITEM_WIDTH, 0.0)
 	column.add_theme_constant_override("separation", 16)
 	center.add_child(column)
-
-	var title := Label.new()
-	title.text = "MENU"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 28)
-	title.add_theme_color_override("font_color", Color(1.0, 0.93, 0.7))
-	column.add_child(title)
 
 	var options_button := Button.new()
 	options_button.text = "Options"
@@ -386,15 +378,12 @@ func _build_menu() -> void:
 	close_button.focus_mode = Control.FOCUS_NONE
 	close_button.anchor_left = 1.0
 	close_button.anchor_right = 1.0
-	close_button.offset_left = -CLOSE_BUTTON_SIZE
-	close_button.offset_right = 0.0
-	close_button.offset_top = 0.0
-	close_button.offset_bottom = CLOSE_BUTTON_SIZE
-	close_button.add_theme_font_size_override("font_size", 22)
-	close_button.add_theme_stylebox_override("normal", _make_box(Color(0.62, 0.16, 0.2), Color(1, 1, 1, 0.55), 8, 2))
-	close_button.add_theme_stylebox_override("hover", _make_box(Color(0.85, 0.24, 0.3), Color.WHITE, 8, 2))
-	close_button.add_theme_stylebox_override("pressed", _make_box(Color(0.45, 0.1, 0.14), Color.WHITE, 8, 2))
-	close_button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	close_button.offset_left = -CLOSE_BUTTON_SIZE - CLOSE_BUTTON_MARGIN
+	close_button.offset_right = -CLOSE_BUTTON_MARGIN
+	close_button.offset_top = CLOSE_BUTTON_MARGIN
+	close_button.offset_bottom = CLOSE_BUTTON_SIZE + CLOSE_BUTTON_MARGIN
+	close_button.custom_minimum_size = Vector2(CLOSE_BUTTON_SIZE, CLOSE_BUTTON_SIZE)
+	MenuStyle.apply(close_button, MENU_BUTTON_FONT_SIZE)   # mismo estilo azul que los botones del inicio
 	close_button.pressed.connect(_close_menu)
 	_menu_view.add_child(close_button)
 
@@ -484,6 +473,7 @@ func _show_view(view: int) -> void:
 	stat_view.visible = view == View.STAT
 	glossary_view.visible = view == View.GLOSSARY
 	_menu_view.visible = view == View.MENU
+	right_screen.get_node("ScreenMargin").visible = view != View.MENU   # el menú tapa toda la pantalla derecha
 	if view == View.DECISIONS:
 		decide_button.button_pressed = true
 
