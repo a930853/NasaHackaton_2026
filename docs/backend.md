@@ -70,7 +70,7 @@ Cada conexión tiene un contexto `{ kind, room, player }`:
 |---|---|---|
 | `null` | Al conectar | `create_room`, `join_room`, `resume_player` |
 | `host` | `create_room` | `start_game`, `controller_view`, `choice_result`, `finish_game` |
-| `player` | `join_room` / `resume_player` | `select_role`, `choose` |
+| `player` | `join_room` / `resume_player` | `select_role`, `leave_room`, `choose`, `continue` |
 
 Un mensaje enviado por el tipo equivocado devuelve `not_host` / `not_player`. La identidad del jugador sale siempre de este contexto: `choose` ignora cualquier `playerId` que traiga el móvil.
 
@@ -102,6 +102,6 @@ No cubre lo que decide Godot (duplicados, eventos antiguos, votaciones) ni la LA
 
 - Todo en memoria: reiniciar el backend pierde las salas.
 - Sin reconexión del anfitrión (`hostToken` se emite pero aún no se usa).
-- Sin "salir de la sala": un móvil desconectado conserva su plaza hasta que cierra la sala.
+- Un móvil desconectado conserva su plaza hasta que cierra la sala. Para salir de verdad, en el lobby, envía `leave_room` (Node lo borra, libera su rol y, si era el Comandante, pasa al siguiente).
 - Sin límite de salas ni de tasa de mensajes (suficiente para una demo en LAN).
 - `message` en `error` es igual a `code`; la traducción a texto corresponde al cliente.

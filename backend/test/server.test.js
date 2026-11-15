@@ -119,6 +119,47 @@ test('el primer jugador conserva su comandante al elegir un rol principal', asyn
   assert.equal(mine.commander, true);
 });
 
+test('salir del lobby libera el rol, invalida el token y avisa al resto', async () => {
+  const { h, code } = await host();
+  const ana = await player(code, 'Ana', 'engineer');
+  const luis = await player(code, 'Luis', 'doctor');
+  ana.p.send({ type: 'leave_room' });
+  await ana.p.next('left_room');
+  // En la cola hay lobby_state anteriores: se espera al que ya no tiene a Ana.
+  let lobby;
+  do lobby = await luis.p.next('lobby_state'); while (lobby.players.length !== 1);
+  assert.deepEqual(lobby.players.map((p) => p.name), ['Luis']);
+  assert.equal(lobby.players[0].commander, true); // el Comandante pasa al siguiente
+
+  // El rol queda libre y el token ya no vale.
+  luis.p.send({ type: 'select_role', role: 'engineer' });
+  let hostView;
+  do hostView = await h.next('lobby_state'); while (hostView.players[0]?.role !== 'engineer');
+  assert.equal(hostView.players.length, 1);
+  const again = await client();
+  again.send({ type: 'resume_player', code, resumeToken: ana.joined.resumeToken });
+  assert.equal((await again.next('error')).code, 'invalid_token');
+});
+
+test('tras salir, la misma conexión puede entrar en otra sala', async () => {
+  const first = await host();
+  const second = await host();
+  const ana = await player(first.code, 'Ana');
+  ana.p.send({ type: 'leave_room' });
+  await ana.p.next('left_room');
+  ana.p.send({ type: 'join_room', code: second.code, name: 'Ana' });
+  assert.equal((await ana.p.next('joined')).code, second.code);
+});
+
+test('con la partida empezada no se puede salir de la sala', async () => {
+  const { h, code } = await host();
+  const ana = await player(code, 'Ana', 'engineer');
+  h.send({ type: 'start_game' });
+  await ana.p.next('game_started');
+  ana.p.send({ type: 'leave_room' });
+  assert.equal((await ana.p.next('error')).code, 'not_in_lobby');
+});
+
 test('no se reserva el mismo rol dos veces', async () => {
   const { code } = await host();
   await player(code, 'Ana', 'engineer');

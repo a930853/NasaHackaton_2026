@@ -16,6 +16,8 @@ Fuente de verdad compartida entre **Godot**, el **mando web** y el **backend**. 
 | [`join_room`](#join_room) | Mando → Node | Node |
 | [`joined`](#joined) | Node → Mando | — |
 | [`select_role`](#select_role) | Mando → Node | Node |
+| [`leave_room`](#leave_room) | Mando → Node | Node |
+| [`left_room`](#left_room) | Node → Mando | — |
 | [`lobby_state`](#lobby_state) | Node → Godot y mandos | — |
 | [`start_game`](#start_game) | Godot → Node | Node |
 | [`game_started`](#game_started) | Node → Godot y mandos | — |
@@ -78,6 +80,21 @@ El jugador elige un rol principal: `engineer`, `biologist`, `doctor` o `generali
 
 Éxito: no hay respuesta directa; todos reciben un [`lobby_state`](#lobby_state). Errores: `invalid_role`, `role_taken`, `not_in_lobby`, `not_player`.
 
+### `leave_room`
+Mando → Node. El jugador sale de la sala. **Solo en el lobby**: con la partida empezada no se abandona (si el móvil se cierra, el jugador queda `connected: false` y puede volver con `resume_player`).
+```json
+{ "type": "leave_room" }
+```
+Node borra al jugador (su rol queda libre y su `resumeToken` deja de valer), le responde [`left_room`](#left_room) y difunde un [`lobby_state`](#lobby_state) al resto. Si salía el Comandante, pasa a serlo el siguiente jugador por orden de llegada. La conexión queda sin registrar: puede enviar otro `join_room`.
+
+Errores: `not_player`, `not_in_lobby`.
+
+### `left_room`
+Node → Mando. Confirma la salida. El mando borra lo guardado (`code`, `resumeToken`) y vuelve a la pantalla de entrada.
+```json
+{ "type": "left_room" }
+```
+
 ### `lobby_state`
 Node → Godot y mandos. Estado completo de la sala.
 ```json
@@ -93,7 +110,7 @@ Node → Godot y mandos. Estado completo de la sala.
 ```
 - `status`: `lobby` | `playing` | `finished`.
 - `role` es `null` hasta que el jugador elige.
-- Se envía cuando: se crea la sala (solo al anfitrión), entra un jugador, cambia un rol, un jugador se desconecta o reconecta. Un jugador que reconecta lo recibe también a título individual.
+- Se envía cuando: se crea la sala (solo al anfitrión), entra o sale un jugador, cambia un rol, un jugador se desconecta o reconecta. Un jugador que reconecta lo recibe también a título individual.
 - Es un **estado completo**, no un diff: el receptor sustituye lo que tenía.
 - No contiene tokens.
 
@@ -245,7 +262,7 @@ Node → emisor del mensaje rechazado.
 | `already_registered` | La conexión ya tiene sala. |
 | `not_host` / `not_player` | Mensaje de un tipo de conexión que no le corresponde. |
 | `room_not_found`, `room_full`, `game_already_started` | `join_room` / `resume_player`. |
-| `role_taken`, `not_in_lobby` | `select_role`; `not_in_lobby` también en `start_game`. |
+| `role_taken`, `not_in_lobby` | `select_role`; `not_in_lobby` también en `start_game` y `leave_room`. |
 | `no_players`, `players_without_role` | `start_game`. |
 | `not_playing` | `choose` antes de empezar. |
 | `unknown_player` | `controller_view` / `choice_result` con un `playerId` que no existe en la sala. |
@@ -314,7 +331,7 @@ Mando(nuevo)     Node                    Godot
 
 - Máximo 4 jugadores; un jugador por rol; los roles solo cambian en el lobby.
 - Se puede iniciar con 1–4 jugadores, siempre que todos tengan rol.
-- Un móvil que se desconecta **conserva jugador y rol** (`connected: false`). No existe "salir de la sala" en el MVP.
+- Un móvil que se desconecta **conserva jugador y rol** (`connected: false`). Para salir de verdad, en el lobby, el mando envía [`leave_room`](#leave_room); con la partida empezada no se puede salir.
 - Si el **anfitrión** se desconecta, la sala se cierra y los mandos reciben `room_closed`. No hay reconexión del anfitrión en el MVP.
 - Las salas viven en memoria: reiniciar Node las pierde.
 - Heartbeat: Node envía un *ping* de WebSocket cada 15 s y termina las conexiones que no responden. Un móvil sin red se marca desconectado en unos 15–30 s.

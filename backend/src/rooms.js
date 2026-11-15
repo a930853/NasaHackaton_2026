@@ -64,6 +64,17 @@ export function selectRole(room, player, role) {
   return {};
 }
 
+/** Saca a un jugador del lobby. Si era el Comandante, pasa a serlo el siguiente por orden de llegada. */
+export function removePlayer(room, player) {
+  if (room.status !== 'lobby') return { error: 'not_in_lobby' };
+  room.players.delete(player.id);
+  if (player.commander) {
+    const next = room.players.values().next().value;
+    if (next) next.commander = true;
+  }
+  return {};
+}
+
 export function findByResumeToken(room, resumeToken) {
   for (const p of room.players.values()) if (p.resumeToken === resumeToken) return p;
   return null;

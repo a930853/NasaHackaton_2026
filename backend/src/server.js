@@ -6,7 +6,7 @@ import { WebSocketServer } from 'ws';
 import { parse, send, sendError } from './protocol.js';
 import { logMessage } from './log.js';
 import {
-  rooms, createRoom, addPlayer, selectRole, findByResumeToken, publicPlayers, closeRoom,
+  rooms, createRoom, addPlayer, selectRole, removePlayer, findByResumeToken, publicPlayers, closeRoom,
 } from './rooms.js';
 
 const HEARTBEAT_MS = 15_000;
@@ -84,6 +84,16 @@ export function createApp() {
       const { error } = selectRole(ctx.room, ctx.player, msg.role);
       if (error) return sendError(ws, error, 'select_role');
       broadcastLobby(ctx.room);
+    },
+
+    leave_room(ws, ctx) {
+      if (ctx.kind !== 'player') return sendError(ws, 'not_player', 'leave_room');
+      const { room, player } = ctx;
+      const { error } = removePlayer(room, player);
+      if (error) return sendError(ws, error, 'leave_room');
+      Object.assign(ctx, { kind: null, room: null, player: null }); // puede volver a entrar en otra sala
+      send(ws, { type: 'left_room' });
+      broadcastLobby(room);
     },
 
     start_game(ws, ctx) {

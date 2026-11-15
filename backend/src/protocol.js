@@ -16,6 +16,7 @@ const validators = {
     return isStr(m.name?.trim?.(), 24) ? null : 'invalid_name';
   },
   select_role: (m) => (ROLES.includes(m.role) ? null : 'invalid_role'),
+  leave_room: () => null,
   resume_player: (m) => (isStr(m.code, 8) && isStr(m.resumeToken, 128) ? null : 'invalid_token'),
   choose: (m) => (isStr(m.actionId) && isStr(m.eventId) && isStr(m.optionId) ? null : 'invalid_choice'),
   continue: (m) => (isStr(m.actionId) ? null : 'invalid_continue'),
