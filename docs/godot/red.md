@@ -13,6 +13,8 @@ Ya está conectado el juego real con el backend y el mando web. Piezas:
 | Lobby | `game/Scripts/main_menu.gd` (nodo `Lobby` de `Main_menu.tscn`) | «Start Game» pregunta el modo: **Play solo** (una pantalla, sin móviles ni red) o **Play multiplayer**. En multijugador conecta, crea la sala y enseña código, dirección del mando y jugadores con su rol; «Start expedition» se activa cuando hay ≥1 jugador y todos tienen rol; «Play solo instead» y «Back» salen del lobby (p. ej. si no hay servidor, que se detecta a los 4 s). |
 | Señales | `game/Scripts/events.gd` | `net_connected`, `net_disconnected`, `net_connection_failed`, `room_created`, `lobby_updated`, `game_started`, `player_choice_received`, `room_closed`, `net_error`. |
 
+El lobby usa la estética del juego: marco azul de los botones, tarjetas de jugador con el casco del color de su rol (4 plazas, las libres apagadas y el comandante marcado), el código de la sala en una caja destacada y el QR sobre fondo blanco con marco azul.
+
 Flujo de una partida: menú → lobby (sala creada, móviles entran y eligen rol) → `start_game` → intro → partida. En cada evento, `TurnManager` emite `event_presented` y `PhoneBridge` manda a cada móvil **todas las opciones** del evento, sean de su rol o no (`TurnManager.controller_view_for(role)`: con `detail` = costes, y `disabled` + `reason` si el rol está ocupado fuera de la base). Al resolverse, todos reciben una vista `result` con las consecuencias. Al volver al menú se cierra la sala (`finish_game`).
 
 Decisiones tomadas:

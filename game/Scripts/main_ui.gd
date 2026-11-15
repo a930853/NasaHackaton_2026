@@ -153,7 +153,7 @@ var _view: int = View.DECISIONS
 var _selected_stat: String = "health"
 var _new_words: int = 0
 var _earth_panel: UiOverlay
-var _end_panel: UiOverlay
+var _end_screen: EndScreen
 var _debug_panel: UiOverlay
 var _toast_tween: Tween = null
 
@@ -458,8 +458,10 @@ func _build_overlays() -> void:
 	_earth_panel = UiOverlay.new(Vector2(640, 420))
 	add_child(_earth_panel)
 
-	_end_panel = UiOverlay.new(Vector2(760, 520))
-	add_child(_end_panel)
+	_end_screen = EndScreen.new()
+	_end_screen.play_again.connect(_on_play_again)
+	_end_screen.back_to_menu.connect(func() -> void: Events.scene_change_requested.emit("menu"))
+	add_child(_end_screen)
 
 	_debug_panel = UiOverlay.new(Vector2(640, 470))
 	add_child(_debug_panel)
@@ -966,43 +968,29 @@ func _on_earth_choice(choice_id: String) -> void:
 # ---------------------------------------------------------------------- Final
 
 func _on_game_ended(victory: bool, report: Dictionary) -> void:
-	_end_panel.clear_content()
-	var content: VBoxContainer = _end_panel.content
-	content.add_child(_end_panel.make_title("Mission complete!" if victory else "Mission failed"))
+	# Al acabar la partida suena el sonido de éxito si se gana y el de fallo si se pierde.
+	Events.sfx_requested.emit("success" if victory else "failure", 0.0)
 
+	var message: String
+	var failed_stat: String = ""
 	if victory:
-		content.add_child(_end_panel.make_text("You survived %d Sols on Mars! Great teamwork!" % GameState.MAX_SOLS))
+		message = "You survived %d Sols on Mars! Great teamwork!" % GameState.MAX_SOLS
 	else:
-		var stat: String = str(report["reason"]).trim_prefix("defeat:")
-		content.add_child(_end_panel.make_text(
-			"%s (Sol %d)\nReal space teams also fail sometimes. They learn and try again!" % [
-				DEFEAT_REASONS.get(stat, "The mission is over."), report["sol"]]))
+		failed_stat = str(report["reason"]).trim_prefix("defeat:")
+		message = "%s (Sol %d)
+Real space teams also fail sometimes. They learn and try again!" % [
+			DEFEAT_REASONS.get(failed_stat, "The mission is over."), report["sol"]]
 
-	var objective_lines: Array[String] = []
+	var objectives: Array = []
 	var status: Dictionary = report["objectives"]
 	for key in OBJECTIVE_NAMES:
-		objective_lines.append("%s  %s" % ["[DONE]" if status[key] else "[ -- ]", OBJECTIVE_NAMES[key]])
-	content.add_child(_end_panel.make_text("\n".join(PackedStringArray(objective_lines))))
-	content.add_child(_end_panel.make_text("Score: %d" % report["score"]))
-	content.add_child(_end_panel.make_text("Words discovered: %d of %d" % [
-		report["terms_unlocked"], report["terms_total"]]))
+		objectives.append({"name": OBJECTIVE_NAMES[key], "done": bool(status[key])})
 
-	var again := Button.new()
-	again.text = "Play again"
-	again.custom_minimum_size = Vector2(0, 44)
-	again.pressed.connect(_on_play_again)
-	content.add_child(again)
-
-	var menu := Button.new()
-	menu.text = "Back to menu"
-	menu.custom_minimum_size = Vector2(0, 44)
-	menu.pressed.connect(func() -> void: Events.scene_change_requested.emit("menu"))
-	content.add_child(menu)
-
-	_end_panel.open()
+	_end_screen.show_result(victory, "Mission complete!" if victory else "Mission failed", message, objectives,
+		int(report["score"]), "Words discovered: %d of %d" % [report["terms_unlocked"], report["terms_total"]], failed_stat)
 
 
 func _on_play_again() -> void:
-	_end_panel.close()
+	_end_screen.hide_screen()
 	_suppress_deltas = true  # el reinicio no debe mostrar números flotantes
 	TurnManager.start_game()

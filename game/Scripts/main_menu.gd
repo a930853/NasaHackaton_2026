@@ -5,14 +5,27 @@ extends Control
 ##                        y la dirección del mando, y lista a los jugadores que entran con su rol.
 ##                        "Start expedition" arranca la partida cuando todos tienen rol.
 
-const MEMBERS_TOP_SPACE: float = 48.0     # hueco para el título "Members"
+const MEMBERS_TOP_SPACE: float = 54.0     # hueco para el título "Members"
 const OFFLINE_COLOR: Color = Color(0.55, 0.55, 0.6)
 const MODE_TITLE_FONT_SIZE: int = 36       # la pregunta de «jugar solo o multijugador» (el título del juego usa 55)
 const MODE_TITLE_WAVE: String = "20.0"
 const MODE_BOX_WIDTH: float = 580.0        # ancho de la pregunta (se parte en dos líneas)
 const MODE_BUTTON_WIDTH: float = 440.0
 const LOBBY_FONT_SIZE: int = 16           # texto de los botones del lobby (más estrecho que el del menú)
+const START_FONT_SIZE: int = 14           # «Start expedition», más pequeño para que quepa dentro del marco del lobby
 const QR_SIZE: float = 186.0              # lado del QR del lobby en pantalla
+
+## Estética del lobby: la misma de las pantallas del juego (marco azul, fondo azul marino, fuente pixelada).
+const LOBBY_FILL: Color = Color(0.03, 0.06, 0.12)
+const LOBBY_BORDER: Color = Color(0.35, 0.55, 0.85)
+const LOBBY_TITLE_COLOR: Color = Color(1.0, 0.93, 0.7)
+const LOBBY_TEXT_COLOR: Color = Color(0.82, 0.9, 1.0)
+const CODE_BORDER: Color = Color(0.95, 0.72, 0.25)
+const HELMET_PATH: String = "res://Images/Astronauta.png"
+const MEMBER_SLOTS: int = 4               # máximo de jugadores: se enseñan siempre 4 plazas
+const MEMBER_ROW_HEIGHT: float = 54.0
+const CODE_BOX_POSITION: Vector2 = Vector2(470.0, 92.0)
+const CODE_BOX_SIZE: Vector2 = Vector2(310.0, 92.0)
 const CREDITS_WIDTH: float = 900.0
 const CREDITS_HEIGHT: float = 620.0
 
@@ -28,6 +41,8 @@ var _local_button: Button        # en el lobby: pasar a jugar solo (p. ej. si no
 var _back_button: Button         # en el lobby: volver a la elección de modo
 var _qr_box: VBoxContainer       # en el lobby: QR con la dirección del mando para los móviles
 var _qr_rect: TextureRect
+var _code_box: PanelContainer    # en el lobby: el código de la sala, en grande
+var _code_label: Label
 var _credits: Control
 var _starting: bool = false
 
@@ -43,17 +58,18 @@ func _ready() -> void:
 	_build_mode_box()
 	_build_qr_box()
 	_build_credits()
+	_style_lobby()
 
 	# Botones del lobby: todos con el estilo azul del menú (MenuStyle).
-	MenuStyle.apply(start_expedition_button, LOBBY_FONT_SIZE)
+	MenuStyle.apply(start_expedition_button, START_FONT_SIZE)
 	MenuStyle.apply($Lobby/Button, LOBBY_FONT_SIZE)
 
 	# "Start expedition" pegado al borde derecho del panel; Back y "Play solo instead" junto a "Options",
 	# en la fila de abajo a la izquierda (los botones azules son grandes y no caben en una sola fila).
-	start_expedition_button.offset_left = 232.0
-	start_expedition_button.offset_right = 528.0
-	start_expedition_button.offset_top = 164.0
-	start_expedition_button.offset_bottom = 228.0
+	start_expedition_button.offset_left = 234.0
+	start_expedition_button.offset_right = 498.0
+	start_expedition_button.offset_top = 134.0
+	start_expedition_button.offset_bottom = 198.0
 
 	_back_button = _make_lobby_button("Back", 245.0, 355.0)
 	_back_button.pressed.connect(_on_lobby_back_pressed)
@@ -363,6 +379,7 @@ func _go_to_intro() -> void:
 func _show_info(bbcode: String) -> void:
 	info_label.text = bbcode
 	_qr_box.visible = false
+	_code_box.visible = false
 
 
 ## QR a la derecha de las instrucciones del lobby. El texto se estrecha para dejarle sitio.
@@ -378,24 +395,33 @@ func _build_qr_box() -> void:
 	_qr_box.visible = false
 	$Lobby/Panel.add_child(_qr_box)
 
+	# El QR va sobre fondo blanco (así se lee mejor) dentro de un marco azul como el del resto del juego.
+	var frame := PanelContainer.new()
+	var frame_style := _screen_box(LOBBY_BORDER, 6)
+	frame_style.bg_color = Color.WHITE
+	frame_style.set_border_width_all(4)
+	frame.add_theme_stylebox_override("panel", frame_style)
+	_qr_box.add_child(frame)
+
 	_qr_rect = TextureRect.new()
-	_qr_rect.custom_minimum_size = Vector2(QR_SIZE, QR_SIZE)
+	_qr_rect.custom_minimum_size = Vector2(QR_SIZE - 20.0, QR_SIZE - 20.0)
 	_qr_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_qr_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_qr_rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST  # bordes nítidos al escalar
-	_qr_box.add_child(_qr_rect)
+	frame.add_child(_qr_rect)
 
 	var caption := Label.new()
 	caption.text = "Scan to join"
 	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	caption.add_theme_font_override("font", MenuStyle.FONT)
+	caption.add_theme_font_size_override("font_size", 13)
+	caption.add_theme_color_override("font_color", LOBBY_TEXT_COLOR)
 	_qr_box.add_child(caption)
 
 
 func _show_room_info(code: String, note: String = "") -> void:
 	var lines: Array[String] = []
-	lines.append("[b]Room code:[/b]  [font_size=44][b]%s[/b][/font_size]" % code)
-	lines.append("")
-	lines.append("[b]How to join (on a phone):[/b]")
+	lines.append("[color=#ffeeb3][b]How to join (on a phone):[/b][/color]")
 	lines.append("1. Scan the QR code or open")
 	lines.append("    [b]%s[/b]" % Net.controller_url(code))
 	lines.append("2. Pick a role. When everybody is ready, press Start expedition.")
@@ -408,6 +434,8 @@ func _show_room_info(code: String, note: String = "") -> void:
 	_show_info("\n".join(PackedStringArray(lines)))
 	_qr_rect.texture = QrCode.to_texture(Net.controller_url(code), 4)
 	_qr_box.visible = _qr_rect.texture != null
+	_code_label.text = code
+	_code_box.visible = true
 
 
 func _refresh_members(players: Array) -> void:
@@ -419,25 +447,178 @@ func _refresh_members(players: Array) -> void:
 	space.custom_minimum_size = Vector2(0.0, MEMBERS_TOP_SPACE)
 	members_box.add_child(space)
 
-	if players.is_empty():
-		members_box.add_child(_member_label("Waiting for players...", OFFLINE_COLOR))
-		return
-	for player in players:
-		var role: Variant = player.get("role")
-		var role_text: String = "choosing a role..." if role == null else str(GameState.ROLE_NAMES.get(str(role), role))
-		var color: Color = CrewAvatar.ROLE_ALBEDO.get(str(role), Color.WHITE) if role != null else Color.WHITE
-		var connected: bool = bool(player.get("connected", true))
-		var text: String = "%s  -  %s%s" % [str(player.get("name", "?")), role_text, "" if connected else "  (disconnected)"]
-		members_box.add_child(_member_label(text, color if connected else OFFLINE_COLOR))
+	# Una tarjeta por jugador (casco con el color de su rol) y, hasta 4, plazas libres apagadas.
+	for slot in range(MEMBER_SLOTS):
+		if slot < players.size():
+			members_box.add_child(_member_row(players[slot]))
+		else:
+			members_box.add_child(_empty_row("Waiting for players..." if slot == 0 and players.is_empty() else "Free seat"))
 
 
-func _member_label(text: String, color: Color) -> Label:
+## Tarjeta de un jugador: casco del color de su rol, nombre y rol (gris si se ha desconectado).
+func _member_row(player: Dictionary) -> Control:
+	var role: Variant = player.get("role")
+	var connected: bool = bool(player.get("connected", true))
+	var color: Color = Color(0.8, 0.86, 0.96)
+	if role != null:
+		color = CrewAvatar.ROLE_ALBEDO.get(str(role), Color.WHITE)
+	if not connected:
+		color = OFFLINE_COLOR
+
+	var role_text: String = "choosing a role..." if role == null else str(GameState.ROLE_NAMES.get(str(role), role))
+	if bool(player.get("commander", false)):
+		role_text += "  -  Commander"
+	if not connected:
+		role_text += "  (disconnected)"
+
+	var row := PanelContainer.new()
+	row.custom_minimum_size = Vector2(0.0, MEMBER_ROW_HEIGHT)
+	row.add_theme_stylebox_override("panel", _row_box(color, 1.0))
+	var box := HBoxContainer.new()
+	box.add_theme_constant_override("separation", 12)
+	row.add_child(box)
+	box.add_child(_helmet_icon(color))
+
+	var texts := VBoxContainer.new()
+	texts.alignment = BoxContainer.ALIGNMENT_CENTER
+	texts.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	texts.add_theme_constant_override("separation", -2)
+	box.add_child(texts)
+	var name_label := Label.new()
+	name_label.text = str(player.get("name", "?"))
+	name_label.add_theme_font_size_override("font_size", 19)
+	name_label.add_theme_color_override("font_color", Color.WHITE if connected else OFFLINE_COLOR)
+	texts.add_child(name_label)
+	var role_label := Label.new()
+	role_label.text = role_text
+	role_label.add_theme_font_size_override("font_size", 14)
+	role_label.add_theme_color_override("font_color", color)
+	texts.add_child(role_label)
+	return row
+
+
+## Plaza libre: tarjeta apagada para que se vea que caben 4 jugadores.
+func _empty_row(text: String) -> Control:
+	var row := PanelContainer.new()
+	row.custom_minimum_size = Vector2(0.0, MEMBER_ROW_HEIGHT)
+	row.add_theme_stylebox_override("panel", _row_box(Color(0.3, 0.36, 0.48), 0.4))
+	var box := HBoxContainer.new()
+	box.add_theme_constant_override("separation", 12)
+	row.add_child(box)
+	box.add_child(_helmet_icon(Color(0.3, 0.36, 0.48, 0.5)))
 	var label := Label.new()
 	label.text = text
-	label.add_theme_color_override("font_color", color)
-	label.add_theme_font_size_override("font_size", 20)
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	return label
+	label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	label.add_theme_font_size_override("font_size", 16)
+	label.add_theme_color_override("font_color", Color(0.45, 0.52, 0.65))
+	box.add_child(label)
+	return row
+
+
+func _helmet_icon(color: Color) -> TextureRect:
+	var icon := TextureRect.new()
+	if ResourceLoader.exists(HELMET_PATH):   # si aún no se importó, la tarjeta sale sin casco
+		icon.texture = load(HELMET_PATH)
+	icon.custom_minimum_size = Vector2(40.0, 40.0)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	icon.modulate = color
+	return icon
+
+
+# ---------------------------------------------------------------- Estética del lobby
+
+## Caja azul marino con borde azul, como las pantallas del juego.
+func _screen_box(border: Color = LOBBY_BORDER, radius: int = 8) -> StyleBoxFlat:
+	var box := StyleBoxFlat.new()
+	box.bg_color = LOBBY_FILL
+	box.border_color = border
+	box.set_border_width_all(2)
+	box.set_corner_radius_all(radius)
+	box.content_margin_left = 12
+	box.content_margin_right = 12
+	box.content_margin_top = 10
+	box.content_margin_bottom = 10
+	return box
+
+
+## Fondo de una tarjeta de jugador: tinte suave del color de su rol y borde de ese color.
+func _row_box(color: Color, strength: float) -> StyleBoxFlat:
+	var box := _screen_box(Color(color, strength), 8)
+	box.bg_color = Color(color.r * 0.16 + 0.03, color.g * 0.16 + 0.05, color.b * 0.16 + 0.1)
+	box.content_margin_top = 6
+	box.content_margin_bottom = 6
+	return box
+
+
+func _heading_settings(font_size: int) -> LabelSettings:
+	var settings := LabelSettings.new()
+	settings.font = MenuStyle.FONT
+	settings.font_size = font_size
+	settings.font_color = LOBBY_TITLE_COLOR
+	settings.outline_size = 4
+	settings.outline_color = Color.BLACK
+	return settings
+
+
+## Viste el lobby con el marco azul del juego, títulos con la fuente pixelada, tarjetas para los jugadores
+## y el código de la sala en una caja destacada.
+func _style_lobby() -> void:
+	$Lobby/Panel.add_theme_stylebox_override("panel", MenuStyle.NORMAL)   # el marco azul de los botones y las opciones
+	$Lobby/Panel/MembersPanel.add_theme_stylebox_override("panel", _screen_box())
+
+	var title: Label = $Lobby/Panel/MisionTitle
+	title.label_settings = _heading_settings(28)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.offset_left = -300.0
+	title.offset_right = 300.0
+	title.offset_top = 24.0
+	title.offset_bottom = 66.0
+
+	var members_title: Label = $Lobby/Panel/MembersPanel/MembersLabel
+	members_title.label_settings = _heading_settings(18)
+	members_title.offset_top = 14.0
+	members_title.offset_bottom = 46.0
+
+	info_label.add_theme_color_override("default_color", LOBBY_TEXT_COLOR)
+	info_label.add_theme_font_size_override("normal_font_size", 16)
+	info_label.add_theme_font_size_override("bold_font_size", 16)
+	info_label.offset_left = -60.0       # debajo de la caja del código y sin llegar al botón de empezar
+	info_label.offset_right = 232.0
+	info_label.offset_top = -43.0
+	info_label.offset_bottom = 191.0
+
+	_build_code_box()
+
+
+## Caja del código de la sala: «ROOM CODE» pequeño y el código en grande, con borde ámbar.
+func _build_code_box() -> void:
+	_code_box = PanelContainer.new()
+	_code_box.position = CODE_BOX_POSITION
+	_code_box.custom_minimum_size = CODE_BOX_SIZE
+	_code_box.size = CODE_BOX_SIZE
+	_code_box.add_theme_stylebox_override("panel", _screen_box(CODE_BORDER, 8))
+	_code_box.visible = false
+	$Lobby/Panel.add_child(_code_box)
+
+	var column := VBoxContainer.new()
+	column.alignment = BoxContainer.ALIGNMENT_CENTER
+	column.add_theme_constant_override("separation", 4)
+	_code_box.add_child(column)
+
+	var caption := Label.new()
+	caption.text = "ROOM CODE"
+	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	caption.add_theme_font_override("font", MenuStyle.FONT)
+	caption.add_theme_font_size_override("font_size", 12)
+	caption.add_theme_color_override("font_color", LOBBY_TEXT_COLOR)
+	column.add_child(caption)
+
+	_code_label = Label.new()
+	_code_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_code_label.label_settings = _heading_settings(46)
+	column.add_child(_code_label)
 
 
 ## "Start expedition" solo se activa con sala creada, al menos un jugador y todos con rol.

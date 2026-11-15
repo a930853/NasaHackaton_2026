@@ -89,6 +89,13 @@ Para el jugador atento el reparto es parejo; para quien elige sin pensar sigue p
 
 **Cómo retocarlo:** subir `PASSIVE_OXYGEN_LOSS` o bajar el peso de MOXIE endurece la partida y la carga hacia el oxígeno; `PASSIVE_HEALTH_LOSS` y `HEALTH_LOSS_FROM_SOL` son muy sensibles (pasar de −5 a −6 multiplica por 3 las derrotas por salud); bajar `PASSIVE_ENERGY_GAIN` carga la energía. Tras cambiar algo, repetir `tools/balance_sim.py`, que usa las mismas constantes (están copiadas en su clase `Cfg`).
 
+## Pantallas de final
+
+Al acabar la partida sale una pantalla con la temática del juego (`EndScreen`, `game/Scripts/end_screen.gd`): marco azul de los botones, título pixelado, el cohete y Marte en pixel art, los cuatro cascos de la tripulación y los objetivos con su marca (tick verde si se cumplió), la puntuación y las palabras descubiertas. Dos botones azules: *Play again* y *Back to menu*.
+
+- **Victoria («Mission complete!»):** título dorado, cohete de pie con la llama encendida junto a un Marte que brilla, cascos de colores y confeti. Suena `success`.
+- **Derrota («Mission failed!»):** pantalla roja que late suave, cohete caído junto a un Marte apagado, cascos grises y el icono de la barra que se agotó sobre su placa clara con borde rojo. Suena `failure`.
+
 ## Victoria y derrota
 
 - **Derrota:** cualquier recurso llega a 0.
