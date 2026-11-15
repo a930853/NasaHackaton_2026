@@ -49,3 +49,10 @@ func _get_bus_linear(bus_name: StringName) -> float:
 	if bus_idx == -1 or AudioServer.is_bus_mute(bus_idx):
 		return 0.0
 	return db_to_linear(AudioServer.get_bus_volume_db(bus_idx))
+
+
+func _on_full_screen_button_pressed() -> void:
+	var is_full: bool = DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
+	DisplayServer.window_set_mode(
+		DisplayServer.WINDOW_MODE_WINDOWED if is_full else DisplayServer.WINDOW_MODE_FULLSCREEN
+	)
