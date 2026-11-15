@@ -155,7 +155,7 @@ Las noticias del amanecer («el ingeniero ha vuelto», «el oxígeno bajó −4�
 
 Al pulsar *Start Game* se elige el modo: **individual** (una persona, una sola pantalla, sin móviles ni red; las opciones se eligen con el ratón) o **multijugador** (lobby con móviles y votación). En individual, la elección es directa (`TurnManager.submit_choice`), sin votación.
 
-Con móviles, `Phone (debug)` en la ventana de Marte abre un simulador con las mismas opciones. `TurnManager.controller_view_for(role)` prepara lo que recibirá cada mando y `submit_choice_from(role, eventId, optionId)` valida su elección. Las opciones llevan además de `id` y `label` los campos opcionales `detail` (costes), `disabled` y `reason`, ya recogidos en `docs/protocol.md`. Con móviles reales, `PhoneBridge` envía esas vistas y valida las elecciones (ver [../godot/red.md](../godot/red.md)).
+El botón `Phone (debug)` (simulador de móvil) ya no se enseña: en solitario las opciones salen en pantalla y en multijugador hay móviles de verdad (su código sigue en `main_ui.gd`). Solo queda `Flare (debug)`, que simula la alerta solar. `TurnManager.controller_view_for(role)` prepara lo que recibirá cada mando y `submit_choice_from(role, eventId, optionId)` valida su elección. Las opciones llevan además de `id` y `label` los campos opcionales `detail` (costes), `disabled` y `reason`, ya recogidos en `docs/protocol.md`. Con móviles reales, `PhoneBridge` envía esas vistas y valida las elecciones (ver [../godot/red.md](../godot/red.md)).
 
 ## Pedir ayuda a la Tierra
 
@@ -181,6 +181,8 @@ Se basa en el retraso real de las comunicaciones: entre 4 y 24 minutos por mensa
 ## Libro de tecnicismos
 
 Glosario educativo. Cuando aparece un evento con términos técnicos (Sol, MOXIE, cráter Jezero, regolito, eyección de masa coronal, probióticos…), se desbloquean y los jugadores pueden consultarlos desde un botón, sin pausar la partida. Cada término tiene un título, una definición sencilla para estudiantes y un dato de la NASA. Al desbloquear uno aparece un aviso: *«Nuevo término en el Libro de tecnicismos»*.
+
+**Cómo se ve:** el libro enseña una rejilla con una tarjeta por palabra, con su dibujo en pixel art (`game/Images/Glossary/<id del término>.png`, 32×32, uno por término). Las que aún no se han descubierto salen apagadas con un «?»; las nuevas llevan un borde naranja hasta que se miran. A la derecha, el dibujo grande sobre una placa clara, el título, la explicación y el dato de la NASA en una caja destacada. Arriba de la rejilla hay un contador («9 / 18»). Los dibujos los genera `tools/make_glossary_icons.py` (una función por término): si se añade una palabra a `glossary.json`, hay que añadir su dibujo ahí y volver a ejecutarlo; sin dibujo, la tarjeta usa el icono del libro.
 
 ## APIs de la NASA
 

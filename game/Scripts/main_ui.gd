@@ -499,7 +499,9 @@ func _refresh_all() -> void:
 	_refresh_earth_help_button()
 	crew_panel.refresh()
 	debug_options_button.disabled = TurnManager.phase != TurnManager.Phase.DECISION or TurnManager.reading
-	debug_options_button.visible = not _is_solo()   # solo: las opciones ya están en pantalla
+	# El simulador de móvil ya no se enseña ni en solitario (las opciones están en pantalla) ni en multijugador
+	# (hay móviles de verdad). Solo queda el botón «Flare (debug)».
+	debug_options_button.visible = false
 
 
 func _refresh_stats() -> void:

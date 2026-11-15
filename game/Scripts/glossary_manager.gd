@@ -50,5 +50,15 @@ func get_unlocked_ids() -> Array[String]:
 	return ids
 
 
+## Todos los ids (descubiertos o no), ordenados alfabéticamente por título.
+func get_all_ids() -> Array[String]:
+	var ids: Array[String] = []
+	for term_id in _terms:
+		ids.append(str(term_id))
+	ids.sort_custom(func(a: String, b: String) -> bool:
+		return str(_terms[a].get("title", a)) < str(_terms[b].get("title", b)))
+	return ids
+
+
 func total_terms() -> int:
 	return _terms.size()
