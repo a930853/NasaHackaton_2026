@@ -14,6 +14,8 @@ const DEFAULT_DESKTOP_URL: String = "ws://localhost:3000/ws"
 ## Si el juego se lanza con `--ws-url=ws://localhost:3100/ws` (o `NASA_WS_URL`), se usa esa dirección.
 const URL_ARGUMENT: String = "--ws-url="
 const URL_ENVIRONMENT: String = "NASA_WS_URL"
+## Si el servidor no contesta en este tiempo, se da por fallida la conexión (para poder avisar al jugador).
+const CONNECT_TIMEOUT_SECONDS: float = 4.0
 
 ## Si es true, cada mensaje se imprime en la salida estándar (útil con el plugin de Godot o `--headless`).
 var print_messages: bool = OS.is_debug_build()
@@ -24,6 +26,7 @@ var room_status: String = ""        ## lobby | playing | finished
 
 var _ws: WebSocketPeer = null
 var _was_open: bool = false
+var _connect_started_msec: int = 0
 
 
 # ---------------------------------------------------------------------------
@@ -71,6 +74,7 @@ func connect_to_server(url: String = "") -> void:
 	if url.is_empty():
 		url = default_url()
 	_ws = WebSocketPeer.new()
+	_connect_started_msec = Time.get_ticks_msec()
 	var err: int = _ws.connect_to_url(url)
 	if err != OK:
 		_ws = null
@@ -102,6 +106,12 @@ func _process(_delta: float) -> void:
 	_ws.poll()
 
 	match _ws.get_ready_state():
+		WebSocketPeer.STATE_CONNECTING:
+			if float(Time.get_ticks_msec() - _connect_started_msec) / 1000.0 > CONNECT_TIMEOUT_SECONDS:
+				push_warning("Net: el servidor no contesta (tiempo agotado).")
+				_ws.close()
+				_ws = null
+				Events.net_connection_failed.emit()
 		WebSocketPeer.STATE_OPEN:
 			if not _was_open:
 				_was_open = true

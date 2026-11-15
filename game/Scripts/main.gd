@@ -5,7 +5,7 @@ const SCENES: Dictionary = {
 	"intro": preload("res://Scenes/Intro.tscn"),
 	"gameplay": preload("res://Scenes/Gameplay.tscn")
 }
-const FADE_DURATION := 0.4
+const FADE_DURATION := 2
 
 ## Música de cada escena: el menú usa Chill_Space2026; la llegada a Marte (intro) y la
 ## partida usan la banda sonora de Marte, Chill_MN. Las escenas que no aparecen siguen igual.
