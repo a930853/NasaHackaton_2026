@@ -1,4 +1,7 @@
-#   docker compose -f compose.yaml -f compose.dev.yaml up --build
+# Desarrollo en local: como compose.local.yaml, pero sirve la pantalla de
+# depuración (dist/game_debug) y muestra los mensajes en bruto.
+#
+#   npm run docker:dev   →  docker compose -f compose.yaml -f compose.local.yaml -f compose.dev.yaml up --build
 
 services:
   backend:

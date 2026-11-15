@@ -26,7 +26,7 @@ Decisiones tomadas:
 - **Rechazos:** `choice_result` con `event_closed`, `not_eligible` o `invalid_option`. El backend no reenvía `choice_result` al mando; el mando se entera por la siguiente `controller_view`.
 - **Si cae el backend:** `PhoneBridge` se desactiva y la partida sigue en la pantalla principal (con el panel `Phone (debug)`).
 
-Probarlo: `npm run dev` (backend en `:3000`), abrir `game/` en Godot y pulsar F5; abrir `http://localhost:5173/controller/?room=<código>` en el navegador. Para el despliegue completo, exportar a web (`dist/game/`) y `npm run docker:prod`.
+Probarlo: `npm run dev` (backend en `:3000`), abrir `game/` en Godot y pulsar F5; abrir `http://localhost:5173/controller/?room=<código>` en el navegador. Para el despliegue completo, exportar a web (`dist/game/`) y `npm run docker:local`.
 
 ## Qué le toca a Godot
 
@@ -319,7 +319,7 @@ Al resolver:
 
 - Preset **Web** en `game/export_presets.cfg` → `../dist/game/index.html`. `thread_support=false`, así que **no hacen falta cabeceras COOP/COEP** y Nginx se mantiene simple.
 - Godot 4 web **solo arranca en un contexto seguro** (HTTPS o `localhost`). Por eso el despliegue sirve todo por HTTPS y el WebSocket es `wss://` (lo deduce `_server_url()` de `location.protocol`). Ver [../deploy.md](../deploy.md).
-- Exportad siempre a `dist/game/` antes de levantar Docker (`npm run docker:prod`).
+- Exportad siempre a `dist/game/` antes de levantar Docker (`npm run docker:local`).
 - `JavaScriptBridge` y `OS.has_feature("web")` solo funcionan en la exportación web. Protegedlo con `OS.has_feature("web")` para poder seguir probando desde el editor.
 - Todos los recursos (fuentes, audio, imágenes) deben ir dentro del `.pck`; la demo no puede depender de Internet. Ojo con la llamada a la API de NASA de `main.gd`: tiene que fallar con gracia si no hay conexión.
 

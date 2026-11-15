@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Juego cooperativo por salas para el NASA Hackathon 2026: una **pantalla principal en Godot** (exportada a web) y **hasta cuatro mandos web** (móviles) por partida. Un **backend Node** conecta a los participantes y mantiene las salas separadas. Todo se sirve con **Nginx** y se levanta con **Docker Compose** en la LAN.
+Juego cooperativo por salas para el NASA Hackathon 2026: una **pantalla principal en Godot** (exportada a web) y **hasta cuatro mandos web** (móviles) por partida. Un **backend Node** conecta a los participantes y mantiene las salas separadas. Todo se sirve con **Nginx** y se levanta con **Docker Compose**: en Internet con Coolify (principal) o en local.
 
 ## Regla fundamental (no romper nunca)
 
@@ -26,14 +26,15 @@ backend/
   package.json
   Dockerfile
 deploy/web.Dockerfile     Imagen web: compila el mando y copia landing/ y dist/<GAME_EXPORT>/
-deploy/nginx/default.conf HTTPS para todo (Godot web lo exige), estáticos y proxy de /ws y /api
-deploy/nginx/15-cert.sh   Certificado autofirmado al arrancar (volumen `certs`)
+deploy/nginx/default.conf Nginx de la app por HTTP: estáticos y proxy de /ws y /api
+deploy/tls/               Solo local: proxy HTTPS con certificado autofirmado (volumen `certs`)
 scripts/dev.mjs    `npm run dev`: arranca backend y mando con puertos libres y log de mensajes
 dist/game/         Exportación web de Godot (generada, se versiona: re-exportar tras cambiar game/)
 dist/game_debug/   Exportación web de game_debug (generada, se versiona)
 dist/controller/   Build del mando (generado, no se versiona)
-compose.yaml       Servicios `web` (Nginx) y `backend` (Node). Producción: sirve dist/game
-compose.dev.yaml   Solo cambia GAME_EXPORT=game_debug y LOG_MESSAGES=1
+compose.yaml       Despliegue principal (Internet, Coolify): `web` (Nginx) y `backend` (Node), sin puertos. Sirve dist/game
+compose.local.yaml En local: añade `tls` (HTTPS autofirmado en 80/443)
+compose.dev.yaml   En local, desarrollo: GAME_EXPORT=game_debug y LOG_MESSAGES=1
 docs/protocol.md   Contrato de mensajes: FUENTE DE VERDAD compartida
 docs/controller.md, docs/backend.md, docs/deploy.md   Guías por componente
 docs/godot/        arquitectura.md (gestores, FSM, events.json) y red.md (autoload Net)
@@ -94,12 +95,13 @@ cd controller && npm install && npm run dev   # http://localhost:5173/controller
 cd controller && npm test                     # store contra el backend real
 cd controller && npm run build                # → dist/controller/
 
-# Todo con Docker, por HTTPS (antes exportar a web el proyecto de Godot que se sirve)
+# Despliegue principal: Coolify con compose.yaml (dominio en el servicio web). Ver docs/deploy.md
+# En local con Docker, por HTTPS autofirmado (antes exportar a web el proyecto de Godot que se sirve)
+npm run docker:local                          # sirve dist/game
 npm run docker:dev                            # sirve dist/game_debug, con log de mensajes
-npm run docker:prod                           # sirve dist/game
 ```
 
-Exportar Godot: abrir `game/project.godot` → Proyecto → Exportar → preset **Web** (apunta a `../dist/game/index.html`). `thread_support=false`, así que no hacen falta cabeceras COOP/COEP. Godot 4 web sí exige contexto seguro (HTTPS o localhost): por eso Nginx sirve todo por HTTPS.
+Exportar Godot: abrir `game/project.godot` → Proyecto → Exportar → preset **Web** (apunta a `../dist/game/index.html`). `thread_support=false`, así que no hacen falta cabeceras COOP/COEP. Godot 4 web sí exige contexto seguro (HTTPS o localhost): por eso siempre hay un proxy con HTTPS delante (Traefik en Coolify, `tls` en local).
 
 En Windows, Hyper-V/WSL pueden reservar el puerto 3000 (`listen EACCES`). Comprobar con `netsh interface ipv4 show excludedportrange protocol=tcp` y usar otro puerto (`PORT` en el backend, `BACKEND_PORT` en el mando).
 

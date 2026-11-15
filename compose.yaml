@@ -1,18 +1,15 @@
-# Despliegue en la LAN.
+# Despliegue principal: Internet con Coolify (VPS). Guía: docs/deploy.md
 #
-#   Producción (sirve dist/game en /game/):
-#     docker compose up --build
-#   Desarrollo (igual, pero sirve dist/game_debug y muestra el log de mensajes):
-#     docker compose -f compose.yaml -f compose.dev.yaml up --build
+# Coolify pone delante su proxy (Traefik) con un certificado de Let's Encrypt y
+# reenvía https://<dominio> al puerto 80 del servicio "web". Por eso aquí no se
+# publican puertos (el 80 y el 443 del VPS son de Traefik).
 #
-# Antes hay que exportar a web el proyecto de Godot que se vaya a servir.
+# En Coolify: recurso "Docker Compose" con este fichero (/compose.yaml) y el
+# dominio puesto solo en el servicio "web".
 #
-#   Pantalla:  https://<IP-del-PC>/game/
-#   Móviles:   https://<IP-del-PC>/controller/?room=<código>
-#
-# Todo va por HTTPS (Godot no arranca en web sin él). El certificado es
-# autofirmado: la primera vez cada navegador avisa y hay que aceptarlo
-# (Configuración avanzada → Continuar).
+# En local (HTTPS con certificado autofirmado en el 80/443 del PC):
+#   npm run docker:local   el juego
+#   npm run docker:dev     la pantalla de depuración, con log de mensajes
 
 services:
   backend:
@@ -20,7 +17,11 @@ services:
     restart: unless-stopped
     environment:
       LOG_MESSAGES: "0"
-    # Sin puertos publicados: solo se llega a través de Nginx (/ws y /api).
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
 
   web:
     build:
@@ -30,13 +31,12 @@ services:
         GAME_EXPORT: game
     restart: unless-stopped
     depends_on:
-      - backend
-    # Si el 80 o el 443 están ocupados: HTTP_PORT=8080 HTTPS_PORT=8443 docker compose up
-    ports:
-      - "${HTTP_PORT:-80}:80"     # solo redirige a HTTPS
-      - "${HTTPS_PORT:-443}:443"
-    volumes:
-      - certs:/etc/nginx/certs   # el certificado sobrevive a los reinicios
-
-volumes:
-  certs:
+      backend:
+        condition: service_healthy
+    expose:
+      - "80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3

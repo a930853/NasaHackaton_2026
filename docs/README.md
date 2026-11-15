@@ -18,7 +18,7 @@ docs/
   protocol.md          Contrato de mensajes entre Godot, mandos y backend. FUENTE DE VERDAD de la red.
   backend.md           Servidor Node: estructura, modelo de sala, reconexión, log de mensajes
   controller.md        Mando web (Vue): rutas de rol y NFC, estados, recuperación de sesión, estilos
-  deploy.md            Docker Compose, HTTPS en Nginx, desarrollo frente a producción
+  deploy.md            Internet con Coolify y despliegue en local con Docker
   juego/
     diseno.md          Reglas: bucle de un Sol, roles, recursos, objetivos, APIs y decisiones pendientes
     eventos.md         Catálogo de eventos con sus opciones, efectos y fuentes de la NASA
