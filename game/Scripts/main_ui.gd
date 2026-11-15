@@ -6,11 +6,12 @@ extends Control
 ##   Pantalla (derecha)          -> información del evento, una estadística o el libro de palabras
 ##   4 botones de colores        -> Salud (rojo), Oxígeno (azul), Energía (naranja),
 ##                                  Fuerza de la base (morado): enseñan su estadística
-##   Botón redondo               -> el evento (las opciones se ven en los móviles)
+##   Botón redondo               -> el evento (con móviles las opciones se ven en ellos; solo, aquí)
 ##   Botón ancho de abajo        -> libro de palabras científicas
 ##
-## Con móviles, la tripulación vota en ellos (TurnManager.cast_vote, vía PhoneBridge) y aquí se ve
-## el recuento (si empata dos veces, se sortea entre las empatadas).
+## Con móviles (multijugador), la tripulación vota en ellos (TurnManager.cast_vote, vía PhoneBridge) y
+## aquí se ve el recuento (si empata dos veces, se sortea entre las empatadas).
+## Jugando solo (sin móviles) las opciones salen en esta pantalla y se eligen con el ratón.
 ## Texto del juego: inglés sencillo para niños de 7 a 12 años.
 
 enum View { DECISIONS, STAT, GLOSSARY }
@@ -64,6 +65,7 @@ const ROLE_COLORS: Dictionary = {
 }
 const GENERAL_LABEL: String = "Everyone"
 const WAITING_TEXT: String = "The crew is choosing on their phones..."
+const SOLO_PROMPT: String = "What will the crew do? Click an option:"
 
 const DEFEAT_REASONS: Dictionary = {
 	"health": "The whole crew got too sick to go on.",
@@ -126,6 +128,7 @@ const CONDITION_SCENES: Dictionary = {
 var _event_face: EventButtonFace   # dibujo del botón EVENT (lleva la exclamación)
 @onready var words_button: Button = %WordsButton
 
+var _options_box: VBoxContainer       # opciones clicables (solo en partida individual)
 var _stat_buttons: Dictionary = {}    # stat -> Button
 var _stat_icons: Dictionary = {}      # stat -> StatIcon (dibujo en la cara del botón)
 var _words_label: Label
@@ -149,6 +152,7 @@ func _ready() -> void:
 	_place_hud()
 	_build_buttons()
 	_build_overlays()
+	_build_options_box()
 	toast_label.modulate.a = 0.0
 	for stat in GameState.STAT_NAMES:
 		_stat_history[stat] = []
@@ -295,6 +299,35 @@ func _build_face(button: Button, title: String, title_size: int, value_size: int
 	return {"name": name_label, "value": value_label}
 
 
+## Contenedor de las opciones para jugar solo: va en la pantalla derecha, justo bajo el aviso de espera.
+func _build_options_box() -> void:
+	_options_box = VBoxContainer.new()
+	_options_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_options_box.add_theme_constant_override("separation", 8)
+	_options_box.visible = false
+	var parent: Node = waiting_label.get_parent()
+	parent.add_child(_options_box)
+	parent.move_child(_options_box, waiting_label.get_index() + 1)
+
+
+## Partida individual: sin móviles, las opciones se eligen con el ratón en esta pantalla.
+func _is_solo() -> bool:
+	return not PhoneBridge.active
+
+
+## Vuelve a dibujar las opciones clicables. Solo hay mientras se espera una decisión en partida individual.
+func _refresh_options_box() -> void:
+	for child in _options_box.get_children():
+		_options_box.remove_child(child)
+		child.queue_free()
+	var show_options: bool = _is_solo() and TurnManager.phase == TurnManager.Phase.DECISION
+	_options_box.visible = show_options
+	if not show_options:
+		return
+	for option in TurnManager.current_event.get("options", []):
+		_options_box.add_child(_make_option_card(option))
+
+
 func _build_overlays() -> void:
 	_earth_panel = UiOverlay.new(Vector2(640, 420))
 	add_child(_earth_panel)
@@ -341,6 +374,7 @@ func _refresh_all() -> void:
 	_refresh_earth_help_button()
 	crew_panel.refresh()
 	debug_options_button.disabled = TurnManager.phase != TurnManager.Phase.DECISION
+	debug_options_button.visible = not _is_solo()   # solo: las opciones ya están en pantalla
 
 
 func _refresh_stats() -> void:
@@ -515,7 +549,7 @@ func _on_event_presented(event: Dictionary, hint: String) -> void:
 	continue_button.visible = false
 	timer_label.visible = false
 
-	# Pantalla derecha: la información del evento. Las opciones se enseñan en los móviles.
+	# Pantalla derecha: la información del evento. Las opciones, en los móviles (o aquí, jugando solo).
 	title_label.text = str(event.get("title", ""))
 	description_label.text = str(event.get("description", ""))
 	var fact: String = str(event.get("nasa_fact", ""))
@@ -532,6 +566,7 @@ func _on_event_presented(event: Dictionary, hint: String) -> void:
 	waiting_label.text = _waiting_text()
 	waiting_label.visible = true
 	_debug_panel.close()
+	_refresh_options_box()
 	decisions_view.scroll_vertical = 0
 
 	mars_view.show_scene(_scene_for(event))
@@ -540,8 +575,8 @@ func _on_event_presented(event: Dictionary, hint: String) -> void:
 
 
 func _waiting_text() -> String:
-	if not PhoneBridge.active:
-		return WAITING_TEXT
+	if _is_solo():
+		return SOLO_PROMPT
 	return "%s %s" % [WAITING_TEXT, TurnManager.vote_progress_text()]
 
 
@@ -615,6 +650,7 @@ func _open_debug_options() -> void:
 	_debug_panel.open()
 
 
+## Opción elegida con el ratón (jugando solo) o desde el simulador de móvil de depuración.
 func _on_option_pressed(option_id: String) -> void:
 	_debug_panel.close()
 	TurnManager.submit_choice(option_id)
@@ -622,6 +658,7 @@ func _on_option_pressed(option_id: String) -> void:
 
 func _on_decision_resolved(option: Dictionary, feedback: String, success: bool) -> void:
 	waiting_label.visible = false
+	_refresh_options_box()   # ya no hay nada que elegir: se quitan las opciones
 	_debug_panel.close()
 	timer_label.visible = false
 	var banner: String = ""

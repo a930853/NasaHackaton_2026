@@ -1,8 +1,9 @@
 extends Control
-## Menú principal y lobby. El lobby se conecta con el backend (autoload Net): crea una sala,
-## enseña el código y la dirección del mando para los móviles, y lista a los jugadores que entran
-## con su rol. "Start expedition" arranca la partida cuando todos tienen rol.
-## Sin backend se puede jugar igualmente en esta pantalla ("Play on this screen only").
+## Menú principal. "Start Game" pregunta cómo jugar:
+##   Play solo         -> una sola pantalla, las opciones se eligen con el ratón (sin móviles ni red).
+##   Play multiplayer  -> lobby conectado con el backend (autoload Net): crea una sala, enseña el código
+##                        y la dirección del mando, y lista a los jugadores que entran con su rol.
+##                        "Start expedition" arranca la partida cuando todos tienen rol.
 
 const MEMBERS_TOP_SPACE: float = 48.0     # hueco para el título "Members"
 const OFFLINE_COLOR: Color = Color(0.55, 0.55, 0.6)
@@ -14,7 +15,9 @@ const OFFLINE_COLOR: Color = Color(0.55, 0.55, 0.6)
 @onready var info_label: RichTextLabel = $Lobby/Panel/RichTextLabel
 @onready var start_expedition_button: Button = $Lobby/Panel/StartExpButton
 
-var _local_button: Button
+var _mode_box: VBoxContainer     # "How do you want to play?": solo o multijugador
+var _local_button: Button        # en el lobby: pasar a jugar solo (p. ej. si no hay servidor)
+var _back_button: Button         # en el lobby: volver a la elección de modo
 var _starting: bool = false
 
 
@@ -26,8 +29,20 @@ func _ready() -> void:
 	# Volver al menú cierra la sala anterior: cada partida con móviles usa una sala nueva.
 	PhoneBridge.end_session()
 
+	_build_mode_box()
+
+	_back_button = Button.new()
+	_back_button.text = "Back"
+	_back_button.set_anchors_preset(Control.PRESET_CENTER)
+	_back_button.offset_left = -60.0
+	_back_button.offset_right = 50.0
+	_back_button.offset_top = 164.0
+	_back_button.offset_bottom = 218.0
+	_back_button.pressed.connect(_on_lobby_back_pressed)
+	$Lobby/Panel.add_child(_back_button)
+
 	_local_button = Button.new()
-	_local_button.text = "Play on this screen only"
+	_local_button.text = "Play solo instead"
 	_local_button.set_anchors_preset(Control.PRESET_CENTER)
 	_local_button.offset_left = 60.0
 	_local_button.offset_right = 312.0
@@ -45,9 +60,69 @@ func _ready() -> void:
 	Events.net_error.connect(_on_net_error)
 
 
+## "Start Game": primero se elige el modo.
 func _on_start_button_pressed() -> void:
-	lobby.visible = true
 	mainButtons.visible = false
+	lobby.visible = false
+	_mode_box.visible = true
+
+
+func _build_mode_box() -> void:
+	_mode_box = VBoxContainer.new()
+	_mode_box.set_anchors_preset(Control.PRESET_CENTER)
+	_mode_box.offset_left = -220.0
+	_mode_box.offset_right = 220.0
+	_mode_box.offset_top = -120.0
+	_mode_box.offset_bottom = 120.0
+	_mode_box.add_theme_constant_override("separation", 12)
+	_mode_box.visible = false
+	add_child(_mode_box)
+
+	var title := Label.new()
+	title.text = "How do you want to play?"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 26)
+	_mode_box.add_child(title)
+
+	var solo := _mode_button("Play solo", "One player. You choose every option with the mouse. No phone needed.")
+	solo.pressed.connect(_on_solo_pressed)
+	var multi_button := _mode_button("Play multiplayer", "Up to 4 players. Each one joins with a phone and the crew votes.")
+	multi_button.pressed.connect(_on_multiplayer_pressed)
+	var back := _mode_button("Back", "")
+	back.custom_minimum_size = Vector2(0, 40)
+	back.pressed.connect(_on_mode_back_pressed)
+	_mode_box.add_child(solo)
+	_mode_box.add_child(multi_button)
+	_mode_box.add_child(back)
+
+
+func _mode_button(text: String, tooltip: String) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.tooltip_text = tooltip
+	button.custom_minimum_size = Vector2(0, 64)
+	button.add_theme_font_size_override("font_size", 22)
+	return button
+
+
+func _on_mode_back_pressed() -> void:
+	_mode_box.visible = false
+	mainButtons.visible = true
+
+
+## Jugar solo: sin móviles ni red; las opciones se eligen con el ratón en la pantalla del juego.
+func _on_solo_pressed() -> void:
+	if _starting:
+		return
+	_starting = true
+	PhoneBridge.use_local_only()
+	_go_to_intro()
+
+
+## Jugar con móviles: abre el lobby y se conecta con el backend.
+func _on_multiplayer_pressed() -> void:
+	_mode_box.visible = false
+	lobby.visible = true
 	_show_info("Connecting to the game server...")
 	_refresh_members([])
 	_update_start_button()
@@ -67,12 +142,17 @@ func _on_start_exp_button_pressed() -> void:
 		Net.start_game()
 
 
-func _on_local_pressed() -> void:
+## Desde el lobby: volver a elegir modo (se cierra la sala).
+func _on_lobby_back_pressed() -> void:
 	if _starting:
 		return
-	_starting = true
 	PhoneBridge.use_local_only()
-	_go_to_intro()
+	lobby.visible = false
+	_mode_box.visible = true
+
+
+func _on_local_pressed() -> void:
+	_on_solo_pressed()
 
 
 func _on_options_button_pressed() -> void:
@@ -89,7 +169,7 @@ func _on_net_connected() -> void:
 func _on_connection_failed() -> void:
 	if not lobby.visible:
 		return
-	_show_info("[color=#ff9a7a]Could not reach the game server.[/color]\nNo problem: you can still play on this screen only (use the debug phone panel to choose options).")
+	_show_info("[color=#ff9a7a]Could not reach the game server.[/color]\nNo problem: press \"Play solo instead\" to play on this screen with the mouse.")
 	_refresh_members([])
 	_update_start_button()
 
@@ -97,7 +177,7 @@ func _on_connection_failed() -> void:
 func _on_net_disconnected() -> void:
 	if not lobby.visible or _starting:
 		return
-	_show_info("[color=#ff9a7a]The connection to the game server was lost.[/color]\nGo back and press Start Game again, or play on this screen only.")
+	_show_info("[color=#ff9a7a]The connection to the game server was lost.[/color]\nPress Back and try again, or press \"Play solo instead\".")
 	_refresh_members([])
 	_update_start_button()
 
