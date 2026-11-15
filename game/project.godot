@@ -13,7 +13,7 @@ config_version=5
 config/name="NasaSimuladorMision"
 run/main_scene="uid://bj3rdjmiiuuhb"
 config/features=PackedStringArray("4.7", "GL Compatibility")
-config/icon="res://icon.svg"
+config/icon="res://Images/Logo.png"
 
 [audio]
 
