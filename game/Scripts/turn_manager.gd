@@ -16,6 +16,7 @@ signal event_presented(event: Dictionary, earth_hint: String)
 signal decision_resolved(option: Dictionary, feedback: String, success: bool)
 signal timer_updated(seconds_left: int)
 signal earth_help_changed
+signal reading_finished   ## Ya se leyó el evento: se pueden elegir opciones (y empieza la cuenta atrás, si la hay).
 signal game_ended(victory: bool, report: Dictionary)
 ## Cambió el recuento de la votación de los móviles (alguien votó, empate, se fue un votante…).
 signal votes_changed
@@ -24,6 +25,13 @@ const FLARE_URL: String = "https://api.nasa.gov/DONKI/FLR?startDate=%s&api_key=%
 const API_KEY: String = "DEMO_KEY"  # límite bajo: usar una key gratuita de api.nasa.gov en la demo
 const FLARE_EVENT_ID: String = "rt-solar-flare"
 const REQUEST_TIMEOUT: float = 3.0
+
+## Lectura del evento: el texto sale poco a poco y no se puede elegir hasta que acaba, para que
+## se lea antes de pulsar. 30 letras por segundo es más rápido que leer pero se nota que va escribiendo;
+## un texto normal (~220 letras) tarda unos 7 s. Mínimo y máximo para que nunca sea eterno ni instantáneo.
+const READING_CHARS_PER_SECOND: float = 30.0
+const READING_MIN_SECONDS: float = 2.0
+const READING_MAX_SECONDS: float = 10.0
 const FLARE_LOOKBACK_DAYS: int = 3
 
 ## Distancia Tierra-Marte de respaldo (no se consulta JPL Horizons en este prototipo).
@@ -40,6 +48,10 @@ var phase: int = Phase.IDLE
 var current_event: Dictionary = {}
 var current_event_uid: String = ""   # "<id>#<n>": identifica ESTA aparición del evento (para los móviles)
 
+var reading: bool = false              # true mientras el texto del evento sale; aún no se puede decidir
+var reading_seconds: float = 0.0       # lo que dura esa lectura (la pantalla escribe el texto en este tiempo)
+
+var _reading_token: int = 0
 var _event_counter: int = 0
 
 var _first_sol: bool = true
@@ -213,12 +225,35 @@ func _present_event(event: Dictionary, hint: String, fresh: bool) -> void:
 				return
 
 	_set_phase(Phase.DECISION)
+	_begin_reading(shown)
 	earth_help_changed.emit()
 	event_presented.emit(shown, hint)
 	if not _has_available_option(shown):
 		_defer_until_crew_returns(event)
 		return
-	_start_countdown(shown)
+	get_tree().create_timer(reading_seconds).timeout.connect(_on_reading_timeout.bind(_reading_token))
+
+
+## Tiempo que se da para leer un evento según lo largo que es su texto.
+func reading_seconds_for(event: Dictionary) -> float:
+	var length: int = str(event.get("description", "")).length()
+	return clampf(float(length) / READING_CHARS_PER_SECOND, READING_MIN_SECONDS, READING_MAX_SECONDS)
+
+
+func _begin_reading(event: Dictionary) -> void:
+	reading = true
+	reading_seconds = reading_seconds_for(event)
+	_reading_token += 1
+
+
+## Acabó el tiempo de lectura (si el evento sigue siendo el mismo): ya se puede decidir.
+func _on_reading_timeout(token: int) -> void:
+	if token != _reading_token or not reading or phase != Phase.DECISION:
+		return
+	reading = false
+	reading_finished.emit()
+	earth_help_changed.emit()
+	_start_countdown(current_event)
 
 
 # ------------------------------------------- Tripulación fuera: opciones bloqueadas
@@ -436,6 +471,9 @@ func controller_view_for(role: String) -> Dictionary:
 			"text": "You are back in %d Sol%s." % [sols_left, "" if sols_left == 1 else "s"]}
 	if phase != Phase.DECISION:
 		return {"screen": "waiting", "title": "Waiting for the crew...", "text": "Look at the main screen."}
+	if reading:
+		return {"screen": "waiting", "title": "Read the story!",
+			"text": "Look at the main screen. Your options will appear in a moment."}
 	if _votes.has(role):
 		var chosen: Dictionary = _find_option(current_event, str(_votes[role]))
 		return {"screen": "waiting", "title": "Vote sent!",
@@ -452,8 +490,8 @@ func controller_view_for(role: String) -> Dictionary:
 ## Por qué no se acepta una elección de un móvil ("" si es válida). Los motivos son los de
 ## `choice_result` del contrato: event_closed, not_eligible, invalid_option.
 func choice_reject_reason(role: String, event_uid: String, option_id: String) -> String:
-	if event_uid != current_event_uid or phase != Phase.DECISION:
-		return "event_closed"
+	if event_uid != current_event_uid or phase != Phase.DECISION or reading:
+		return "event_closed"   # (si aún se está leyendo, tampoco se acepta nada)
 	if GameState.is_away(role):
 		return "not_eligible"
 	if _votes.has(role):
@@ -479,7 +517,7 @@ func vote_progress_text() -> String:
 ## Elección directa (pantalla principal: partida sin móviles o simulador de debug) o resultado de
 ## la votación de los móviles (cast_vote). `note` es una línea que va antes del resultado.
 func submit_choice(option_id: String, note: String = "") -> bool:
-	if phase != Phase.DECISION:
+	if phase != Phase.DECISION or reading:
 		return false
 	var option: Dictionary = _find_option(current_event, option_id)
 	if option.is_empty() or not option_block_reason(option).is_empty():
@@ -566,7 +604,7 @@ func _finish(victory: bool, reason: String) -> void:
 # ------------------------------------------------------------ Ayuda de la Tierra
 
 func can_request_earth_help() -> bool:
-	if phase != Phase.DECISION or GameState.earth_help_cooldown_left() > 0 or GameState.earth_help_blocked():
+	if phase != Phase.DECISION or reading or GameState.earth_help_cooldown_left() > 0 or GameState.earth_help_blocked():
 		return false
 	var kind: String = str(current_event.get("kind", ""))
 	if kind == "realtime" or kind == "auto" or current_event.has("timer_seconds"):
@@ -704,5 +742,8 @@ func _find_option(event: Dictionary, option_id: String) -> Dictionary:
 
 
 func _set_phase(new_phase: int) -> void:
+	if new_phase != Phase.DECISION:
+		reading = false      # fuera de la decisión no hay nada que leer
+		_reading_token += 1
 	phase = new_phase
 	phase_changed.emit(new_phase)

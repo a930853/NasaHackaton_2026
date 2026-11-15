@@ -36,6 +36,7 @@ func _ready() -> void:
 	TurnManager.decision_resolved.connect(_on_decision_resolved)
 	TurnManager.game_ended.connect(_on_game_ended)
 	TurnManager.votes_changed.connect(_on_votes_changed)
+	TurnManager.reading_finished.connect(_on_reading_finished)
 
 
 ## Roles de los jugadores de la sala (sin repetir). Con `only_connected`, solo los que tienen el móvil conectado.
@@ -137,6 +138,14 @@ func _on_net_disconnected() -> void:
 # ---------------------------------------------------------------- Juego -> móviles
 
 func _on_event_presented(_event: Dictionary, _hint: String) -> void:
+	if not active:
+		return
+	for player in players:
+		_send(player, _current_view(str(player.get("role", ""))))
+
+
+## Al acabar de leer salen las opciones en los móviles.
+func _on_reading_finished() -> void:
 	if not active:
 		return
 	for player in players:

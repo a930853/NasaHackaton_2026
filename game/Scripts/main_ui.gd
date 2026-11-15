@@ -66,6 +66,7 @@ const ROLE_COLORS: Dictionary = {
 const GENERAL_LABEL: String = "Everyone"
 const WAITING_TEXT: String = "The crew is choosing on their phones..."
 const SOLO_PROMPT: String = "What will the crew do? Click an option:"
+const READING_PROMPT: String = "Read the story carefully... your options are coming!"
 
 const DEFEAT_REASONS: Dictionary = {
 	"health": "The whole crew got too sick to go on.",
@@ -129,6 +130,9 @@ var _event_face: EventButtonFace   # dibujo del botón EVENT (lleva la exclamaci
 @onready var words_button: Button = %WordsButton
 
 var _options_box: VBoxContainer       # opciones clicables (solo en partida individual)
+var _typing_tween: Tween = null       # el texto del evento sale poco a poco
+var _fact_to_show: bool = false       # dato NASA y pista de la Tierra salen al acabar de leer
+var _hint_to_show: bool = false
 var _stat_buttons: Dictionary = {}    # stat -> Button
 var _stat_icons: Dictionary = {}      # stat -> StatIcon (dibujo en la cara del botón)
 var _words_label: Label
@@ -168,6 +172,7 @@ func _ready() -> void:
 	TurnManager.earth_help_changed.connect(_refresh_earth_help_button)
 	TurnManager.game_ended.connect(_on_game_ended)
 	TurnManager.votes_changed.connect(_on_votes_changed)
+	TurnManager.reading_finished.connect(_on_reading_finished)
 
 	continue_button.pressed.connect(TurnManager.continue_after_resolution)
 	earth_help_button.pressed.connect(_open_earth_panel)
@@ -320,7 +325,8 @@ func _refresh_options_box() -> void:
 	for child in _options_box.get_children():
 		_options_box.remove_child(child)
 		child.queue_free()
-	var show_options: bool = _is_solo() and TurnManager.phase == TurnManager.Phase.DECISION
+	var show_options: bool = _is_solo() and TurnManager.phase == TurnManager.Phase.DECISION \
+		and not TurnManager.reading
 	_options_box.visible = show_options
 	if not show_options:
 		return
@@ -373,7 +379,7 @@ func _refresh_all() -> void:
 	_refresh_conditions()
 	_refresh_earth_help_button()
 	crew_panel.refresh()
-	debug_options_button.disabled = TurnManager.phase != TurnManager.Phase.DECISION
+	debug_options_button.disabled = TurnManager.phase != TurnManager.Phase.DECISION or TurnManager.reading
 	debug_options_button.visible = not _is_solo()   # solo: las opciones ya están en pantalla
 
 
@@ -554,9 +560,13 @@ func _on_event_presented(event: Dictionary, hint: String) -> void:
 	description_label.text = str(event.get("description", ""))
 	var fact: String = str(event.get("nasa_fact", ""))
 	nasa_fact_label.text = "NASA fact: " + fact
-	nasa_fact_label.visible = not fact.is_empty()
 	hint_label.text = hint
-	hint_label.visible = not hint.is_empty()
+	# El texto sale poco a poco para que se lea; el dato NASA, la pista y las opciones salen al acabar.
+	_fact_to_show = not fact.is_empty()
+	_hint_to_show = not hint.is_empty()
+	nasa_fact_label.visible = _fact_to_show and not TurnManager.reading
+	hint_label.visible = _hint_to_show and not TurnManager.reading
+	_start_typing(TurnManager.reading)
 
 	# Foto de cómo estaba todo antes de decidir, para enseñar después qué cambió.
 	for stat in GameState.STAT_NAMES:
@@ -574,7 +584,39 @@ func _on_event_presented(event: Dictionary, hint: String) -> void:
 	_refresh_all()
 
 
+## Escribe la descripción letra a letra (o la enseña entera si ya se había leído, p. ej. en un desempate).
+func _start_typing(animate: bool) -> void:
+	if _typing_tween != null:
+		_typing_tween.kill()
+		_typing_tween = null
+	if not animate:
+		description_label.visible_ratio = 1.0
+		return
+	description_label.visible_ratio = 0.0
+	_typing_tween = create_tween()
+	_typing_tween.tween_property(description_label, "visible_ratio", 1.0, TurnManager.reading_seconds)
+
+
+func _stop_typing() -> void:
+	if _typing_tween != null:
+		_typing_tween.kill()
+		_typing_tween = null
+	description_label.visible_ratio = 1.0
+
+
+## Se acabó el tiempo de lectura: sale lo que faltaba (dato NASA, pista) y ya se puede elegir.
+func _on_reading_finished() -> void:
+	_stop_typing()
+	nasa_fact_label.visible = _fact_to_show
+	hint_label.visible = _hint_to_show
+	waiting_label.text = _waiting_text()
+	_refresh_options_box()
+	_refresh_all()
+
+
 func _waiting_text() -> String:
+	if TurnManager.reading:
+		return READING_PROMPT
 	if _is_solo():
 		return SOLO_PROMPT
 	return "%s %s" % [WAITING_TEXT, TurnManager.vote_progress_text()]
@@ -657,6 +699,9 @@ func _on_option_pressed(option_id: String) -> void:
 
 
 func _on_decision_resolved(option: Dictionary, feedback: String, success: bool) -> void:
+	_stop_typing()
+	nasa_fact_label.visible = _fact_to_show
+	hint_label.visible = _hint_to_show
 	waiting_label.visible = false
 	_refresh_options_box()   # ya no hay nada que elegir: se quitan las opciones
 	_debug_panel.close()

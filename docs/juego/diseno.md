@@ -103,6 +103,10 @@ Cada opción deja ocupado a quien la hace durante 0, 1 o 2 Sols (`away_sols` en 
 - **Vuelve** al empezar el Sol indicado, con un aviso en las noticias del amanecer y el sonido de la puerta.
 - **Avatares:** la franja inferior derecha de la cabina muestra a los 4 astronautas con su casco (amarillo, verde, rojo y blanco): con color y «READY» en la base, grises y «BUSY - N Sols» si están ocupados.
 
+## Lectura del evento
+
+Al aparecer un evento, su descripción **se escribe poco a poco** (30 letras por segundo, entre 2 y 10 segundos según lo larga que sea; los eventos actuales tardan de 2,5 a 6,6 s) para animar a leerla. Hasta que acaba **no se puede decidir**: ni con el ratón en partida individual (las opciones aparecen al terminar), ni en los móviles (muestran «Read the story!» y reciben las opciones al terminar), ni pedir ayuda a la Tierra. El dato NASA y la pista de la Tierra salen también al terminar. La cuenta atrás de los eventos críticos (terremoto) empieza **después** de la lectura. Las constantes están en `TurnManager` (`READING_CHARS_PER_SECOND`, `READING_MIN_SECONDS`, `READING_MAX_SECONDS`). Un desempate de votación no repite la lectura.
+
 ## Qué se ve dónde
 
 | Dónde | Qué muestra |
