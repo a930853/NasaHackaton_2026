@@ -174,11 +174,14 @@ func _on_game_ended(victory: bool, report: Dictionary) -> void:
 
 func _on_continue(player_id: String, _role: String, action_id: String) -> void:
 	if not active or TurnManager.phase != TurnManager.Phase.RESOLUTION:
+		print("PhoneBridge: Continue ignorado (active=%s, phase=%d)." % [active, TurnManager.phase])
 		return
 	if not _is_player(player_id) or action_id.is_empty() or _continue_actions.has(action_id):
+		print("PhoneBridge: Continue inválido o duplicado de %s." % player_id)
 		return
 	_continue_actions[action_id] = player_id
 	_continue_votes[player_id] = action_id
+	print("PhoneBridge: Continue recibido de %s." % player_id)
 	for player in players:
 		if str(player.get("id", "")) == player_id:
 			_send(player, {
@@ -190,9 +193,18 @@ func _on_continue(player_id: String, _role: String, action_id: String) -> void:
 
 
 func _try_continue() -> void:
+	var required_players: Array[String] = []
 	for player in players:
-		if bool(player.get("connected", false)) and not _continue_votes.has(str(player.get("id", ""))):
+		if bool(player.get("connected", true)):
+			required_players.append(str(player.get("id", "")))
+	for player_id in required_players:
+		if player_id.is_empty() or not _continue_votes.has(player_id):
+			print("PhoneBridge: Continue %d/%d." % [_continue_votes.size(), required_players.size()])
 			return
+	if required_players.is_empty():
+		push_warning("PhoneBridge: no hay jugadores conectados para continuar.")
+		return
+	print("PhoneBridge: todos han confirmado Continue (%d)." % required_players.size())
 	_continue_votes.clear()
 	_continue_actions.clear()
 	TurnManager.continue_after_resolution()
