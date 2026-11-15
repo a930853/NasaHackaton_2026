@@ -32,7 +32,7 @@ Todo sale del mismo origen, así que la pantalla y los móviles construyen la UR
 2. En Coolify: **+ New → Resource → Public/Private Repository** con este repositorio y la rama `main`.
 3. **Build Pack: Docker Compose**, y en *Docker Compose Location* `/compose.yaml`.
 4. En el servicio **`web`**, el dominio con `https://`: `https://marte.example.com`. El `backend` se deja sin dominio (solo se llega a él a través de `web`).
-5. **Deploy**. La primera vez tarda (compila el mando dentro de la imagen) y Traefik pide el certificado.
+5. **Deploy**. La primera vez tarda (compila el mando y la landing dentro de la imagen) y Traefik pide el certificado.
 
 Direcciones: la pantalla en `https://marte.example.com/game/` y los móviles en `https://marte.example.com/` con el código de sala, **desde cualquier red**. Como el certificado es de verdad, ningún navegador avisa.
 

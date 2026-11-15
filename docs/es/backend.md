@@ -6,7 +6,7 @@ Servidor Node que gestiona **salas, identidades, roles y conexiones** y reparte 
 
 | Pieza | Elección |
 |---|---|
-| Runtime | Node ≥ 20, ES modules (`"type": "module"`) |
+| Runtime | Node ≥ 20 para el backend solo (`backend/package.json`; la imagen Docker usa Node 22); el repositorio completo pide Node ≥ 22 (`package.json` de la raíz). ES modules (`"type": "module"`) |
 | HTTP | Express 5 (solo `/api/health`) |
 | WebSocket | `ws` en `/ws`, sobre el mismo servidor HTTP |
 | Identificadores | `node:crypto` (`randomInt` para códigos, `randomBytes` para tokens) |
@@ -60,7 +60,7 @@ Player  { id, name, role, commander, resumeToken, connection, connected, lastVie
 
 - Códigos de 4 caracteres sobre `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`, regenerados hasta que no colisionan con una sala viva.
 - `resumeToken` y `hostToken`: 24 bytes aleatorios en base64url. **El código de sala no es una credencial.**
-- `lobby_state` solo expone `id`, `name`, `role`, `connected`; nunca tokens ni conexiones.
+- `lobby_state` solo expone `id`, `name`, `role`, `commander`, `connected`; nunca tokens ni conexiones.
 
 ## Contexto de cada conexión
 

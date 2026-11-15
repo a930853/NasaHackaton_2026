@@ -1,6 +1,6 @@
 # Red en Godot: conexión con el backend y los móviles
 
-Cómo conectar `game/` con el backend siguiendo el [contrato de mensajes](../protocol.md). La organización del resto del juego (gestores, máquina de estados, `events.json`) está en [arquitectura.md](arquitectura.md). Los fragmentos son una propuesta de punto de partida (GDScript, Godot 4.x); adaptadlos al estilo del proyecto.
+Cómo conectar `game/` con el backend siguiendo el [contrato de mensajes](../protocol.md). La organización del resto del juego (gestores, máquina de estados, `events.json`) está en [arquitectura.md](arquitectura.md). Los fragmentos de código son versiones resumidas de `game/Scripts/` (GDScript, Godot 4.x); la referencia es siempre el código.
 
 ## Estado de la implementación (`game/`)
 
@@ -11,7 +11,7 @@ Ya está conectado el juego real con el backend y el mando web. Piezas:
 | `Net` (autoload) | `game/Scripts/net.gd` | Único sitio que toca el WebSocket. Emite las señales de red en `Events` y expone `create_room()`, `start_game()`, `send_view()`, `send_result()`, `finish_game()`. |
 | `PhoneBridge` (autoload) | `game/Scripts/phone_bridge.gd` | Une `TurnManager` con los móviles: envía a cada jugador su `controller_view`, **valida** cada `choose` (evento vigente, jugador, opción, duplicados por `actionId`) y responde siempre con `choice_result`. |
 | Lobby | `game/Scripts/main_menu.gd` (nodo `Lobby` de `Main_menu.tscn`) | «Start Game» pregunta el modo: **Play solo** (una pantalla, sin móviles ni red) o **Play multiplayer**. En multijugador conecta, crea la sala y enseña código, dirección del mando y jugadores con su rol; «Start expedition» se activa cuando hay ≥1 jugador y todos tienen rol; «Play solo instead» y «Back» salen del lobby (p. ej. si no hay servidor, que se detecta a los 4 s). |
-| Señales | `game/Scripts/events.gd` | `net_connected`, `net_disconnected`, `net_connection_failed`, `room_created`, `lobby_updated`, `game_started`, `player_choice_received`, `room_closed`, `net_error`. |
+| Señales | `game/Scripts/events.gd` | `net_connected`, `net_disconnected`, `net_connection_failed`, `room_created`, `lobby_updated`, `game_started`, `player_choice_received`, `player_continue_received`, `room_closed`, `net_error`. |
 
 El lobby usa la estética del juego: marco azul de los botones, tarjetas de jugador con el casco del color de su rol (4 plazas, las libres apagadas y el comandante marcado), el código de la sala en una caja destacada y el QR sobre fondo blanco con marco azul.
 
@@ -25,10 +25,10 @@ Decisiones tomadas:
 - **Todos votan todas las opciones:** cada móvil recibe todas las opciones del evento. Las que tienen un rol dueño llevan su nombre delante (`(Engineer) …`) y quien la haga queda ocupado. Si solo votara el dueño del rol, su opción casi nunca saldría elegida. Un rol ausente (menos de 4 jugadores) no deja ninguna decisión sin dueño. Si todos los presentes están ocupados fuera, el evento espera a que vuelva alguien.
 - **Quién decide (votación):** cada jugador conectado y en la base vota una opción (`TurnManager.cast_vote`). Cuando han votado todos los que pueden, gana la más votada. Un voto aceptado queda bloqueado (otro `actionId` → `already_decided`) y el móvil pasa a una vista `waiting` «Vote sent!» con el recuento. Un móvil desconectado no bloquea la votación.
 - **Empates:** segunda votación solo entre las empatadas, con nuevo `eventId` (`<id>#<n>-tie`), así que un voto tardío de la primera ronda recibe `event_closed`. Si vuelve a empatar, decide el voto del Comandante (el primer jugador que entró) y el resultado lo dice («It was a tie again, so the Commander's vote decided!»). Si se acaba la cuenta atrás de un evento crítico, gana lo más votado hasta ese momento (o la opción por defecto si no hay votos).
-- **Rechazos:** `choice_result` con `event_closed`, `not_eligible` o `invalid_option`. El backend no reenvía `choice_result` al mando; el mando se entera por la siguiente `controller_view`.
-- **Si cae el backend:** `PhoneBridge` se desactiva y la partida sigue en la pantalla principal (con el panel `Phone (debug)`).
+- **Rechazos:** `choice_result` con `event_closed`, `not_eligible`, `invalid_option` o `already_decided`. El backend no reenvía `choice_result` al mando; el mando se entera por la siguiente `controller_view`.
+- **Si cae el backend:** `PhoneBridge` se desactiva y la partida sigue en la pantalla principal como en el modo solitario: las opciones se eligen con el ratón.
 
-Probarlo: `npm run dev` (backend en `:3000`), abrir `game/` en Godot y pulsar F5; abrir `http://localhost:5173/controller/?room=<código>` en el navegador. Para el despliegue completo, exportar a web (`dist/game/`) y `npm run docker:local`.
+Probarlo: `npm run dev` (la terminal imprime los puertos que usa: el backend intenta el 3000 y, si está ocupado, otro libre; en ese caso hay que lanzar el juego con `--ws-url`), abrir `game/` en Godot y pulsar F5; abrir `http://localhost:5173/controller/?room=<código>` en el navegador. Para el despliegue completo, exportar a web (`dist/game/`) y `npm run docker:local`.
 
 ## Qué le toca a Godot
 
@@ -43,7 +43,7 @@ Godot es **la autoridad sobre el juego** y, además, el cliente *anfitrión* de 
 
 Node solo garantiza quién es quién. Que un mensaje llegue **no** significa que sea válido para el juego.
 
-## Arquitectura propuesta
+## Arquitectura
 
 ```text
 Net (autoload, game/Scripts/net.gd)   ← único sitio que toca el WebSocket
@@ -56,10 +56,10 @@ GameState / EventManager / Lobby UI   ← lógica y pantallas
 ```
 
 - **`Net`** abre el socket, hace `poll()`, parsea JSON y emite señales. También expone funciones para enviar (`create_room()`, `start_game()`, `send_view()`, `send_result()`…). El resto del juego **no** conoce el WebSocket.
-- **`Events`** (`game/Scripts/events.gd`) ya existe y tiene `mobile_client_connected`. Añadid ahí las señales de red nuevas para mantener el patrón del proyecto.
-- La lógica de eventos va en su propio script/autoload (`EventManager`), sin depender de `Net` directamente: recibe señales y llama a `Net.send_view(...)`.
+- **`Events`** (`game/Scripts/events.gd`) es el bus de señales y ya contiene todas las señales de red (lista abajo).
+- La lógica de eventos (`TurnManager`) no depende de `Net`: `PhoneBridge` escucha sus señales y las de red, y llama a `Net.send_view(...)` / `Net.send_result(...)`.
 
-### Señales sugeridas para `events.gd`
+### Señales de red en `events.gd`
 
 ```gdscript
 # --- Network (Node backend) ---
@@ -68,7 +68,9 @@ signal net_disconnected
 signal room_created(code: String)
 signal lobby_updated(players: Array, status: String)   # lobby_state
 signal game_started(players: Array)
+signal net_connection_failed
 signal player_choice_received(player_id: String, role: String, action_id: String, event_id: String, option_id: String)
+signal player_continue_received(player_id: String, role: String, action_id: String)
 signal room_closed(reason: String)
 signal net_error(code: String, request_type: String)
 ```
@@ -77,18 +79,20 @@ signal net_error(code: String, request_type: String)
 
 ### Dirección del servidor
 
-La URL se construye desde el sitio que sirvió la página. **Nunca** una IP fija.
+La URL se construye desde el sitio que sirvió la página. **Nunca** una IP fija. Es `Net.default_url()` (resumido):
 
 ```gdscript
-func _server_url() -> String:
+func default_url() -> String:
 	if OS.has_feature("web"):
-		var proto: String = JavaScriptBridge.eval("location.protocol === 'https:' ? 'wss' : 'ws'")
-		var host: String = JavaScriptBridge.eval("location.host")
+		var proto: String = str(JavaScriptBridge.eval("location.protocol === 'https:' ? 'wss' : 'ws'"))
+		var host: String = str(JavaScriptBridge.eval("location.host"))
 		return "%s://%s/ws" % [proto, host]
-	return "ws://localhost:3000/ws"   # solo para probar desde el editor con el backend en local
+	# Fuera del navegador: argumento --ws-url=..., variable NASA_WS_URL o, si no, la dirección local.
+	...
+	return "ws://localhost:3000/ws"
 ```
 
-> En el editor (no web) no hay `location`; apuntad al backend local (`npm run dev` en `backend/`, puerto 3000). Para probar la integración completa, exportad a web y servid con Docker.
+> En el editor (no web) no hay `location`; se usa el backend local. `npm run dev` intenta el puerto 3000 y, si no está libre, usa otro y lo imprime: entonces lanzad el juego con `--ws-url=ws://localhost:<puerto>/ws` (o `NASA_WS_URL`). Para probar la integración completa, exportad a web y servid con Docker.
 
 ### Autoload `Net` (esqueleto)
 
@@ -102,7 +106,7 @@ var room_code := ""
 var players: Array = []            # último lobby_state.players
 
 func connect_to_server() -> void:
-	var err := _ws.connect_to_url(_server_url())
+	var err := _ws.connect_to_url(default_url())
 	if err != OK:
 		push_error("Net: no se pudo conectar (%s)" % err)
 
@@ -180,170 +184,156 @@ Detalles que suelen fallar:
 
 El QR debe contener `<dirección-LAN>/controller/?room=<código>`.
 
-- Usad `location.origin` como base **solo si no es `localhost`/`127.0.0.1`**: esos nombres no sirven a los móviles. Si el anfitrión abrió el juego por `localhost`, mostrad un aviso y permitid escribir la IP de la LAN a mano (p. ej. `http://192.168.1.50`).
+- La base es `location.origin` (en el editor, `http://localhost:5173`) y la dirección completa la da `Net.controller_url(code)`. Si contiene `localhost`/`127.0.0.1` (`Net.controller_url_is_local()`), el lobby avisa de que los móviles no podrán usarla: hay que abrir el juego por la dirección de la LAN (p. ej. `http://192.168.1.50`). No hay campo para escribir la IP a mano.
 - Godot no trae generador de QR: se usa `game/Scripts/qr_code.gd`, en GDScript y sin dependencias (funciona igual en escritorio y en web).
 - Mostrad siempre también el código en texto: es el plan B si falla el QR.
 
 ```gdscript
-func _controller_url(code: String) -> String:
-	var origin: String = JavaScriptBridge.eval("location.origin")
-	return "%s/controller/?room=%s" % [origin, code]
+func controller_url(code: String) -> String:
+	return "%s/controller/?room=%s" % [controller_base_url(), code]
 ```
 
 ## Eventos
 
 ### Modelo
 
-```gdscript
-class_name GameEvent   # un evento concreto de una partida
-extends RefCounted
+Los eventos salen de `game/Data/events.json` y los lleva `TurnManager` (ver [arquitectura.md](arquitectura.md)). Todos se deciden **por votación** entre los jugadores; no hay eventos `individual` ni lista `eligible_players` por evento. Lo que guarda `TurnManager` del evento vigente:
 
-var id: String                      # "storm-01#1" → identifica ESTA aparición (ver abajo)
-var mode: String                    # "individual" | "vote"
-var eligible_players: Array[String] # playerIds que pueden decidir
-var options: Array[Dictionary]      # [{ "id": "shelter", "label": "…" }, …]
-var decisions: Dictionary = {}      # playerId -> optionId (ya aceptadas)
-var results: Dictionary = {}        # actionId -> { "accepted": bool, "reason": String }  (idempotencia)
-var closed := false
+```gdscript
+var current_event: Dictionary          # la plantilla de events.json (id, title, options…)
+var current_event_uid: String          # "storm-01#3" → el eventId de ESTA aparición (ver abajo)
+var _votes: Dictionary = {}            # role -> optionId (votos aceptados, bloqueados)
+var _tie_options: Array[String] = []   # en el desempate, las únicas opciones que se pueden votar
 ```
+
+La idempotencia la lleva `PhoneBridge`: `_results` (`actionId -> {accepted, reason}`), con memoria de los últimos resultados.
 
 ### `eventId`: una aparición, no una plantilla
 
-`eventId` debe ser **único por aparición** del evento en esa partida. Si "tormenta solar" puede salir dos veces, no uséis `storm-01` las dos: usad `storm-01#1`, `storm-01#2` (o un contador global). Así un `choose` rezagado de la primera tormenta se reconoce como antiguo y se rechaza.
+`eventId` es **único por aparición** del evento en esa partida: `TurnManager` lo forma con la plantilla y un contador global (`<id>#<n>`, p. ej. `storm-01#1`, `storm-01#2`; el desempate añade `-tie`). Así un `choose` rezagado de una aparición anterior se reconoce como antiguo y se rechaza con `event_closed`.
 
-### Asignar jugadores según los roles presentes
+### Roles presentes y opciones
 
-Con 1–4 jugadores, un evento "para el ingeniero" no puede quedar sin destinatario:
+Con 1–4 jugadores, ningún evento puede quedar sin quien decida. Por eso **todos votan todas las opciones**:
 
-- Construid `eligible_players` desde la lista de `game_started`, no desde una lista fija de cuatro roles.
-- Si el rol destinatario no existe, elegid un sustituto determinista (p. ej. el `generalist`, o el primer jugador conectado) o abrid el evento como `vote` entre los presentes. Documentad la regla en el propio evento.
-- Los jugadores **no elegibles** reciben igualmente una vista (`waiting` o informativa) para no quedarse con la pantalla anterior.
-
-### Abrir un evento
-
-```gdscript
-func open_event(ev: GameEvent) -> void:
-	for p in Net.players:
-		var pid: String = p["id"]
-		if pid in ev.eligible_players:
-			Net.send_view(pid, {
-				"screen": "choice", "eventId": ev.id,
-				"title": ev.title, "prompt": ev.prompt, "options": ev.options,
-			})
-		else:
-			Net.send_view(pid, {"screen": "waiting", "title": "Esperando decisión de la tripulación"})
-```
-
-Cada jugador puede recibir **opciones distintas**: sencillamente enviadle un `options` propio.
+- `TurnManager.controller_view_for(role)` da a cada móvil **todas** las opciones del evento. Las que tienen un rol dueño llevan su nombre delante (`(Engineer) …`), pero cualquier jugador puede votarlas, esté o no ese rol en la partida. Si el rol dueño está ocupado fuera de la base (o la opción exige a toda la tripulación en la base), la opción llega con `disabled` y `reason`.
+- Votan los roles **conectados**, en la base y con alguna opción libre (`TurnManager.voters()`). Un móvil desconectado no bloquea la votación: al cambiar `connected`, `TurnManager` vuelve a comprobar si ya han votado todos. Si no queda nadie que pueda votar, el evento espera.
+- Quien no puede votar recibe igualmente una vista `waiting` («You are busy!», «Read the story!», «Vote sent!»…) para no quedarse con la pantalla anterior. Mientras se lee la historia en la pantalla principal también llega `waiting`, y las opciones salen al acabar la lectura.
 
 ### Validar un `choose`
 
-Orden recomendado (se recorre al recibir `player_choice_received`):
+Orden que sigue `PhoneBridge._on_choice` (`game/Scripts/phone_bridge.gd`) al recibir `player_choice_received`; las comprobaciones del evento están en `TurnManager.choice_reject_reason` (`game/Scripts/turn_manager.gd`). Resumido:
 
 ```gdscript
+# PhoneBridge
 func _on_choice(player_id: String, role: String, action_id: String, event_id: String, option_id: String) -> void:
-	var ev := current_event
-
-	# 1. Duplicado: mismo actionId → repetir la respuesta anterior SIN repetir efectos.
-	#    Se busca en TODOS los eventos recientes, por si el reenvío llega tras cerrarse el evento.
-	var previous := _find_previous_result(action_id)
-	if previous:
-		Net.send_result(player_id, action_id, previous.accepted, previous.reason)
+	if not active:
+		Net.send_result(player_id, action_id, false, "event_closed")
 		return
-
-	# 2. Evento antiguo o ya cerrado.
-	if ev == null or ev.id != event_id or ev.closed:
-		return _reject(player_id, action_id, "event_closed")
-	# 3. ¿Puede decidir este jugador?
-	if player_id not in ev.eligible_players:
-		return _reject(player_id, action_id, "not_eligible")
-	# 4. ¿Existe la opción?
-	if not ev.options.any(func(o): return o["id"] == option_id):
-		return _reject(player_id, action_id, "invalid_option")
-	# 5. La elección aceptada queda bloqueada.
-	if ev.decisions.has(player_id):
-		return _reject(player_id, action_id, "already_decided")
-
-	# 6. Aceptar.
-	ev.decisions[player_id] = option_id
-	_remember(ev, action_id, true, "")
+	# 1. Duplicado (mismo actionId): misma respuesta, SIN repetir efectos.
+	if _results.has(action_id):
+		var previous: Dictionary = _results[action_id]
+		Net.send_result(player_id, action_id, bool(previous["accepted"]), str(previous["reason"]))
+		return
+	# 2. ¿El jugador existe en la partida? (la identidad la garantiza Node)
+	if not _is_player(player_id):
+		_reject(player_id, action_id, "not_eligible")
+		return
+	# 3. Evento vigente, rol libre y opción válida.
+	var reason: String = TurnManager.choice_reject_reason(role, event_id, option_id)
+	if not reason.is_empty():
+		_reject(player_id, action_id, reason)   # memoriza el rechazo y reenvía la vista vigente
+		return
+	# 4. Aceptar el voto (con el último que faltaba, TurnManager resuelve).
+	_remember(action_id, true, "")
 	Net.send_result(player_id, action_id, true)
-	_try_resolve(ev)
+	TurnManager.cast_vote(role, event_id, option_id)
+
+# TurnManager
+func choice_reject_reason(role: String, event_uid: String, option_id: String) -> String:
+	if event_uid != current_event_uid or phase != Phase.DECISION or reading:
+		return "event_closed"
+	if GameState.is_away(role):
+		return "not_eligible"
+	if _votes.has(role):
+		return "already_decided"
+	var option: Dictionary = _find_option(current_event, option_id)
+	if option.is_empty() or not option_block_reason(option).is_empty():
+		return "invalid_option"
+	if not _tie_options.is_empty() and not (option_id in _tie_options):
+		return "invalid_option"
+	return ""
 ```
 
 Puntos clave:
 
-- **Idempotencia**: guardad `actionId → resultado` y respondedlo igual las veces que haga falta. Una doble pulsación o un reenvío tras reconexión **no** puede aplicar la consecuencia dos veces. Los rechazos también se memorizan.
-- Responded **siempre** con un `choice_result` para que Node pueda validar el flujo; el mando no lo recibe. Enviad después una nueva `controller_view` para mostrar el resultado, espera o siguiente pregunta.
-- La identidad (`player_id`, `role`) viene de Node y es fiable; no la leáis del contenido que mande el móvil.
+- **Idempotencia**: se guarda `actionId → resultado` y se responde igual las veces que haga falta. Una doble pulsación o un reenvío tras reconexión **no** puede aplicar la consecuencia dos veces. Los rechazos también se memorizan.
+- Se responde **siempre** con un `choice_result` para que Node pueda validar el flujo; el mando no lo recibe. Después llega una nueva `controller_view` con el resultado, la espera («Vote sent!») o la siguiente pregunta.
+- La identidad (`player_id`, `role`) viene de Node y es fiable; nunca se lee del contenido que mande el móvil.
 - `already_decided` con un **`actionId` distinto**: el jugador ya votó y pulsó otra cosa. Con el mismo `actionId` es un duplicado (paso 1) y no un error.
 
 ### Resolver
 
-Cuando `_try_resolve` detecta que se cumple la regla:
+Cuando ha votado el último de los que pueden votar (`TurnManager._try_resolve_votes`), gana la opción más votada.
 
-| Modo | Condición típica | Resolución |
-|---|---|---|
-| `individual` | Decide el jugador asignado. | Se aplica su opción. |
-| `vote` | Han votado todos los `eligible_players` **conectados** requeridos. | Opción más votada. |
-
-**Empates (`vote`):** nueva votación **solo entre las opciones empatadas** (nuevo `eventId`, p. ej. `storm-01#1-desempate`). Si vuelve a empatar, **decide el voto del Comandante** (si no votó ninguna de las empatadas, la primera de ellas).
+**Empates:** nueva votación **solo entre las opciones empatadas**, con nuevo `eventId` (`<id>#<n>-tie`). Si vuelve a empatar, **decide el voto del Comandante** (si no votó ninguna de las empatadas, la primera de ellas). Si se acaba la cuenta atrás de un evento crítico, gana lo más votado hasta ese momento (o la opción por defecto si no hay votos).
 
 Al resolver:
 
-1. `ev.closed = true`.
-2. Aplicad las consecuencias a recursos (solo aquí, nunca en el momento de recibir el `choose`).
-3. Enviad a cada jugador una vista `result` (o `waiting` hasta el siguiente evento).
-4. Emitid señales de juego (`oxygen_level_changed`, etc.) para actualizar la UI.
+1. El evento se cierra: los `choose` que lleguen después reciben `event_closed`.
+2. Se aplican las consecuencias a los recursos (solo aquí, nunca al recibir el `choose`).
+3. Cada jugador recibe una vista `result` con `canContinue: true`; cuando todos los conectados confirman (`continue`), se pasa al siguiente Sol. El anfitrión también puede avanzar desde la pantalla principal.
+4. Se emiten las señales de juego (`oxygen_level_changed`, etc.) para actualizar la UI.
 
 ### Jugadores ausentes
 
 `lobby_updated` sigue llegando durante la partida con `connected` actualizado.
 
-- Si falta un jugador **necesario**, **esperad**. No resolváis solos.
-- Dad al anfitrión un botón explícito "Omitir ausentes" que cierre el evento con las decisiones recibidas.
-- Cuando un jugador **reconecta**, Node le reenvía su última `controller_view`; no hace falta que Godot la reenvíe. Si el evento ya se resolvió mientras estaba fuera, su `lastView` será la vista antigua: enviadle la vista vigente (`result`/`waiting`) al ver que vuelve a `connected == true`.
+- Un jugador desconectado **no bloquea** el evento: deja de contar como votante y se resuelve con los votos de los conectados. No hay botón para omitir ausentes porque no hace falta.
+- Cuando un jugador **reconecta**, Node le reenvía su última `controller_view`, y además `PhoneBridge` le manda la vista vigente al ver que vuelve a `connected == true` (por si el evento se resolvió mientras estaba fuera).
 
 ### Fin de partida
 
-`Net.finish_game()` cuando acabe la misión. Los mandos recibirán `room_closed` (`game_finished`). Mostrad antes los resultados en Godot: tras `finish_game` la sala deja de existir.
+Al acabar la misión los móviles reciben una vista `result` con `canContinue: false` y la puntuación. `Net.finish_game()` se llama al volver al menú: los mandos reciben `room_closed` (`game_finished`) y la sala deja de existir.
 
 ## Desconexiones
 
 | Situación | Qué hace Godot |
 |---|---|
-| Se cae el WebSocket del propio anfitrión (`net_disconnected`) | La sala ya no existe en Node y los mandos han recibido `room_closed`. Mostrad un mensaje y ofreced volver al menú. No intentéis reconectar a la misma sala. |
+| Se cae el WebSocket del propio anfitrión (`net_disconnected`) | La sala ya no existe en Node y los mandos han recibido `room_closed`. En el lobby se avisa y se ofrece «Back» o «Play solo instead»; en partida, `PhoneBridge` se desactiva y se sigue jugando en la pantalla principal. No se reconecta a la misma sala. |
 | Recargar la pestaña del anfitrión | Equivale a lo anterior: partida nueva. |
-| Se desconecta un móvil | Llega `lobby_updated` con `connected: false`. Mantened su rol y sus decisiones. |
+| Se desconecta un móvil | Llega `lobby_updated` con `connected: false`. Se mantienen su rol y su voto; deja de contar como votante. |
 | Reinicio del backend | Mismo caso que caída del anfitrión. |
 
 ## Exportación web
 
 - Preset **Web** en `game/export_presets.cfg` → `../dist/game/index.html`. `thread_support=false`, así que **no hacen falta cabeceras COOP/COEP** y Nginx se mantiene simple.
-- Godot 4 web **solo arranca en un contexto seguro** (HTTPS o `localhost`). Por eso el despliegue sirve todo por HTTPS y el WebSocket es `wss://` (lo deduce `_server_url()` de `location.protocol`). Ver [../deploy.md](../deploy.md).
+- Godot 4 web **solo arranca en un contexto seguro** (HTTPS o `localhost`). Por eso el despliegue sirve todo por HTTPS y el WebSocket es `wss://` (lo deduce `Net.default_url()` de `location.protocol`). Ver [../deploy.md](../deploy.md).
 - **Pantalla de carga propia** (sustituye a la de Godot): un cohete en pixel art sale de la Tierra, pasa por la Luna y llega a Marte según avanza la descarga; al terminar aterriza y la pantalla se funde con el juego. Es una plantilla web propia: el preset Web usa `html/custom_html_shell="res://web/loading_shell.html"` (y `exclude_filter="web/*"` para que no vaya dentro del `.pck`). Los ficheros:
   - `game/web/loading_shell.template.html`: la plantilla, que se **edita a mano**. Conserva los marcadores `$GODOT_...` de Godot y el arranque (`engine.startGame`, `onProgress`, avisos de error).
   - `tools/build_loading_shell.py`: mete en la plantilla, como data URI, las imágenes `tierra.png`, `luna.png`, `Marte.png` y `Cohete.png` de `game/Images/` y la fuente, y genera `game/web/loading_shell.html`. **Hay que ejecutarlo tras cambiar la plantilla o esas imágenes y antes de exportar.**
   - Para ver la animación sin esperar a una descarga lenta, servir `dist/game/` en `localhost` y abrir `index.html?fakeload=10` (10 s de carga simulada). El viaje dura como mínimo unos 3 s aunque el juego cargue al instante.
 - Exportad siempre a `dist/game/` antes de levantar Docker (`npm run docker:local`).
 - `JavaScriptBridge` y `OS.has_feature("web")` solo funcionan en la exportación web. Protegedlo con `OS.has_feature("web")` para poder seguir probando desde el editor.
-- Todos los recursos (fuentes, audio, imágenes) deben ir dentro del `.pck`; la demo no puede depender de Internet. Ojo con la llamada a la API de NASA de `main.gd`: tiene que fallar con gracia si no hay conexión.
+- Todos los recursos (fuentes, audio, imágenes) deben ir dentro del `.pck`; la demo no puede depender de Internet. Las llamadas a las APIs de la NASA (`nasa_api.gd`, que lanza `main.gd`, y la de DONKI en `turn_manager.gd`) tienen que fallar con gracia si no hay conexión.
 
 ## Cómo probar
 
-1. Desde la raíz: `npm run dev` (backend + mando). Fijaos en el puerto que imprime el backend. En esa terminal se ven todos los mensajes que pasan por el backend (`←` recibidos, `→` enviados), útil para ver qué manda Godot y qué le llega.
-2. Lanzad el juego desde el editor apuntando a `ws://localhost:<puerto>/ws`.
+1. Desde la raíz: `npm run dev` (backend + mando + landing). Fijaos en el puerto que imprime para el backend. En esa terminal se ven todos los mensajes que pasan por el backend (`←` recibidos, `→` enviados), útil para ver qué manda Godot y qué le llega.
+2. Lanzad el juego desde el editor apuntando a `ws://localhost:<puerto>/ws` (por defecto el 3000; si es otro, con `--ws-url`).
 3. Abrid el mando en el móvil (`http://<IP-del-PC>:5173/controller/?room=<código>`) o en otra pestaña del PC.
 4. Sin móviles, también vale cualquier cliente WebSocket (p. ej. `npx wscat -c ws://localhost:<puerto>/ws`) enviando a mano `join_room`, `select_role` y `choose`.
 ## Checklist de Godot
 
-- [ ] `Net` hace `poll()` cada frame y centraliza el socket.
-- [ ] Lobby pintado desde `lobby_state` completo, con jugadores desconectados diferenciados.
-- [x] QR (o enlace) con dirección de LAN, nunca `localhost`; código visible también en texto.
-- [ ] Cada evento tiene `eventId` único por aparición.
-- [ ] Un evento nunca depende de un rol ausente.
-- [ ] `actionId` repetido → misma respuesta, sin efectos duplicados.
-- [ ] `choose` de un evento anterior → `event_closed`.
-- [ ] Todo `choose` recibe un `choice_result`.
-- [x] Empate → segunda votación → sorteo.
-- [ ] Tras `net_disconnected` se ofrece volver al menú.
+Estado de lo implementado en `game/`:
+
+- [x] `Net` hace `poll()` cada frame y centraliza el socket.
+- [x] Lobby pintado desde `lobby_state` completo, con jugadores desconectados diferenciados.
+- [x] QR (o enlace) con la dirección de la página y aviso si es `localhost`; código visible también en texto.
+- [x] Cada evento tiene `eventId` único por aparición (`<id>#<n>`, `-tie` en el desempate).
+- [x] Un evento nunca depende de un rol ausente (todos votan todas las opciones).
+- [x] `actionId` repetido → misma respuesta, sin efectos duplicados.
+- [x] `choose` de un evento anterior → `event_closed`.
+- [x] Todo `choose` recibe un `choice_result`.
+- [x] Empate → segunda votación entre las empatadas → si persiste, decide el voto del Comandante.
+- [x] Tras `net_disconnected`: en el lobby se ofrece volver o jugar en solitario; en partida se sigue en la pantalla principal.

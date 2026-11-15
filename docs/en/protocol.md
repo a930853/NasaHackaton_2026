@@ -167,7 +167,7 @@ Node only requires `view` to be an object. Godot/controller screens are:
 |---|---|---|
 | `choice` | `eventId`, `title`, `prompt`, `options[{id,label,detail?,disabled?,reason?}]` | Question and buttons. |
 | `waiting` | `title`, `text?` | Waiting message, no actions. |
-| `result` | `title`, `text` | Decision consequences. |
+| `result` | `title`, `text`, `canContinue?` | Decision consequences. `canContinue` (optional boolean): when `false` the controller hides the continue button (e.g. when the game is over); when missing or `true`, it shows it. |
 
 Optional option fields are passed through as-is: `detail` (cost shown below label), `disabled` (boolean; dim the button) and `reason` (why it is unavailable). Missing optional fields mean a normal `{id, label}` option. Godot must reject a `choose` for an option marked disabled (`invalid_option`).
 
@@ -206,7 +206,7 @@ The controller confirms it is ready to advance after a result:
 { "type": "continue", "actionId": "p2-continue-17" }
 ```
 
-Node adds `playerId` and `role` from the connection. Godot counts confirmations from connected players and calls `continue_after_resolution()` only after everyone has confirmed. The host can advance directly from the main screen.
+Node adds `playerId` and `role` from the connection. Godot counts confirmations from connected players and calls `continue_after_resolution()` only after everyone has confirmed. The host can advance directly from the main screen. Node errors: `not_player`, `invalid_continue` (missing `actionId`).
 
 ### `resume_player`
 
@@ -240,12 +240,12 @@ Node reports a rejected message to its sender:
 { "type": "error", "code": "role_taken", "message": "role_taken", "requestType": "select_role" }
 ```
 
-`message` currently equals `code`; clients translate `code` to text. `requestType` is omitted if the request could not be parsed as JSON with a `type`.
+`message` currently equals `code`; clients translate `code` to text. `requestType` is omitted when the message fails parsing or field validation (`invalid_json`, `missing_type`, `unknown_type` and the `invalid_*` codes in the table).
 
 | Error code | Meaning |
 |---|---|
 | `invalid_json`, `missing_type`, `unknown_type` | Message could not be interpreted. |
-| `invalid_code`, `invalid_name`, `invalid_role`, `invalid_token`, `invalid_choice`, `invalid_view`, `invalid_result` | Missing or invalid fields. |
+| `invalid_code`, `invalid_name`, `invalid_role`, `invalid_token`, `invalid_choice`, `invalid_continue`, `invalid_view`, `invalid_result` | Missing or invalid fields. |
 | `already_registered` | Connection already has a room. |
 | `not_host` / `not_player` | Message sent by the wrong connection type. |
 | `room_not_found`, `room_full`, `game_already_started` | `join_room` / `resume_player` failure. |

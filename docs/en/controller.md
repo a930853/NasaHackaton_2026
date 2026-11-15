@@ -4,7 +4,7 @@ The **Vue 3 + Vite + Tailwind CSS 4** (JavaScript) app used by each player on a 
 
 ## Run
 
-From the repository root, `npm install && npm run dev` starts the backend and controller with backend message logging enabled (see the [root README](../../README.md#run-the-development-environment)). A Godot host must create the room.
+From the repository root, `npm install && npm run dev` starts the backend, controller and landing with backend message logging enabled (see the [root README](../../README.md#run-the-development-environment)). A Godot host must create the room.
 
 Or run separately:
 
@@ -65,7 +65,8 @@ controller/
       ChoiceView.vue       question and options (`controller_view` "choice")
       StatusCard.vue       waiting, registered choice, result, closed room
       CrewList.vue         crew (name, role, connection)
-      ScreenHeading.vue    entry-screen heading
+      DevicePlate.vue      identity plate: role-colored helmet, name and room code
+    assets/                helmet, Mars photo and screw (copied from game/Images)
   test/session.test.js     store tests against the real backend
 ```
 
@@ -115,11 +116,15 @@ Fonts use `@fontsource`. **Nothing is downloaded from the Internet**; the LAN de
 
 ## Deployment
 
-`npm run build` generates untracked `dist/controller/`. Docker's `web` service builds it, or build it before starting Compose. Nginx serves the app at `/controller/` with `index.html` fallback for direct role routes (NFC and page reload):
+`npm run build` generates untracked `dist/controller/`. The Docker `web` image (`deploy/web.Dockerfile`) builds it itself, so there is no need to build it before starting Compose. Nginx (`deploy/nginx/default.conf`; the `web` image copies `dist/controller/` into `/srv/www`) serves the app at `/controller/` with `index.html` fallback for direct role routes (NFC and page reload):
 
 ```nginx
+# deploy/nginx/default.conf (excerpt)
+root /srv/www;
+
+# Controller (Vue). Role routes (/controller/engineer…) are not files:
+# index.html is served and the controller's router decides.
 location /controller/ {
-    alias /usr/share/nginx/html/controller/;
     try_files $uri $uri/ /controller/index.html;
 }
 ```

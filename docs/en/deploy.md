@@ -32,7 +32,7 @@ Everything uses the same origin, so the screen and phones build the WebSocket UR
 2. In Coolify, choose **+ New → Resource → Public/Private Repository** and select this repository and the `main` branch.
 3. Set **Build Pack: Docker Compose** and **Docker Compose Location** to `/compose.yaml`.
 4. Configure the domain with `https://` on the **`web`** service, e.g. `https://mars.example.com`. Leave `backend` without a domain; it is reachable only through `web`.
-5. **Deploy.** The first build takes longer because it compiles the controller inside the image; Traefik then requests the certificate.
+5. **Deploy.** The first build takes longer because it compiles the controller and the landing inside the image; Traefik then requests the certificate.
 
 The screen is at `https://mars.example.com/game/` and phones use `https://mars.example.com/` with the room code, **from any network**. Browsers do not warn because the certificate is valid.
 

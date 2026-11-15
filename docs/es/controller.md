@@ -4,7 +4,7 @@ App **Vue 3 + Vite + Tailwind CSS 4** (JavaScript) que usa cada jugador en su m�
 
 ## Ejecutar
 
-La forma rápida, desde la raíz del repo: `npm install && npm run dev`. Levanta backend y mando, con el log de mensajes del backend activado (ver el [README](../../README.md#run-the-development-environment)). Hace falta un anfitrión (Godot) que cree la sala.
+La forma rápida, desde la raíz del repo: `npm install && npm run dev`. Levanta backend, mando y landing, con el log de mensajes del backend activado (ver el [README](../../README.md#run-the-development-environment)). Hace falta un anfitrión (Godot) que cree la sala.
 
 Por separado:
 
@@ -65,7 +65,8 @@ controller/
       ChoiceView.vue       pregunta y opciones (controller_view "choice")
       StatusCard.vue       espera, decisión registrada, resultado, sala cerrada
       CrewList.vue         tripulación (nombre, rol, conexión)
-      ScreenHeading.vue    cabecera de las pantallas de inicio
+      DevicePlate.vue      placa de identidad: casco del color del rol, nombre y código de sala
+    assets/                casco, foto de Marte y tornillo (copiados de game/Images)
   test/session.test.js     tests del store contra el backend real
 ```
 
@@ -131,12 +132,16 @@ phase = playing
 
 ## Despliegue
 
-- `npm run build` genera `dist/controller/` (no se versiona). El servicio `web` de Docker debe compilarlo, o hay que hacerlo antes de levantar Compose.
-- Nginx: servir `dist/controller/` en `/controller/` con *fallback* a `index.html` para que funcionen las rutas de rol al entrar directamente (NFC, recarga):
+- `npm run build` genera `dist/controller/` (no se versiona). La imagen `web` de Docker (`deploy/web.Dockerfile`) lo compila ella misma: no hace falta hacerlo antes de levantar Compose.
+- Nginx (`deploy/nginx/default.conf`; la imagen `web` copia `dist/controller/` dentro de `/srv/www`): servir el mando en `/controller/` con *fallback* a `index.html` para que funcionen las rutas de rol al entrar directamente (NFC, recarga):
 
 ```nginx
+# deploy/nginx/default.conf (extracto)
+root /srv/www;
+
+# Mando (Vue). Las rutas de rol (/controller/engineer…) no existen como
+# fichero: se sirve index.html y el router del mando decide.
 location /controller/ {
-    alias /usr/share/nginx/html/controller/;
     try_files $uri $uri/ /controller/index.html;
 }
 ```

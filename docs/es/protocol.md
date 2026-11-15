@@ -162,7 +162,7 @@ El contenido de `view` es libre para Node (solo exige un objeto); el contrato en
 |---|---|---|
 | `choice` | `eventId`, `title`, `prompt`, `options[{id,label,detail?,disabled?,reason?}]` | Pregunta y botones. |
 | `waiting` | `title`, `text?` | Mensaje de espera, sin acciones. |
-| `result` | `title`, `text` | Consecuencias de la decisión. |
+| `result` | `title`, `text`, `canContinue?` | Consecuencias de la decisión. `canContinue` (booleano, opcional): si es `false` el mando no enseña el botón para seguir (p. ej. al acabar la partida); si falta o es `true`, sí. |
 
 Campos opcionales de cada opción (los pone Godot; el mando los pinta tal cual, sin calcular nada):
 
@@ -217,7 +217,7 @@ Node añade `playerId` y `role` desde la conexión:
 ```json
 { "type": "continue", "playerId": "p2", "role": "doctor", "actionId": "p2-continue-17" }
 ```
-Godot cuenta las confirmaciones de los jugadores conectados. Solo llama a `continue_after_resolution()` cuando todos han confirmado. El botón del anfitrión en la pantalla principal puede avanzar directamente.
+Godot cuenta las confirmaciones de los jugadores conectados. Solo llama a `continue_after_resolution()` cuando todos han confirmado. El botón del anfitrión en la pantalla principal puede avanzar directamente. Errores de Node: `not_player`, `invalid_continue` (falta `actionId`).
 
 ### `resume_player`
 Mando → Node. Recupera una sesión tras una desconexión (recarga, cambio de red, pantalla bloqueada).
@@ -253,12 +253,12 @@ Node → emisor del mensaje rechazado.
 { "type": "error", "code": "role_taken", "message": "role_taken", "requestType": "select_role" }
 ```
 - `code`: ver la tabla siguiente. `message` es hoy igual a `code`; el cliente debe traducir `code` a texto propio.
-- `requestType`: tipo del mensaje que falló; no aparece si el mensaje ni siquiera era un JSON con `type`.
+- `requestType`: tipo del mensaje que falló; no aparece cuando el mensaje no supera el análisis o la validación de campos (`invalid_json`, `missing_type`, `unknown_type` y los `invalid_*` de la tabla).
 
 | `code` | Cuándo |
 |---|---|
 | `invalid_json`, `missing_type`, `unknown_type` | El mensaje no se pudo interpretar. |
-| `invalid_code`, `invalid_name`, `invalid_role`, `invalid_token`, `invalid_choice`, `invalid_view`, `invalid_result` | Faltan campos o son inválidos. |
+| `invalid_code`, `invalid_name`, `invalid_role`, `invalid_token`, `invalid_choice`, `invalid_continue`, `invalid_view`, `invalid_result` | Faltan campos o son inválidos. |
 | `already_registered` | La conexión ya tiene sala. |
 | `not_host` / `not_player` | Mensaje de un tipo de conexión que no le corresponde. |
 | `room_not_found`, `room_full`, `game_already_started` | `join_room` / `resume_player`. |

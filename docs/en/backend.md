@@ -6,7 +6,7 @@ Node server that manages **rooms, identities, roles and connections**, and forwa
 
 | Component | Choice |
 |---|---|
-| Runtime | Node ≥ 20, ES modules (`"type": "module"`) |
+| Runtime | Node ≥ 20 for the backend alone (`backend/package.json`; the Docker image uses Node 22); the whole repository requires Node ≥ 22 (root `package.json`). ES modules (`"type": "module"`) |
 | HTTP | Express 5 (only `/api/health`) |
 | WebSocket | `ws` on `/ws`, using the same HTTP server |
 | Identifiers | `node:crypto` (`randomInt` for codes, `randomBytes` for tokens) |
@@ -38,7 +38,7 @@ npm test        # integration tests
 
 Health check: `curl http://localhost:3000/api/health` → `{"ok":true,"rooms":0}`.
 
-**Message logging:** with `LOG_MESSAGES=1`, the backend prints every received (`←`) and sent (`→`) message exactly as transmitted, together with the connection (`host K7MP`, `K7MP/p1`, or `unregistered` if it has not created or joined a room yet). Running `npm run dev` from the repository root enables it by default (`LOG_MESSAGES=0` disables it). Tokens are also shown: development only.
+**Message logging:** with `LOG_MESSAGES=1`, the backend prints every received (`←`) and sent (`→`) message exactly as transmitted, together with the connection (`host K7MP`, `K7MP/p1`, or `sin registrar` ("unregistered"; the log label is in Spanish) if it has not created or joined a room yet). Running `npm run dev` from the repository root enables it by default (`LOG_MESSAGES=0` disables it). Tokens are also shown: development only.
 
 ```text
 ← host K7MP     {"type":"start_game"}
@@ -60,7 +60,7 @@ Player  { id, name, role, commander, resumeToken, connection, connected, lastVie
 
 - Four-character codes use `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` and are regenerated if they collide with a live room.
 - `resumeToken` and `hostToken` are 24 random bytes encoded as base64url. **A room code is not a credential.**
-- `lobby_state` exposes only `id`, `name`, `role` and `connected`; it never exposes tokens or connections.
+- `lobby_state` exposes only `id`, `name`, `role`, `commander` and `connected`; it never exposes tokens or connections.
 
 ## Connection context
 
