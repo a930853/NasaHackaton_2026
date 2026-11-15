@@ -45,6 +45,10 @@ Mobile web controllers ───┘                         │
 
 ## Get started
 
+### Test the game
+
+- The game is currently running on a member's server -> [[red-planet-survivors.karu.es/]]
+
 ### Requirements
 
 - Node.js **22 or later**
