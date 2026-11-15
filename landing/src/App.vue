@@ -22,9 +22,9 @@ watch(open, async (isOpen) => {
   sync(isOpen)
   await nextTick()
   if (isOpen) door.value.focusTitle()
-  // Al cerrar, el foco vuelve a lo que la abrió: «Play» en PC, la barra de abajo en el móvil
-  else if (matchMedia('(width < 48rem)').matches) door.value.focusHatch()
-  else intro.value.focusPlay()
+  // Al cerrar, el foco vuelve a lo que abre la puerta y se ve: «Play» en PC, la barra en el móvil.
+  // Se decide por lo que está a la vista, sin repetir aquí el punto de corte de Tailwind.
+  else intro.value.focusPlay() || door.value.focusHatch()
 })
 
 const onHashChange = () => { open.value = location.hash === '#play' }

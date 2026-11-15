@@ -13,7 +13,8 @@ const hatchEl = ref(null)
 const titleEl = ref(null)
 defineExpose({
   focusTitle: () => titleEl.value?.focus(),
-  focusHatch: () => hatchEl.value?.focus(),
+  // Devuelve false si la barra no se ve (en PC está oculta)
+  focusHatch: () => !!hatchEl.value?.offsetParent && (hatchEl.value.focus(), true),
 })
 </script>
 

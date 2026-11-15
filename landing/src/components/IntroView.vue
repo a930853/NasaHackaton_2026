@@ -1,6 +1,7 @@
 <script setup>
 // Portada: Marte visto por la ventana de la nave. Nombre y logo del juego, de qué va, los recursos,
 // la tripulación y un dato real de la NASA. Arriba, un banner con el logo y el nombre; «Play» abre la puerta.
+import { ref } from 'vue'
 import { randomFact } from '../facts.js'
 import logo from '../assets/logo.png'
 import health from '../assets/health.png'
@@ -23,10 +24,10 @@ const CREW = [
 ]
 const fact = randomFact()
 // «Play» abre la puerta (App.vue); al cerrarla, el foco vuelve a este botón
-import { ref } from 'vue'
 const emit = defineEmits(['play'])
 const playEl = ref(null)
-defineExpose({ focusPlay: () => playEl.value?.focus() })
+// Devuelve false si el botón no se ve (en el móvil está oculto) para que App.vue pruebe otro
+defineExpose({ focusPlay: () => !!playEl.value?.offsetParent && (playEl.value.focus(), true) })
 </script>
 
 <template>
