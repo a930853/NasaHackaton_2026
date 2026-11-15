@@ -33,8 +33,8 @@ const decided = computed(
   () => s.view?.screen === 'choice' && s.choice.status === 'registered' && s.choice.eventId === s.view.eventId,
 )
 
-const preGameTrack = '/controller/audio/Chill_MN.mp3'
-const gameTrack = '/controller/audio/Chill_Space2026.mp3'
+const preGameTrack = '/controller/audio/Chill_Space2026.mp3'
+const gameTrack = '/controller/audio/Chill_MN.mp3'
 let music = null
 let musicUnlocked = false
 
