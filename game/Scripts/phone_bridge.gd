@@ -72,6 +72,7 @@ func _reset() -> void:
 	_result_order.clear()
 	TurnManager.present_roles = []
 	TurnManager.connected_roles = []
+	TurnManager.set_commander_role("")
 	if was_active:
 		session_changed.emit()
 
@@ -84,6 +85,7 @@ func _on_game_started(started_players: Array) -> void:
 	players = started_players
 	active = true
 	TurnManager.present_roles = roles()
+	TurnManager.set_commander_role(_commander_role())
 	TurnManager.set_connected_roles(roles(true))
 	session_changed.emit()
 	for player in players:
@@ -105,6 +107,13 @@ func _on_lobby_updated(updated_players: Array, _status: String) -> void:
 				_send(updated, _current_view(str(updated.get("role", ""))))
 	players = updated_players
 	TurnManager.set_connected_roles(roles(true))
+
+
+func _commander_role() -> String:
+	for player in players:
+		if bool(player.get("commander", false)):
+			return str(player.get("role", ""))
+	return ""
 
 
 func _on_net_disconnected() -> void:

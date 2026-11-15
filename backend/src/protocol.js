@@ -1,7 +1,7 @@
 // Tipos de mensaje y validación de entrada. Contrato: docs/protocol.md
 import { logMessage } from './log.js';
 
-export const ROLES = ['engineer', 'biologist', 'doctor', 'generalist'];
+export const ROLES = ['engineer', 'biologist', 'doctor'];
 export const MAX_PLAYERS = 4;
 
 const isStr = (v, max = 64) => typeof v === 'string' && v.length > 0 && v.length <= max;

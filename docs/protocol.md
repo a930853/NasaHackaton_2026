@@ -73,7 +73,7 @@ Mando → Node. Pide (o cambia) su rol. Solo en el lobby.
 ```json
 { "type": "select_role", "role": "engineer" }
 ```
-Roles: `engineer`, `biologist`, `doctor`, `generalist`. Si el jugador ya tenía rol, lo cambia (libera el anterior).
+El jugador elige un rol principal: `engineer`, `biologist` o `doctor`. El primer jugador recibe además `commander: true`; esa capacidad no ocupa un cuarto rol y su voto decide el segundo empate. Si el jugador ya tenía rol, lo cambia (libera el anterior).
 
 Éxito: no hay respuesta directa; todos reciben un [`lobby_state`](#lobby_state). Errores: `invalid_role`, `role_taken`, `not_in_lobby`, `not_player`.
 
@@ -85,8 +85,8 @@ Node → Godot y mandos. Estado completo de la sala.
   "code": "K7MP",
   "status": "lobby",
   "players": [
-    { "id": "p1", "name": "Ana",  "role": "engineer", "connected": true },
-    { "id": "p2", "name": "Luis", "role": null,       "connected": false }
+    { "id": "p1", "name": "Ana",  "role": "engineer", "commander": true, "connected": true },
+    { "id": "p2", "name": "Luis", "role": null,       "commander": false, "connected": false }
   ]
 }
 ```
@@ -106,7 +106,7 @@ Condiciones: ser el anfitrión, estar en lobby, haber **1–4 jugadores** y que 
 ### `game_started`
 Node → Godot y mandos conectados.
 ```json
-{ "type": "game_started", "players": [ { "id": "p1", "name": "Ana", "role": "engineer", "connected": true } ] }
+{ "type": "game_started", "players": [ { "id": "p1", "name": "Ana", "role": "engineer", "commander": true, "connected": true } ] }
 ```
 Desde aquí no se aceptan nuevos jugadores ni cambios de rol. La lista de `players` es la que Godot debe usar para decidir qué roles están presentes.
 

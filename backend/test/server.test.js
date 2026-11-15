@@ -96,6 +96,26 @@ test('no entran cinco jugadores', async () => {
   assert.equal((await fifth.next('error')).code, 'room_full');
 });
 
+test('el primer jugador recibe el rol de Comandante y no puede cambiarlo', async () => {
+  const { code } = await host();
+  const first = await player(code, 'Ana');
+  const initialLobby = await first.p.next('lobby_state');
+  assert.equal(initialLobby.players.find((p) => p.id === first.joined.playerId).role, 'generalist');
+
+  first.p.send({ type: 'select_role', role: 'engineer' });
+  assert.equal((await first.p.next('error')).code, 'commander_required');
+});
+
+test('el primer jugador conserva su comandante al elegir un rol principal', async () => {
+  const { code } = await host();
+  const first = await player(code, 'Ana');
+  first.p.send({ type: 'select_role', role: 'engineer' });
+  const lobby = await first.p.next('lobby_state');
+  const mine = lobby.players.find((p) => p.id === first.joined.playerId);
+  assert.equal(mine.role, 'engineer');
+  assert.equal(mine.commander, true);
+});
+
 test('no se reserva el mismo rol dos veces', async () => {
   const { code } = await host();
   await player(code, 'Ana', 'engineer');

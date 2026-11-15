@@ -45,7 +45,7 @@ INICIO DEL SOL ──► SELECCIÓN DEL EVENTO ──► DECISIÓN ──► RES
 | `engineer` | Ingeniero | Hardware, paneles, rover, sensores, MOXIE. Es el rol con más opciones propias. |
 | `biologist` | Bióloga | Invernadero, cultivos, probióticos. |
 | `doctor` | Médico | Salud, botiquín, estrés. |
-| `generalist` | Comandante / Polivalente (ver [pendientes](#decisiones-pendientes)) | Moral del equipo, órdenes difíciles, comunicaciones con la Tierra. |
+| `generalist` | Capacidad adicional de Comandante | Moral del equipo, órdenes difíciles, comunicaciones con la Tierra; la tiene el primer jugador además de su rol principal. |
 
 Los ids en inglés son los del [contrato de mensajes](../protocol.md) y los de `events.json`. Cada opción de un evento es de dos tipos:
 
