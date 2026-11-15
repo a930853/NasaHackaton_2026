@@ -14,48 +14,45 @@ const sending = computed(() => props.choice.status === 'sending')
 const rejected = computed(() => props.choice.status === 'rejected' && props.choice.eventId === props.view.eventId)
 const isSelected = (option) => sending.value && props.choice.optionId === option.id
 
-// Los mismos neones que los botones del marco del juego (rojo, cian, naranja, morado).
-const NEONS = ['var(--color-neon-red)', 'var(--color-neon-cyan)', 'var(--color-neon-orange)', 'var(--color-neon-purple)']
+// Los cuatro colores de los botones del marco del juego, por orden.
+const KEYS = ['var(--color-key-red)', 'var(--color-key-cyan)', 'var(--color-key-orange)', 'var(--color-key-purple)']
 </script>
 
 <template>
-  <div class="flex flex-col gap-6 py-[clamp(16px,3vh,32px)]">
-    <div class="screen-panel px-6 py-5">
-      <p class="eyebrow text-(--role-color)">◆ CREW DECISION</p>
-      <h2 class="text-[clamp(22px,3vw,34px)] leading-tight font-bold">{{ view.title }}</h2>
-      <p v-if="view.prompt" class="mt-2 text-[15px] text-muted">{{ view.prompt }}</p>
+  <div class="flex flex-col gap-5">
+    <div class="screen screen-padding">
+      <h2 class="text-[clamp(21px,6vw,26px)] leading-tight font-bold text-glass">{{ view.title }}</h2>
+      <p v-if="view.prompt" class="mt-1.5 text-glass-dim">{{ view.prompt }}</p>
     </div>
 
-    <p v-if="rejected" class="notice-error" role="alert">{{ rejectionText(choice.reason) }}</p>
+    <p v-if="rejected" class="alert" role="alert">{{ rejectionText(choice.reason) }}</p>
 
-    <div class="grid gap-4 sm:grid-cols-2" aria-label="Options">
+    <div class="flex flex-col gap-4 pb-1.5" role="group" :aria-label="view.prompt || view.title">
       <button
         v-for="(option, index) in view.options ?? []"
         :key="option.id"
         type="button"
-        class="neon-button flex min-h-20 flex-col items-start gap-1.5 p-[clamp(12px,1.8vw,18px)] text-left"
-        :class="isSelected(option) ? 'bg-panel-hover' : ''"
-        :style="{ '--neon': NEONS[index % NEONS.length] }"
+        class="key flex items-start gap-3"
+        :class="option.disabled ? 'key-off' : ''"
+        :style="option.disabled ? null : { '--key': KEYS[index % KEYS.length] }"
+        :aria-pressed="isSelected(option)"
         :disabled="sending || option.disabled === true"
         @click="emit('choose', option.id)"
       >
-        <span class="flex w-full items-start gap-3">
-          <span
-            class="grid size-7 shrink-0 place-items-center rounded-full border-2 border-outline bg-(--neon) font-mono text-sm font-bold text-outline"
-            aria-hidden="true"
-          >
-            {{ index + 1 }}
-          </span>
-          <span class="flex-1 text-[clamp(15px,1.6vw,18px)] leading-snug font-semibold">{{ option.label }}</span>
-          <span v-if="isSelected(option)" class="text-(--neon)" aria-hidden="true">…</span>
+        <span
+          class="grid size-8 shrink-0 place-items-center rounded-full border-[3px] border-ink bg-screen font-display text-xs text-glass"
+          aria-hidden="true"
+        >
+          {{ index + 1 }}
         </span>
-        <small v-if="option.detail" class="pl-10 font-mono text-[12px] leading-snug text-muted">{{ option.detail }}</small>
-        <small v-if="option.disabled && option.reason" class="pl-10 font-mono text-[12px] leading-snug text-danger">
-          {{ option.reason }}
-        </small>
+        <span class="flex min-w-0 flex-1 flex-col gap-1">
+          <span class="text-[18px] leading-snug">{{ option.label }}</span>
+          <span v-if="option.detail" class="text-[15px] leading-snug font-normal text-ink/80">{{ option.detail }}</span>
+          <span v-if="option.disabled && option.reason" class="text-[15px] leading-snug font-normal">{{ option.reason }}</span>
+        </span>
       </button>
     </div>
 
-    <p v-if="sending" class="notice" role="status">Sending…</p>
+    <p v-if="sending" class="text-center font-bold text-ink" role="status">Sending your vote…</p>
   </div>
 </template>
