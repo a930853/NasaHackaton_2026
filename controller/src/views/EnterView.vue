@@ -1,7 +1,6 @@
 <script setup>
 // Entrada a la sala: código (precargado desde ?room=) y nombre.
 import { ref, watch } from 'vue'
-import ScreenHeading from '../components/ScreenHeading.vue'
 
 const props = defineProps({
   initialCode: { type: String, default: '' },
@@ -20,58 +19,56 @@ watch(() => props.initialCode, (value) => { if (value) code.value = value })
 function submit() {
   emit('join', { code: code.value, name: name.value })
 }
-
-const input =
-  'min-w-0 rounded-[12px] border-[3px] border-line bg-panel px-4 py-[14px] font-mono text-base text-ink placeholder:text-muted/60 focus:border-amber focus:outline-none focus:shadow-[0_0_14px_rgb(255_168_38/.5)]'
 </script>
 
 <template>
-  <section class="screen-w flex min-h-0 flex-1 flex-col" aria-labelledby="enter-title">
-    <div class="flex min-h-0 flex-1 flex-col justify-center gap-[clamp(20px,6vh,56px)] py-5 md:py-12">
-      <ScreenHeading id="enter-title">
-        Join the <span class="text-amber">mission</span>
-        <template #hint>
-          <template v-if="role">
-            You will join as the <strong :style="{ color: role.color }">{{ role.name }}</strong>.
-          </template>
-          <template v-else>Type the room code and your name to start.</template>
-        </template>
-      </ScreenHeading>
+  <section class="flex flex-1 flex-col gap-5" aria-labelledby="enter-title">
+    <form class="flex flex-col gap-5" @submit.prevent="submit">
+      <div class="screen screen-padding flex flex-col gap-4">
+        <div>
+          <h1 id="enter-title" class="text-[clamp(22px,6.5vw,28px)] leading-tight font-bold">Join the crew</h1>
+          <p class="mt-1 text-glass-dim">
+            <template v-if="role">You will be the <strong :style="{ color: role.color }">{{ role.name }}</strong>.</template>
+            <template v-else>The room code is on the main screen.</template>
+          </p>
+        </div>
 
-      <form class="screen-panel flex w-full max-w-[620px] flex-col gap-2.5 p-6" @submit.prevent="submit">
-        <label for="room-code" class="text-sm font-semibold text-soft">Room code</label>
-        <input
-          id="room-code"
-          v-model="code"
-          :class="[input, 'tracking-[.2em] uppercase']"
-          type="text"
-          name="room"
-          autocomplete="off"
-          autocapitalize="characters"
-          spellcheck="false"
-          placeholder="e.g. K7MP"
-          maxlength="8"
-          required
-        >
-        <label for="player-name" class="mt-2 text-sm font-semibold text-soft">Your name</label>
-        <input
-          id="player-name"
-          v-model="name"
-          :class="input"
-          type="text"
-          name="name"
-          autocomplete="nickname"
-          placeholder="e.g. Ana"
-          maxlength="24"
-          required
-        >
-        <button type="submit" class="btn-primary" :disabled="busy">
-          Join the room <span aria-hidden="true">→</span>
-        </button>
-        <p class="notice">The code is on the main screen.</p>
-      </form>
+        <label class="flex flex-col gap-1.5">
+          <span class="font-bold">Room code</span>
+          <input
+            v-model="code"
+            class="field display tracking-[.18em] uppercase"
+            type="text"
+            name="room"
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            placeholder="K7MP"
+            maxlength="8"
+            required
+          >
+        </label>
+        <label class="flex flex-col gap-1.5">
+          <span class="font-bold">Your name</span>
+          <input
+            v-model="name"
+            class="field"
+            type="text"
+            name="name"
+            autocomplete="nickname"
+            placeholder="Ana"
+            maxlength="24"
+            required
+          >
+      </label>
 
-      <p v-if="message" class="notice-error" role="alert">{{ message }}</p>
-    </div>
+      </div>
+
+      <button type="submit" class="key text-center text-lg" :disabled="busy">
+        {{ busy ? 'Connecting…' : 'Join the room' }}
+      </button>
+    </form>
+
+    <p v-if="message" class="alert" role="alert">{{ message }}</p>
   </section>
 </template>

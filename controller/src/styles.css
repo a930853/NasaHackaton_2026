@@ -1,50 +1,42 @@
 @import 'tailwindcss';
 
 /*
- * Estilo de la cabina del juego (game/Images/hud_frame.png): casco metálico gris azulado con
- * contorno oscuro grueso, pantallas azul marino con bisel, botones con borde de neón y pilotos
- * naranjas. Los colores salen de game/Scripts/main_ui.gd y option_card.gd.
+ * El mando es el comunicador de mano de cada astronauta: un aparato de la misma cabina de dibujos
+ * que el juego (game/Images/hud_frame.png). Carcasa metálica con contorno grueso, una pantalla
+ * marina con bisel y teclas de colores que se hunden al pulsarlas. Detrás, la foto de Marte del
+ * menú del juego.
+ *
+ * Tipos: Sixtyfour (el título del juego) solo para textos cortos de identidad (rol, código, titulares);
+ * Chakra Petch para leer: cuadrada y técnica como una consola de nave, pero clara en frases.
+ *
+ * Los tornillos son un recorte del propio marco del juego (src/assets/screw.png).
  */
 @theme {
-  --font-sans: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'DM Mono', ui-monospace, monospace;
+  --font-sans: 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Sixtyfour', ui-monospace, monospace;
 
-  /* Casco de la nave */
-  --color-hull: #7d869c;
-  --color-hull-light: #a9b1c3;
-  --color-hull-dark: #555e75;
-  --color-outline: #1a2030;
+  --color-hull: #8b93a8;
+  --color-hull-light: #b3bacb;
+  --color-hull-dark: #5d667c;
+  --color-ink: #1a2030;
+  --color-screen: #0d1424;
+  --color-screen-2: #172238;
+  --color-glass: #dfe8ff;     /* texto sobre la pantalla */
+  --color-glass-dim: #9fb0cc;
 
-  /* Pantallas (fondo de los botones del HUD y de las tarjetas de opción) */
-  --color-navy: #0d1424;
-  --color-panel: #172238;
-  --color-panel-hover: #24385f;
-  --color-line: #4d73b3;
-  --color-line-strong: #7fa6e6;
-
-  /* Texto */
-  --color-ink: #eef3ff;
-  --color-soft: #d3def2;
-  --color-muted: #9fb0cc;
-  --color-dim: #2a3348;
-
-  /* Neón de los botones del marco y pilotos */
-  --color-neon-red: #f2455c;
-  --color-neon-cyan: #4db8ff;
-  --color-neon-orange: #ffa826;
-  --color-neon-purple: #b86bff;
-  --color-amber: #ffa826;
-  --color-amber-light: #ffc463;
-  --color-danger: #ff7b7b;
-  --color-ok: #73ff8c;
+  /* Los cuatro colores de los botones del marco del juego */
+  --color-key-red: #f2455c;
+  --color-key-cyan: #4db8ff;
+  --color-key-orange: #ffa826;
+  --color-key-purple: #b86bff;
+  --color-lamp: #ffa826;
+  --color-alert: #ff8a8a;
 }
 
 @layer base {
   :root {
-    /* Color del rol activo: lo sobrescribe roleStyle() (src/roles.js). Por defecto, cian. */
-    --role-color: var(--color-neon-cyan);
-    --role-pale: #dff2ff;
-    --role-dark: #0d4a73;
+    /* Color del rol activo: lo pone roleStyle() (src/roles.js). Sin rol, el casco va blanco. */
+    --role-color: #ffffff;
     color-scheme: dark;
   }
 
@@ -56,88 +48,139 @@
   }
 
   body {
-    @apply overflow-x-hidden bg-hull font-sans text-ink antialiased;
-    /* Planchas del casco: juntas horizontales suaves y un brillo arriba */
-    background-image:
-      linear-gradient(180deg, rgb(255 255 255 / .14), transparent 30%),
-      repeating-linear-gradient(180deg, transparent 0 159px, rgb(26 32 48 / .35) 159px 161px, rgb(255 255 255 / .12) 161px 162px);
+    @apply overflow-x-hidden bg-ink font-sans text-[17px] leading-[1.45] font-medium text-ink antialiased;
+    background-image: linear-gradient(rgb(13 20 36 / .35), rgb(13 20 36 / .6)), url('./assets/mars.jpg');
+    background-size: cover;
+    background-position: center top;
+    background-attachment: fixed;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-key-cyan);
+    outline-offset: 3px;
   }
 }
 
-@media (max-width: 767px) {
-  .fixed-mobile-screen {
-    height: 100dvh;
-    overflow: hidden;
-  }
-}
-
-/* Piezas repetidas en varias pantallas */
 @layer components {
-  .screen-w {
-    @apply mx-auto w-[calc(100%-32px)] md:w-[min(1120px,calc(100%-64px))];
+  /* El aparato: del tamaño de su contenido, centrado sobre Marte (la foto asoma alrededor). */
+  .device {
+    @apply relative mx-auto flex w-[calc(100%-20px)] max-w-[480px] flex-col gap-4 rounded-[28px] border-4 border-ink bg-hull px-3.5 py-8;
+    /*
+     * Sombreado de dibujos como el del marco del juego, con degradados para que valga en
+     * cualquier tamaño: luz que entra por arriba a la izquierda, metal más oscuro abajo y un
+     * canto claro arriba y oscuro abajo.
+     */
+    background-image:
+      radial-gradient(120% 60% at 15% 0%, rgb(255 255 255 / .22), transparent 60%),
+      linear-gradient(180deg, transparent 55%, rgb(26 32 48 / .22) 100%);
+    box-shadow:
+      inset 0 4px 0 rgb(255 255 255 / .35),
+      inset 0 -6px 0 rgb(26 32 48 / .3),
+      inset 0 0 0 2px rgb(26 32 48 / .08),
+      0 18px 40px rgb(0 0 0 / .45);
   }
 
-  /* Pantalla del HUD: contorno oscuro, bisel metálico claro y cristal marino dentro.
-     El bisel va con sombras interiores para que ningún contenedor lo recorte. */
-  .screen-panel {
-    @apply rounded-[20px] border-[3px] border-outline bg-navy;
+  /* Placa de identidad de arriba: casco, nombre y código de sala */
+  .plate {
+    @apply flex items-center gap-3 rounded-[18px] border-[3px] border-ink bg-hull-light px-3 py-2.5;
+    box-shadow: inset 0 3px 0 rgb(255 255 255 / .4), inset 0 -3px 0 rgb(26 32 48 / .15);
+  }
+
+  .display {
+    @apply font-display leading-[1.25] tracking-[-.02em];
+  }
+
+  /* Mini pantalla LCD (código de sala) */
+  .lcd {
+    @apply rounded-[10px] border-[3px] border-ink bg-screen px-2.5 py-1 font-display text-sm text-key-cyan;
+  }
+
+  /* Pantalla con bisel: contorno oscuro, marco claro y cristal marino */
+  .screen {
+    @apply rounded-[22px] border-[3px] border-ink bg-screen px-5 py-5 text-glass;
     box-shadow:
       inset 0 0 0 5px var(--color-hull-light),
-      inset 0 0 0 8px var(--color-outline),
-      inset 0 0 36px rgb(77 184 255 / .14);
+      inset 0 0 0 8px var(--color-ink),
+      inset 0 0 30px rgb(77 184 255 / .14);
   }
 
-  /* Placa metálica para los títulos sobre el casco */
-  .hull-plate {
-    @apply rounded-[14px] border-[3px] border-outline bg-hull-light px-4 py-3 text-outline;
-    box-shadow: inset 0 -4px 0 rgb(26 32 48 / .18), inset 0 3px 0 rgb(255 255 255 / .35);
+  .screen-padding {
+    @apply px-6 py-6;
   }
 
-  /* Botón de neón como los del marco: fondo oscuro y borde de color (--neon) */
-  .neon-button {
-    --neon: var(--role-color);
-    @apply cursor-pointer rounded-[14px] border-[3px] border-(--neon) bg-navy text-ink transition duration-150;
-    box-shadow: inset 0 0 0 2px var(--color-outline), inset 0 0 14px color-mix(in srgb, var(--neon) 18%, transparent), 0 0 10px color-mix(in srgb, var(--neon) 40%, transparent);
+  /*
+   * Tecla del aparato: color sólido (--key), contorno grueso y una sombra dura debajo que
+   * desaparece al pulsar, como si la tecla bajara.
+   */
+  .key {
+    --key: var(--color-key-orange);
+    @apply relative w-full cursor-pointer rounded-[16px] border-[3px] border-ink bg-(--key) px-4 py-3.5 text-left font-bold text-ink;
+    box-shadow: 0 6px 0 var(--color-ink), inset 0 3px 0 rgb(255 255 255 / .35);
+    transition: transform 80ms ease-out, box-shadow 80ms ease-out, filter 120ms;
   }
 
-  .neon-button:enabled:hover,
-  .neon-button:focus-visible {
-    @apply -translate-y-0.5 bg-panel-hover;
-    box-shadow: inset 0 0 0 2px var(--color-outline), inset 0 0 18px color-mix(in srgb, var(--neon) 30%, transparent), 0 0 16px color-mix(in srgb, var(--neon) 65%, transparent);
+  .key:enabled:hover {
+    filter: brightness(1.06);
   }
 
-  .neon-button:disabled {
-    @apply cursor-not-allowed opacity-45 grayscale-[.7];
+  .key:enabled:active,
+  .key[aria-pressed='true'] {
+    transform: translateY(6px);
+    box-shadow: 0 0 0 var(--color-ink), inset 0 3px 0 rgb(255 255 255 / .35);
   }
 
-  /* Piloto naranja del marco */
-  .hud-light {
-    @apply inline-block h-3 w-6 rounded-full border-2 border-outline bg-neon-orange;
-    box-shadow: 0 0 10px var(--color-neon-orange);
+  .key:disabled {
+    @apply cursor-not-allowed;
   }
 
-  .eyebrow {
-    @apply mb-2 font-mono text-[11px] font-medium tracking-[.14em] text-muted;
+  /* Opción bloqueada: metal rayado, sin color */
+  .key-off {
+    --key: var(--color-hull-dark);
+    @apply text-ink/70;
+    background-image: repeating-linear-gradient(135deg, transparent 0 9px, rgb(26 32 48 / .12) 9px 18px);
   }
 
-  .notice {
-    @apply font-mono text-xs text-muted;
+  /* Tecla secundaria: metal claro */
+  .key-quiet {
+    --key: var(--color-hull-light);
   }
 
-  .notice-error {
-    @apply rounded-[10px] border-2 border-outline bg-navy px-3 py-2 font-mono text-xs text-danger;
+  /* Campo de texto con aspecto de pantalla */
+  .field {
+    @apply w-full rounded-[14px] border-[3px] border-ink bg-screen-2 px-4 py-3 text-lg text-glass placeholder:text-glass-dim/60;
+    box-shadow: inset 0 3px 0 rgb(0 0 0 / .35);
   }
 
-  .btn-primary {
-    @apply mt-2 min-h-13 cursor-pointer rounded-[14px] border-[3px] border-outline bg-amber px-[18px] font-bold whitespace-nowrap text-outline;
-    box-shadow: 0 4px 0 var(--color-outline), 0 0 16px rgb(255 168 38 / .55);
-    @apply transition duration-150 hover:bg-amber-light focus-visible:bg-amber-light focus-visible:outline-none;
-    @apply active:translate-y-1 active:shadow-none disabled:cursor-wait disabled:opacity-50;
+  .field:focus {
+    @apply border-key-orange outline-none;
   }
 
-  .btn-secondary {
-    @apply mt-[18px] min-h-11 cursor-pointer rounded-[12px] border-[3px] border-line bg-panel px-[18px] text-soft transition duration-150;
-    @apply hover:border-(--role-color) hover:text-(--role-color);
-    @apply focus-visible:border-(--role-color) focus-visible:text-(--role-color) focus-visible:outline-none;
+  /* Tornillo recortado del marco del juego, en las cuatro esquinas del aparato */
+  .screw {
+    @apply absolute block h-[15px] w-[14px] bg-contain bg-no-repeat;
+    background-image: url('./assets/screw.png');
+  }
+
+  .alert {
+    @apply rounded-[12px] border-[3px] border-ink bg-screen px-3.5 py-2.5 text-[15px] text-alert;
+  }
+
+  /*
+   * Casco del juego (game/Images/Astronauta.png) teñido del color del rol, como hace Godot con
+   * modulate: el blanco toma el color y los trazos negros siguen negros.
+   */
+  .helmet {
+    @apply inline-block shrink-0;
+    background-color: var(--helmet-color, var(--role-color));
+    background-image: url('./assets/helmet.png');
+    background-blend-mode: multiply;
+    background-size: contain;
+    mask: url('./assets/helmet.png') center / contain no-repeat;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .key {
+    transition: none;
   }
 }

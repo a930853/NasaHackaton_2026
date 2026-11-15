@@ -1,24 +1,23 @@
 <script setup>
-// Tarjeta de estado: espera, decisión registrada, resultado, sala cerrada…
+// Pantalla de estado del aparato: espera, voto enviado, resultado, sala cerrada…
+// El slot por defecto va dentro de la pantalla; "actions" (teclas) va debajo, en la carcasa.
 defineProps({
-  mark: { type: String, default: '◷' },
-  eyebrow: { type: String, default: '' },
   title: { type: String, required: true },
   text: { type: String, default: '' },
 })
 </script>
 
 <template>
-  <div class="screen-panel px-5 py-[clamp(28px,6vh,55px)] text-center" role="status" aria-live="polite">
-    <div
-      class="mx-auto mb-5 grid size-[62px] place-items-center rounded-full border-[3px] border-(--role-color) bg-panel text-[27px] text-(--role-color) shadow-[0_0_16px_var(--role-color)]"
-      aria-hidden="true"
-    >
-      {{ mark }}
+  <div class="flex flex-col gap-5">
+    <div class="screen screen-padding flex flex-col gap-3" role="status" aria-live="polite">
+      <h2 class="display text-[clamp(17px,5vw,22px)] text-(--role-color)">{{ title }}</h2>
+      <p v-if="text" class="whitespace-pre-line text-glass">{{ text }}</p>
+      <div v-if="$slots.default" class="mt-2">
+        <slot />
+      </div>
     </div>
-    <p v-if="eyebrow" class="eyebrow text-(--role-color)">{{ eyebrow }}</p>
-    <h2 class="mb-3 text-[clamp(22px,3vw,34px)] font-bold">{{ title }}</h2>
-    <p v-if="text" class="text-[15px] whitespace-pre-line text-muted">{{ text }}</p>
-    <slot />
+    <div v-if="$slots.actions" class="flex flex-col gap-4 pb-1.5">
+      <slot name="actions" />
+    </div>
   </div>
 </template>

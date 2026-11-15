@@ -7,7 +7,7 @@ import { ROLES, roleStyle } from '../roles.js'
 import { closedText, errorText } from '../messages.js'
 import ChoiceView from '../components/ChoiceView.vue'
 import CrewList from '../components/CrewList.vue'
-import ScreenHeading from '../components/ScreenHeading.vue'
+import DevicePlate from '../components/DevicePlate.vue'
 import StatusCard from '../components/StatusCard.vue'
 import EnterView from './EnterView.vue'
 import RolePicker from './RolePicker.vue'
@@ -143,9 +143,11 @@ function changeRole() {
   goTo('home', { push: true })
 }
 
-const footerText = computed(() => {
-  if (!s.code) return 'NASA · MISSION SIMULATOR'
-  return `ROOM ${s.code}${s.name ? ` · ${s.name.toUpperCase()}` : ''}`
+// Placa de arriba: con rol, quién eres; sin rol, el nombre del juego.
+const plateTitle = computed(() => (showRoleScreen.value && roleInfo.value ? roleInfo.value.name : 'Mars Mission'))
+const plateSubtitle = computed(() => {
+  if (!s.name || !s.code) return 'Crew controller'
+  return s.commander ? `${s.name}, crew commander` : s.name
 })
 
 function restart() {
@@ -160,150 +162,102 @@ function restart() {
 </script>
 
 <template>
-  <main
-    class="flex min-h-dvh flex-col overflow-x-hidden"
-    :class="!showRoleScreen && s.phase === 'lobby' ? 'fixed-mobile-screen h-dvh min-h-0 overflow-hidden' : ''"
-    :style="roleStyle(roleInfo)"
-  >
-    <p
-      v-if="s.connection === 'offline' && s.phase !== 'connecting'"
-      class="sticky top-0 z-10 border-b-[3px] border-outline bg-amber px-4 py-2.5 text-center font-mono text-xs font-medium text-outline"
-      role="status"
-    >
-      No connection to Mission Control. Reconnecting…
-    </p>
+  <main class="flex min-h-dvh flex-col justify-center py-5" :style="roleStyle(roleInfo)">
+    <div class="device">
+      <span class="screw top-2.5 left-3" aria-hidden="true" />
+      <span class="screw top-2.5 right-3" aria-hidden="true" />
+      <DevicePlate :title="plateTitle" :subtitle="plateSubtitle" :code="s.code" />
 
-    <!-- Otro dispositivo ha recuperado esta misma sesión -->
-    <section v-if="s.connection === 'replaced'" class="screen-w flex min-h-0 flex-1 flex-col justify-center py-12">
-      <StatusCard mark="⇄" eyebrow="OPENED ON ANOTHER DEVICE" title="Your session was opened on another device.">
-        <button class="btn-primary" type="button" @click="session.takeOver()">Use this device</button>
-      </StatusCard>
-    </section>
-
-    <section
-      v-else-if="s.phase === 'connecting' || s.phase === 'joining'"
-      class="screen-w flex min-h-0 flex-1 flex-col justify-center gap-[clamp(20px,6vh,56px)] py-8 md:py-12"
-    >
-      <ScreenHeading>Join the <span class="text-amber">mission</span></ScreenHeading>
-      <p class="notice text-outline" role="status">
-        Connecting to Mission Control<span class="tracking-[3px]">...</span>
+      <p v-if="s.connection === 'offline' && s.phase !== 'connecting'" class="alert" role="status">
+        Lost the link to the main screen. Trying again…
       </p>
-    </section>
 
-    <EnterView
-      v-else-if="s.phase === 'enter'"
-      :initial-code="s.prefillCode"
-      :initial-name="s.name"
-      :role="ROLES[routeRole] ?? null"
-      :message="message"
-      :busy="s.connection !== 'online'"
-      @join="join"
-    />
-
-    <section v-else-if="s.phase === 'closed'" class="screen-w flex min-h-0 flex-1 flex-col justify-center py-8 md:py-12">
-      <StatusCard mark="■" eyebrow="ROOM CLOSED" :title="closedText(s.closedReason)">
-        <button class="btn-primary" type="button" @click="restart">Back to start</button>
+      <!-- Otro dispositivo ha recuperado esta misma sesión -->
+      <StatusCard
+        v-if="s.connection === 'replaced'"
+        title="Opened somewhere else"
+        text="Your place on the crew is open on another device."
+      >
+        <template #actions>
+          <button class="key text-center" type="button" @click="session.takeOver()">Use this device</button>
+        </template>
       </StatusCard>
-    </section>
 
-    <RolePicker
-      v-else-if="!showRoleScreen"
-      :players="s.players"
-      :player-id="s.playerId"
-      :message="message"
-      @pick="pickRole"
-    />
+      <StatusCard
+        v-else-if="s.phase === 'connecting' || s.phase === 'joining'"
+        title="Connecting…"
+        text="Getting in touch with the main screen."
+      />
 
-    <section v-else class="screen-w flex min-h-0 flex-1 flex-col overflow-hidden" aria-labelledby="role-title">
-      <header class="hull-plate mt-[clamp(14px,3vh,30px)] flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3">
-          <!-- Casco del color del rol, como los astronautas del juego -->
-          <span
-            class="size-10 shrink-0 rounded-full border-[3px] border-outline bg-(--role-color) shadow-[inset_-5px_-5px_0_rgb(26_32_48/.25)]"
-            aria-hidden="true"
-          />
-          <div>
-            <p class="mb-0.5 font-mono text-[11px] font-medium tracking-[.14em] text-outline/75">
-              YOUR MISSION<span v-if="s.commander"> · COMMANDER</span>
-            </p>
-            <h1 id="role-title" class="text-[clamp(28px,4.5vw,50px)] leading-[.98] font-bold tracking-[-.04em]">
-              {{ roleInfo.name }}
-            </h1>
-          </div>
-        </div>
-        <span class="rounded-[10px] border-[3px] border-outline bg-navy px-2.5 py-1.5 font-mono text-xs tracking-[.15em] text-neon-cyan">
-          {{ s.code }}
-        </span>
-      </header>
+      <EnterView
+        v-else-if="s.phase === 'enter'"
+        :initial-code="s.prefillCode"
+        :initial-name="s.name"
+        :role="ROLES[routeRole] ?? null"
+        :message="message"
+        :busy="s.connection !== 'online'"
+        @join="join"
+      />
 
-      <p v-if="message" class="notice-error mt-4" role="alert">{{ message }}</p>
+      <StatusCard v-else-if="s.phase === 'closed'" title="Room closed" :text="closedText(s.closedReason)">
+        <template #actions>
+          <button class="key text-center" type="button" @click="restart">Join another room</button>
+        </template>
+      </StatusCard>
 
-      <div v-if="s.phase === 'lobby'" class="mt-[clamp(16px,3vh,32px)]">
-        <StatusCard
-          v-if="s.role !== activeRole"
-          mark="…"
-          eyebrow="SAVING YOUR ROLE"
-          title="Saving your place on the crew"
-        />
-        <StatusCard
-          v-else
-          mark="✓"
-          eyebrow="ROLE SAVED"
-          title="Waiting for Mission Control to start"
-          text="Look at the main screen: the mission starts when the whole crew is ready."
-        >
-          <CrewList class="mx-auto mt-6 text-left" :players="s.players" :player-id="s.playerId" />
-          <button class="btn-secondary" type="button" @click="changeRole">Change role</button>
-        </StatusCard>
-      </div>
+      <RolePicker
+        v-else-if="!showRoleScreen"
+        :players="s.players"
+        :player-id="s.playerId"
+        :message="message"
+        @pick="pickRole"
+      />
 
-      <template v-else>
-        <ChoiceView
-          v-if="s.view?.screen === 'choice' && !decided"
-          :view="s.view"
-          :choice="s.choice"
-          @choose="session.choose"
-        />
-        <div v-else class="mt-[clamp(16px,3vh,32px)]">
+      <section v-else class="flex flex-1 flex-col gap-5" aria-label="Your mission">
+        <p v-if="message" class="alert" role="alert">{{ message }}</p>
+
+        <template v-if="s.phase === 'lobby'">
+          <StatusCard v-if="s.role !== activeRole" title="Saving your job…" />
           <StatusCard
-            v-if="!s.view"
-            eyebrow="MISSION RUNNING"
-            title="The mission is starting"
-            text="Watch the main screen."
-          />
-          <StatusCard
-            v-else-if="decided"
-            mark="✓"
-            eyebrow="CHOICE SAVED"
-            title="Your choice reached Mission Control."
-            text="Waiting for the rest of the crew…"
-          />
-          <StatusCard
-            v-else-if="s.view.screen === 'result'"
-            class="mission-status-card"
-            mark="★"
-            eyebrow="RESULT"
-            :title="s.view.title || 'Result'"
-            :text="s.view.text"
+            v-else
+            title="You are in!"
+            text="The mission starts when the whole crew is ready. Look at the main screen."
           >
-            <button
-              v-if="s.view.canContinue !== false"
-              class="role-change-button"
-              type="button"
-              :disabled="s.continueStatus === 'sending'"
-              @click="session.continueMission()"
-            >
-              <span>{{ s.continueStatus === 'sending' ? 'Waiting…' : 'Continue' }}</span>
-            </button>
+            <CrewList :players="s.players" :player-id="s.playerId" />
+            <template #actions>
+              <button class="key key-quiet text-center" type="button" @click="changeRole">Change job</button>
+            </template>
           </StatusCard>
-          <StatusCard v-else eyebrow="PLEASE WAIT" :title="s.view.title || 'Waiting…'" :text="s.view.text" />
-        </div>
-      </template>
-    </section>
+        </template>
 
-    <footer class="screen-w flex items-center gap-2 pt-[18px] pb-6 font-mono text-[10px] font-medium tracking-[.08em] text-dim">
-      <span class="hud-light h-2.5 w-2.5" aria-hidden="true" />
-      <span>{{ footerText }}</span>
-    </footer>
+        <template v-else>
+          <ChoiceView
+            v-if="s.view?.screen === 'choice' && !decided"
+            :view="s.view"
+            :choice="s.choice"
+            @choose="session.choose"
+          />
+          <StatusCard v-else-if="!s.view" title="Lift-off!" text="The mission is starting. Watch the main screen." />
+          <StatusCard v-else-if="decided" title="Vote sent!" text="Waiting for the rest of the crew…" />
+          <StatusCard v-else-if="s.view.screen === 'result'" :title="s.view.title || 'Result'" :text="s.view.text">
+            <template v-if="s.view.canContinue !== false" #actions>
+              <button
+                class="key text-center"
+                type="button"
+                :disabled="s.continueStatus === 'sending'"
+                :aria-pressed="s.continueStatus === 'sending'"
+                @click="session.continueMission()"
+              >
+                {{ s.continueStatus === 'sending' ? 'Waiting for the crew…' : 'Continue' }}
+              </button>
+            </template>
+          </StatusCard>
+          <StatusCard v-else :title="s.view.title || 'Please wait'" :text="s.view.text" />
+        </template>
+      </section>
+
+      <span class="screw bottom-2.5 left-3" aria-hidden="true" />
+      <span class="screw right-3 bottom-2.5" aria-hidden="true" />
+    </div>
   </main>
 </template>
