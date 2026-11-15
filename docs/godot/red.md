@@ -319,6 +319,10 @@ Al resolver:
 
 - Preset **Web** en `game/export_presets.cfg` → `../dist/game/index.html`. `thread_support=false`, así que **no hacen falta cabeceras COOP/COEP** y Nginx se mantiene simple.
 - Godot 4 web **solo arranca en un contexto seguro** (HTTPS o `localhost`). Por eso el despliegue sirve todo por HTTPS y el WebSocket es `wss://` (lo deduce `_server_url()` de `location.protocol`). Ver [../deploy.md](../deploy.md).
+- **Pantalla de carga propia** (sustituye a la de Godot): un cohete en pixel art sale de la Tierra, pasa por la Luna y llega a Marte según avanza la descarga; al terminar aterriza y la pantalla se funde con el juego. Es una plantilla web propia: el preset Web usa `html/custom_html_shell="res://web/loading_shell.html"` (y `exclude_filter="web/*"` para que no vaya dentro del `.pck`). Los ficheros:
+  - `game/web/loading_shell.template.html`: la plantilla, que se **edita a mano**. Conserva los marcadores `$GODOT_...` de Godot y el arranque (`engine.startGame`, `onProgress`, avisos de error).
+  - `tools/build_loading_shell.py`: mete en la plantilla, como data URI, las imágenes `tierra.png`, `luna.png`, `Marte.png` y `Cohete.png` de `game/Images/` y la fuente, y genera `game/web/loading_shell.html`. **Hay que ejecutarlo tras cambiar la plantilla o esas imágenes y antes de exportar.**
+  - Para ver la animación sin esperar a una descarga lenta, servir `dist/game/` en `localhost` y abrir `index.html?fakeload=10` (10 s de carga simulada). El viaje dura como mínimo unos 3 s aunque el juego cargue al instante.
 - Exportad siempre a `dist/game/` antes de levantar Docker (`npm run docker:local`).
 - `JavaScriptBridge` y `OS.has_feature("web")` solo funcionan en la exportación web. Protegedlo con `OS.has_feature("web")` para poder seguir probando desde el editor.
 - Todos los recursos (fuentes, audio, imágenes) deben ir dentro del `.pck`; la demo no puede depender de Internet. Ojo con la llamada a la API de NASA de `main.gd`: tiene que fallar con gracia si no hay conexión.

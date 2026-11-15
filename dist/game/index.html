@@ -4,7 +4,20 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
 		<title>NasaSimuladorMision</title>
+		<!--
+			Plantilla web propia de Godot con pantalla de carga: un cohete sale de la Tierra, pasa por la Luna y
+			llega a Marte según avanza la descarga. Sustituye a la pantalla de carga de Godot.
+			NO se edita game/web/loading_shell.html (se genera): se edita ESTE fichero y se ejecuta
+			`python tools/build_loading_shell.py`, que le mete las imágenes (Tierra, Luna, Marte y cohete) y la fuente.
+			Los marcadores @@...@@ los sustituye ese script; los $GODOT_... los sustituye Godot al exportar.
+			Para probar la animación sin esperar a la descarga: abrir la página con ?fakeload=8 (segundos).
+		-->
 		<style>
+@font-face {
+	font-family: 'MissionFont';
+	src: url(data:font/woff2;base64,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) format('woff2');
+}
+
 html, body, #canvas {
 	margin: 0;
 	padding: 0;
@@ -26,68 +39,176 @@ body {
 	outline: none;
 }
 
-#status, #status-splash, #status-progress {
+/* ---------- Pantalla de carga ---------- */
+
+#status {
+	position: fixed;
+	inset: 0;
+	z-index: 10;
+	overflow: hidden;
+	background: radial-gradient(ellipse at 50% 35%, #1b2a55 0%, #0b1330 55%, #050816 100%);
+	font-family: 'MissionFont', 'Courier New', monospace;
+	transition: opacity 0.6s ease;
+}
+
+#status.leaving {
+	opacity: 0;
+	pointer-events: none;
+}
+
+.star {
+	position: absolute;
+	background: #fff;
+	animation: twinkle 2.4s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+	0%, 100% { opacity: 0.25; }
+	50% { opacity: 1; }
+}
+
+#route {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+#route path {
+	fill: none;
+	stroke: rgba(160, 200, 255, 0.35);
+	stroke-width: 3;
+	stroke-dasharray: 2 14;
+	stroke-linecap: square;
+}
+
+.planet {
+	position: absolute;
+	image-rendering: pixelated;
+	transform: translate(-50%, -50%);
+	filter: drop-shadow(0 0 14px rgba(150, 200, 255, 0.25));
+}
+
+#mars.arrived {
+	animation: arrive 1.1s ease-out;
+}
+
+@keyframes arrive {
+	0% { filter: drop-shadow(0 0 0 rgba(255, 150, 60, 0)); transform: translate(-50%, -50%) scale(1); }
+	35% { filter: drop-shadow(0 0 40px rgba(255, 170, 70, 0.95)); transform: translate(-50%, -50%) scale(1.12); }
+	100% { filter: drop-shadow(0 0 18px rgba(255, 150, 60, 0.55)); transform: translate(-50%, -50%) scale(1); }
+}
+
+.planet-label {
+	position: absolute;
+	transform: translate(-50%, 0);
+	font-size: 13px;
+	letter-spacing: 0.12em;
+	color: rgba(190, 215, 255, 0.7);
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+#rocket {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 24px;
+	height: 40px;
+	margin: -20px 0 0 -12px;
+	transform-origin: 12px 20px;
+	will-change: transform;
+}
+
+#rocket-sprite {
+	width: 24px;
+	height: 40px;
+	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAoCAYAAAC4h3lxAAABvklEQVR4nO2YMUvDQBSA3z0zSSlBpHTu4CSOIghSHHSTjo4ZHIs4dHSSjplKcc5PcHWRUnSpk/6ACCJSRCVocZOTS6VYSNJ3vTubK/0gXHq59+Wad3e5FoBIYbnEw/UtHpTXuDinxpn2I1X+eXQYn++srkC76MZ1Cv3V5keq/OGqN6rT+SUKin5SBvIMyj4dnVkoaPDPdwZsgKVdEKnrvz1nBvfunuLyYHcTBl8vqS6TfgTLQbAch9rQu1wa+xzsf2vtiDelH6nyxjbER9oNVfAU/FJDyL8Bo/hT+NHmzs/FJEZKo6QJpXMSBwp+8iqke9XR5UewHEx7zd9XKmSJ7K5Upx/Bcpjq0xF0X9/jsv4RTdzU6fY7lEBTdDX4WdbTKd1ek7a7j7W9UV1WFkz4ESyHZY3NjTCMy3rjNDG47TeHZdEdq0/Kgik/guXgtCuDzLpt0u9MaixS1fabPO2a6p9bA0X/2BxIEoiSe2UONRegejy80GkBXETAgj6bFGva76TdUAZKrCk/guU4lEYilRyAQ/W34k96dcAU/OTfA/9CpyUdYv0QkoJH51wckCMcqdYnZ5A3cNYdWLAAZssPw5Eac77Vz/UAAAAASUVORK5CYII=);
+	background-size: 48px 40px;
+	background-repeat: no-repeat;
+	image-rendering: pixelated;
+	animation: flame 0.24s steps(1) infinite;
+}
+
+@keyframes flame {
+	0% { background-position: 0 0; }
+	50% { background-position: -24px 0; }
+}
+
+.trail {
+	position: absolute;
+	width: 6px;
+	height: 6px;
+	margin: -3px 0 0 -3px;
+	background: #ffcf5a;
+	opacity: 0.9;
+	animation: trail-fade 0.8s linear forwards;
+}
+
+@keyframes trail-fade {
+	0% { opacity: 0.9; transform: scale(1); background: #ffcf5a; }
+	40% { background: #ff7a2a; }
+	100% { opacity: 0; transform: scale(0.3); background: #6a2a20; }
+}
+
+#title {
+	position: absolute;
+	top: 7%;
+	left: 0;
+	right: 0;
+	text-align: center;
+	font-size: clamp(22px, 5vw, 54px);
+	letter-spacing: 0.08em;
+	color: #ffe9b0;
+	text-shadow: 0 3px 0 #000, 0 0 24px rgba(255, 190, 90, 0.35);
+}
+
+#bottom {
 	position: absolute;
 	left: 0;
 	right: 0;
+	bottom: 8%;
+	text-align: center;
 }
 
-#status, #status-splash {
-	top: 0;
-	bottom: 0;
+#phase {
+	font-size: clamp(14px, 2.2vw, 22px);
+	letter-spacing: 0.1em;
+	color: #cfe3ff;
+	text-shadow: 0 2px 0 #000;
 }
 
-#status {
-	background-color: #242424;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	visibility: hidden;
-}
-
-#status-splash {
-	max-height: 100%;
-	max-width: 100%;
-	margin: auto;
-}
-
-#status-splash.show-image--false {
-	display: none;
-}
-
-#status-splash.fullsize--true {
-	height: 100%;
-	width: 100%;
-	object-fit: contain;
-}
-
-#status-splash.use-filter--false {
-	image-rendering: pixelated;
-}
-
-#status-progress, #status-notice {
-	display: none;
-}
-
-#status-progress {
-	bottom: 10%;
-	width: 50%;
-	margin: 0 auto;
+#percent {
+	margin-top: 10px;
+	font-size: clamp(12px, 1.6vw, 16px);
+	letter-spacing: 0.2em;
+	color: #7fa6e6;
 }
 
 #status-notice {
+	display: none;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	max-width: min(90vw, 640px);
 	background-color: #5b3943;
 	border-radius: 0.5rem;
 	border: 1px solid #9b3943;
 	color: #e0e0e0;
 	font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
 	line-height: 1.3;
-	margin: 0 2rem;
 	overflow: hidden;
 	padding: 1rem;
 	text-align: center;
-	z-index: 1;
+	z-index: 2;
+}
+
+#status.failed #scene,
+#status.failed #title,
+#status.failed #bottom {
+	display: none;
 }
 		</style>
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
@@ -104,40 +225,207 @@ body {
 		</noscript>
 
 		<div id="status">
-			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png" alt="">
-			<progress id="status-progress"></progress>
+			<div id="stars"></div>
+			<div id="scene">
+				<svg id="route" xmlns="http://www.w3.org/2000/svg"><path id="route-path" d=""></path></svg>
+				<img id="earth" class="planet" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAF0SURBVFhHtZTBTcRQDERTBhKcuNEFBVACLXGjAjpAVLENbANc6GLRBpy15884dqJYGmkV/Zl539L+aerPZUWHzVxwf7oE3X19L5o+fg6BocUS4F+Pny+7IdLiDOBabtq6jaEI5YtVOQEpzRyIhais/On8GtSBWEKxcGt5F6IFoMoZSAUg3AxLqwD226sKUQLI1t8RQoTgDgAGV3UIgG0Evz+8P89SALMBARSEAvDlDAQBPMRyuAOARUq4BQ+yCsAg2O3DrQQAgxgA1iD8NyxGMZDNACgrYQ8NCiEMJAAwA5aacK3qxWOZ6E0BlDCcPb14RvkDgDdjqQpAkApAkH8LLGTN5IPZf5sJM7CcbkEaxX9bwaA3BUCIwQQQCMBAgu/tdBMABAgZQGTnGECn3Ca/AZEHSH2F8usMNxmCEgDpKd7eZljpbMTQKkCz3CaEhhABMKzfe5rlNn8mDCIwabnl7JixuKqdxX5uN8ESlD970GAJqjW/baoQzFaPSbsAAAAASUVORK5CYII=" alt="Earth">
+				<img id="moon" class="planet" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGASURBVFhHtZSLrYNADARTGtXQAIVQBKVQ2Hsy0qJl8P0IsbSCHMYzwCmfz3j9NfKzOgD7vlfzC5kucJZvJbrA27al55AYFrkNaiXgmYAyIpEOrgG0zuvTNB0ZkbgNZAgtRfB5no/0SlwAtbQkHN4rUAX7cK5l1+NIeEviBnWQXqm+aUmC97KvJFG8WXB/nZRgXCpbTwXYpN+ES6Alkc3SOQUuDRxOeO9baMUlzkV/2jiPNYI9rwvwCbP1N55euQlEBPG1dV0vAhz0NKlAJIA6+jn7eqKNyA0ZuQgQJLhHN/bK+KbOPtspQFAthGSJPoeXPt8jAZfIztUzIvBIgsBSXKAErwrEk3DtSRxeFFiW5XL0zcOBjO90XlNqAodEgB3OPx4OdDh3O3tacNUhwI0jCQ5VHK6wR/ulBo8aFsiA2ZokWgJRpwRFYog+kcMI0jp7e+Cqi4SGcZMq/tv7nsJVx00a6HFoBvdoDoeP1G1ob74Fe51PQgjjvRzyVhHCDNU/L8b96SYU74kAAAAASUVORK5CYII=" alt="Moon">
+				<img id="mars" class="planet" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAG2SURBVFhHtZYxUsMwEEVzAjqaFLR09FwgfRoqOg7CBeAO9BnOwTk4iRkJr/j6u38thWRn/kxi7/7/rMh2drv5WjZ0taoBzw83qa4BMxQc6b8Q1eDtcFvF5qM6dzVaMIsDTFlf+T4D0Rl9Pu2d+TkqPiMQ3cByOlaVzywO4LCodwSiDdXw749fnY7L18tdVWSchWPvFkAL6MInIew49+I5BdEaZgCUrNf6GZAh3KCDAIBRLa/3DYAhQgBnsG7CqtVsVKWfARACAeLw1WBEao49DYYhHEAX8P74p+h7Ig43AINoANzERl1oBpCciyAkgINBQ9gTUgJEAtgBDm8AGL7eFdznehFkawUUQESfAbjZBMBtwgyCj2G/mo3gJQA/pdgsC1X9CsD63bMA3+mRIUsFZ+E2x+HhKvDgiDCYw3G1JEAUzKYqoPXC41uFRwAVgq+eA/G+ZvPaH7zAOFiFWzmIDoZuK7yyIgVgwfAnVZYzdStC93V3XgAYxAhAqTYgIcQeaBCwBxBgJNyq+80YIhKDIfxsuFUd2oLgYJP1mw+bz5SDiECS8ItUuxKEiGCwl00uVRzCmqofrpq783D9DYkAAAAASUVORK5CYII=" alt="Mars">
+				<div id="label-earth" class="planet-label">Earth</div>
+				<div id="label-moon" class="planet-label">Moon</div>
+				<div id="label-mars" class="planet-label">Mars</div>
+				<div id="rocket"><div id="rocket-sprite"></div></div>
+			</div>
+			<div id="title">MARS MISSION</div>
+			<div id="bottom">
+				<div id="phase">Launching from Earth</div>
+				<div id="percent">0%</div>
+			</div>
 			<div id="status-notice"></div>
 		</div>
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":18606008,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":18606816,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
 (function () {
 	const statusOverlay = document.getElementById('status');
-	const statusProgress = document.getElementById('status-progress');
 	const statusNotice = document.getElementById('status-notice');
 
-	let initializing = true;
-	let statusMode = '';
+	// ------------------------------------------------------------------ Pantalla de carga: cohete
+	const MAX_SPEED = 0.34;         // trayecto completo por segundo como máximo (mínimo ~3 s de viaje)
+	const DOWNLOAD_SHARE = 0.9;     // la descarga llena hasta el 90 %; el 10 % final es arrancar el juego
+	const LANDING_SECONDS = 0.8;
+	const FINISH_PAUSE_MS = 700;
+	const TRAIL_EVERY_MS = 45;
+	const FAKE_SECONDS = parseFloat(new URLSearchParams(location.search).get('fakeload')) || 0;
 
-	function setStatusMode(mode) {
-		if (statusMode === mode || !initializing) {
-			return;
+	const $ = (id) => document.getElementById(id);
+	const earth = $('earth'), moon = $('moon'), mars = $('mars');
+	const rocket = $('rocket'), phaseText = $('phase'), percentText = $('percent'), scene = $('scene');
+
+	let W = 0, H = 0, scale = 1, path = null;
+	let shown = 0;                  // lo que se ve (0 a 1): el cohete persigue al progreso real
+	let downloadProgress = 0;       // 0 a 1, de la descarga real
+	let indeterminate = false;
+	let started = false;            // el juego ya está en marcha
+	let landing = -1;               // -1: aún no; 0 a 1: aterrizando
+	let finished = false;
+	let lastFrame = performance.now();
+	let lastTrail = 0;
+	const t0 = performance.now();
+
+	function buildStars() {
+		const holder = $('stars');
+		holder.textContent = '';
+		for (let i = 0; i < 90; i++) {
+			const star = document.createElement('div');
+			const size = Math.random() < 0.15 ? 3 : 2;
+			star.className = 'star';
+			star.style.cssText = 'left:' + (Math.random() * 100).toFixed(2) + '%;top:' + (Math.random() * 100).toFixed(2) +
+				'%;width:' + size + 'px;height:' + size + 'px;animation-delay:' + (Math.random() * 2.4).toFixed(2) + 's';
+			holder.appendChild(star);
 		}
-		if (mode === 'hidden') {
-			statusOverlay.remove();
-			initializing = false;
-			return;
-		}
-		statusOverlay.style.visibility = 'visible';
-		statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
-		statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
-		statusMode = mode;
 	}
 
+	function placePlanet(img, label, cx, cy, blocks) {
+		const size = 32 * blocks;
+		img.style.width = size + 'px';
+		img.style.height = size + 'px';
+		img.style.left = cx + 'px';
+		img.style.top = cy + 'px';
+		label.style.left = cx + 'px';
+		label.style.top = (cy + size / 2 + 8) + 'px';
+		return size / 2;
+	}
+
+	function layout() {
+		W = window.innerWidth;
+		H = window.innerHeight;
+		const block = Math.max(2, Math.min(6, Math.round(W / 240)));
+		scale = Math.max(2, Math.min(4, Math.round(Math.min(W, H * 1.5) / 420)));
+		const ex = W * 0.14, ey = H * 0.66;
+		const mx = W * 0.5, my = H * 0.4;
+		const rx = W * 0.86, ry = H * 0.66;
+		const er = placePlanet(earth, $('label-earth'), ex, ey, block);
+		const mr = placePlanet(moon, $('label-moon'), mx, my, Math.max(2, block - 2));
+		const rr = placePlanet(mars, $('label-mars'), rx, ry, Math.max(2, block - 1));
+
+		// Salida: sobre el borde de la Tierra. Paso: justo encima de la Luna. Llegada: sobre el borde de Marte.
+		const start = { x: ex + er * 0.7, y: ey - er * 0.7 };
+		const pass = { x: mx + mr * 0.15, y: my - mr - 18 * scale };
+		const end = { x: rx - rr * 0.7, y: ry - rr * 0.7 };
+		// Puntos de control a la altura del paso: la trayectoria sube en arco, pasa por la Luna en horizontal
+		// y baja hacia Marte, sin picos.
+		const c1 = { x: pass.x - (pass.x - start.x) * 0.5, y: pass.y };
+		const c2 = { x: pass.x + (end.x - pass.x) * 0.5, y: pass.y };
+		path = { start, pass, end, c1, c2, mars: { x: rx, y: ry }, marsRadius: rr };
+
+		$('route-path').setAttribute('d', 'M' + start.x + ' ' + start.y + ' Q' + c1.x + ' ' + c1.y + ' ' + pass.x + ' ' + pass.y +
+			' Q' + c2.x + ' ' + c2.y + ' ' + end.x + ' ' + end.y);
+	}
+
+	function bezier(p0, c, p1, u) {
+		const a = (1 - u) * (1 - u), b = 2 * (1 - u) * u, d = u * u;
+		return {
+			x: a * p0.x + b * c.x + d * p1.x,
+			y: a * p0.y + b * c.y + d * p1.y,
+			dx: 2 * (1 - u) * (c.x - p0.x) + 2 * u * (p1.x - c.x),
+			dy: 2 * (1 - u) * (c.y - p0.y) + 2 * u * (p1.y - c.y),
+		};
+	}
+
+	function pointAt(t) {
+		if (t <= 0.5) {
+			return bezier(path.start, path.c1, path.pass, t * 2);
+		}
+		return bezier(path.pass, path.c2, path.end, (t - 0.5) * 2);
+	}
+
+	function phaseFor(t) {
+		if (landing >= 0) return 'Welcome to Mars!';
+		if (t < 0.3) return 'Launching from Earth';
+		if (t < 0.58) return 'Passing the Moon';
+		return 'Flying to Mars';
+	}
+
+	function spawnTrail(x, y, angle, now) {
+		if (now - lastTrail < TRAIL_EVERY_MS) return;
+		lastTrail = now;
+		const back = 20 * scale;      // un poco detrás de la tobera
+		const dot = document.createElement('div');
+		dot.className = 'trail';
+		dot.style.left = (x - Math.cos(angle) * back + (Math.random() - 0.5) * 6) + 'px';
+		dot.style.top = (y - Math.sin(angle) * back + (Math.random() - 0.5) * 6) + 'px';
+		scene.appendChild(dot);
+		setTimeout(() => dot.remove(), 850);
+	}
+
+	function frame(now) {
+		if (finished) return;
+		const dt = Math.min((now - lastFrame) / 1000, 0.1);
+		lastFrame = now;
+
+		// Objetivo: lo que lleva descargado (o un avance lento si no se sabe el total)
+		let progress = downloadProgress;
+		if (FAKE_SECONDS > 0) {
+			progress = Math.min(1, (now - t0) / 1000 / FAKE_SECONDS);
+		} else if (indeterminate) {
+			progress = Math.min(0.9, (now - t0) / 1000 * 0.05);
+		}
+		const canFinish = started && (FAKE_SECONDS <= 0 || (now - t0) / 1000 >= FAKE_SECONDS);
+		const target = canFinish ? 1 : progress * DOWNLOAD_SHARE;
+
+		if (shown < target) {
+			const speed = Math.min(MAX_SPEED, Math.max((target - shown) * 3, 0.05));
+			shown = Math.min(target, shown + speed * dt);
+		}
+
+		let x, y, angle, rocketScale = scale, opacity = 1;
+		const p = pointAt(Math.min(shown, 1));
+		x = p.x; y = p.y;
+		angle = Math.atan2(p.dy, p.dx);
+
+		if (shown >= 0.999 && landing < 0) {
+			landing = 0;
+			mars.classList.add('arrived');
+		}
+		if (landing >= 0) {
+			landing = Math.min(1, landing + dt / LANDING_SECONDS);
+			const ease = landing * landing * (3 - 2 * landing);
+			x = path.end.x + (path.mars.x - path.end.x) * ease;
+			y = path.end.y + (path.mars.y - path.end.y) * ease;
+			rocketScale = scale * (1 - 0.75 * ease);
+			opacity = 1 - ease;
+			if (landing >= 1 && !finished) {
+				finished = true;
+				percentText.textContent = '100%';
+				setTimeout(leave, FINISH_PAUSE_MS);
+			}
+		} else {
+			spawnTrail(x, y, angle, now);
+		}
+
+		rocket.style.opacity = opacity;
+		rocket.style.transform = 'translate(' + x + 'px,' + y + 'px) rotate(' + (angle + Math.PI / 2) + 'rad) scale(' + rocketScale + ')';
+		phaseText.textContent = phaseFor(shown);
+		percentText.textContent = Math.floor(Math.min(shown, 1) * 100) + '%';
+		requestAnimationFrame(frame);
+	}
+
+	function leave() {
+		statusOverlay.classList.add('leaving');
+		setTimeout(() => statusOverlay.remove(), 700);
+	}
+
+	buildStars();
+	layout();
+	window.addEventListener('resize', layout);
+	requestAnimationFrame(frame);
+
+	// ------------------------------------------------------------------ Avisos de error (como la plantilla de Godot)
 	function setStatusNotice(text) {
 		while (statusNotice.lastChild) {
 			statusNotice.removeChild(statusNotice.lastChild);
@@ -158,10 +446,12 @@ const engine = new Engine(GODOT_CONFIG);
 		} else {
 			setStatusNotice('An unknown error occurred.');
 		}
-		setStatusMode('notice');
-		initializing = false;
+		finished = true;
+		statusOverlay.classList.add('failed');
+		statusNotice.style.display = 'block';
 	}
 
+	// ------------------------------------------------------------------ Arranque del juego
 	const missing = Engine.getMissingFeatures({
 		threads: GODOT_THREADS_ENABLED,
 	});
@@ -198,19 +488,17 @@ const engine = new Engine(GODOT_CONFIG);
 			displayFailureNotice(missingMsg + missing.join('\n'));
 		}
 	} else {
-		setStatusMode('progress');
 		engine.startGame({
 			'onProgress': function (current, total) {
 				if (current > 0 && total > 0) {
-					statusProgress.value = current;
-					statusProgress.max = total;
+					indeterminate = false;
+					downloadProgress = Math.min(1, current / total);
 				} else {
-					statusProgress.removeAttribute('value');
-					statusProgress.removeAttribute('max');
+					indeterminate = true;
 				}
 			},
 		}).then(() => {
-			setStatusMode('hidden');
+			started = true;
 		}, displayFailureNotice);
 	}
 }());
