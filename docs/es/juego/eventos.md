@@ -4,10 +4,11 @@
 
 Todos los eventos de la partida. Las reglas generales (votación, roles, ayuda de la Tierra…) están en [diseno.md](diseno.md).
 
-- **Las cifras son las de [`game/Data/events.json`](../../../game/Data/events.json).** Si cambiáis un evento, cambiadlo allí y aquí.
+- **Las cifras de abajo son las del diseño original.** Los valores actuales están en [`game/Data/events.json`](../../../game/Data/events.json); si no coinciden, manda el JSON.
 - **Quién:** «Todos» es votación general; un rol significa que solo ese rol puede elegir la opción (y solo aparece si ese rol está en la partida).
 - **Sol+N:** el efecto se aplica N Sols después.
-- Cada evento lleva su `id` de `events.json` para encontrarlo rápido.
+- Cada evento lleva su `id` del diseño original. En `events.json` algunos cambiaron o desaparecieron (por ejemplo, `sensor-failure` es ahora `sensor-dust`, y `solar-storm` no existe: lo sustituye `rt-solar-flare`).
+- **Comandante (`generalist`):** en el diseño original el rol `generalist` se llamaba Comandante. En la versión entregada ese rol es el Generalista, y el Comandante es el primer jugador en entrar (ver [diseno.md](diseno.md)).
 
 ## Índice
 
@@ -23,7 +24,7 @@ Todos los eventos de la partida. Las reglas generales (votación, roles, ayuda d
 ## Eventos aleatorios
 
 ### Tormenta de radiación solar
-`solar-storm` · **Fuente NASA de diseño:** DONKI, eyección de masa coronal (CME); la partida no consulta ese endpoint
+`solar-storm` (no está en la versión entregada; ver [Alerta solar en tiempo real](#alerta-solar-en-tiempo-real)) · **Fuente NASA de diseño:** DONKI, eyección de masa coronal (CME); la partida no consulta ese endpoint
 
 > Los sensores detectan una CME acercándose a Marte. Hay que proteger a la tripulación antes de que llegue la radiación.
 
@@ -58,13 +59,13 @@ Todos los eventos de la partida. Las reglas generales (votación, roles, ayuda d
 **Dato real:** un estudio de la NASA vio que la bacteria *L. rhamnosus* GG puede modular la respuesta del intestino humano a la radiación espacial.
 
 ### Niebla mental y aislamiento
-`mental-fog` · **Condición:** a partir del Sol 5, o antes si «Barrigas espaciales» está pendiente · **Fuente NASA:** OSDR, efectos del vuelo espacial en el cerebro humano (organoides cerebrales), DOI 10.26030/twtb-sc40
+`mental-fog` · **Condición:** a partir del Sol 5 (en la versión entregada, Sol 4), o antes si «Barrigas espaciales» está pendiente · **Fuente NASA:** OSDR, efectos del vuelo espacial en el cerebro humano (organoides cerebrales), DOI 10.26030/twtb-sc40
 
 > Lleváis muchos Sols viendo solo rocas rojas. En la Tierra se ha estudiado que el aislamiento y el vuelo espacial afectan al cerebro. El equipo está triste, despistado y discute por todo.
 
 | Opción | Quién | Efectos | Resultado |
 |---|---|---|---|
-| Torneo de videojuegos y música | Comandante (`generalist`) | +20 Salud, −10 Energía | La Comandante subió la moral del equipo. ¡Risas en Marte! |
+| Torneo de videojuegos y música | Comandante (`generalist`) | +20 Salud, −10 Energía | El Comandante subió la moral del equipo. ¡Risas en Marte! |
 | Ejercicios de memoria y relajación | Médico | +15 Salud, −5 Energía | El Médico ayudó a entrenar vuestros cerebros contra el estrés espacial. |
 | Ignorarlo y trabajar en silencio | Todos | −10 Salud · Sol+1: −5 Integridad | Al estar distraídos, alguien pulsó un botón equivocado y dañó un panel. |
 
@@ -92,13 +93,15 @@ Todos los eventos de la partida. Las reglas generales (votación, roles, ayuda d
 | Reprogramar los paneles para que se sacudan | Ingeniero | −10 Energía · Sol+1: +15 Energía, +5 Integridad | El Ingeniero los hizo vibrar para soltar el polvo. Gasta batería hoy, pero ahorra trabajo mañana. |
 | Racionar la electricidad | Todos | +10 Energía, −10 Salud, −5 Integridad (el frío daña las tuberías) | Sobrevivisteis con lo justo, pero hace frío en la base y las tuberías sufren. |
 
+En la versión entregada, la tercera opción es «esperar a que pase la tormenta» (`wait-it-out`): +5 Energía, −5 Integridad y una tormenta de polvo que resta 10 de Energía cada mañana durante 2 Sols.
+
 **Dato real:** Opportunity siguió funcionando años porque el viento limpió sus paneles. Vosotros no podéis esperar al viento.
 
 ---
 
 ## Objetivo: red de sensores sísmicos (InSight)
 
-Hay que fabricar y colocar 3 sensores. **Si están colocados antes del Sol 20**, el terremoto avisa con un Sol de antelación (S4 con aviso); si no, llega sin avisar.
+Hay que fabricar y colocar 3 sensores. **Si están colocados antes del Sol 20**, el terremoto avisa con un Sol de antelación (S4 con aviso); si no, llega sin avisar. En la versión entregada el plazo es el Sol 13 (`SEISMIC_DEADLINE_SOL`) y el terremoto con aviso llega 1 o 2 Sols después de completar la red.
 
 ### S1. Fabricar los 3 sensores
 `sensors-fabricate` · **Condición:** objetivo activo, hasta el Sol 17 · **Fuente NASA:** InSight, sismómetro SEIS (aterrizó en 2018 para escuchar los «terremotos marcianos»)
@@ -109,7 +112,7 @@ Hay que fabricar y colocar 3 sensores. **Si están colocados antes del Sol 20**,
 |---|---|---|---|
 | Imprimirlos con la impresora 3D | Ingeniero | −25 Energía · 3 sensores fabricados | El Ingeniero imprimió los tres sensores pieza a pieza. Funcionan perfecto. |
 | Reciclar piezas del rover viejo | Todos | −10 Integridad, −5 Energía · 3 sensores fabricados | Desmontasteis el rover viejo. Sensores listos, aunque la base perdió piezas útiles. |
-| Montarlos con cinta americana | Todos | −10 Energía · 3 sensores fabricados, pero **uno fallará**: provoca S3 en los 3 Sols siguientes | No es bonito, pero con suficiente cinta todo se sujeta… de momento. |
+| Montarlos con cinta americana | Todos | −10 Energía · 3 sensores fabricados, pero **uno fallará**: provoca S3 en los 3 Sols siguientes (en la versión entregada, 1 o 2 Sols después) | No es bonito, pero con suficiente cinta todo se sujeta… de momento. |
 
 ### S2. Salir a colocar los 3 sensores
 `sensors-place` · **Condición:** S1 completado · **Fuente NASA:** InSight, despliegue del sismómetro con el brazo robótico
@@ -123,7 +126,7 @@ Hay que fabricar y colocar 3 sensores. **Si están colocados antes del Sol 20**,
 | Dos salidas en dos Sols | Todos | −20 Energía, −15 Oxígeno · 2 colocados · Sol+1: −10 Energía, −10 Oxígeno, el 3.º colocado | Salisteis en dos turnos para respirar entre medias. Más lento, pero más seguro. |
 
 ### S3. Sensor tapado por polvo
-`sensor-failure` · **Condición:** lo provoca «cinta americana» en S1 · **Fuente NASA:** el polvo acumulado limitó la operación de InSight
+`sensor-failure` (en `events.json`: `sensor-dust`) · **Condición:** lo provoca «cinta americana» en S1 · **Fuente NASA:** el polvo acumulado limitó la operación de InSight
 
 > Uno de los sensores ya no manda datos. Una capa de polvo lo cubre o el cable se ha soltado. Si lo dejáis, ya no cuenta.
 
@@ -133,10 +136,12 @@ Hay que fabricar y colocar 3 sensores. **Si están colocados antes del Sol 20**,
 | Reprogramarlo a distancia | Ingeniero | −5 Energía | El Ingeniero activó el limpiaparabrisas y recuperó la conexión. |
 | Dejarlo y fabricar otro | Todos | −1 sensor colocado y fabricado; vuelve a abrirse S1 | Lo abandonasteis. |
 
+En la versión entregada, dejarlo solo resta 1 sensor colocado (`sensors_placed` −1): S1 no se reabre y basta con volver a colocar el que falta (S2).
+
 ### S4. ¡Terremoto marciano!
 **Emergencia: 20 s para elegir** · **Fuente NASA:** InSight detectó más de 1.300 sismos, de hasta magnitud 5
 
-**Con aviso** (`quake-warned`, red completa antes del Sol 20):
+**Con aviso** (`quake-warned`, red completa antes del Sol 20; en la versión entregada, antes del Sol 13):
 
 > ¡Alerta de la red sísmica! Se detecta un sismo a punto de llegar a la base. Tenéis un Sol para prepararos.
 
@@ -145,7 +150,7 @@ Hay que fabricar y colocar 3 sensores. **Si están colocados antes del Sol 20**,
 | Reforzar la estructura | Ingeniero | −10 Energía, Integridad intacta | Gracias al aviso, el Ingeniero reforzó los puntos débiles antes del temblor. |
 | Evacuar a la zona segura | Todos | −5 Oxígeno, −5 Energía, Integridad intacta | Todos estaban a salvo cuando llegó el temblor. |
 
-**Sin aviso** (`quake-unwarned`, a partir del Sol 8 si la red no estaba completa a tiempo):
+**Sin aviso** (`quake-unwarned`, a partir del Sol 8 si la red no estaba completa a tiempo; en la versión entregada, a partir del Sol 14):
 
 > El suelo tiembla sin avisar. La base cruje y hay daños. Sin red de sensores no hubo tiempo de prepararse.
 
@@ -157,7 +162,7 @@ Hay que fabricar y colocar 3 sensores. **Si están colocados antes del Sol 20**,
 
 ## Objetivo: generador de oxígeno MOXIE
 
-MOXIE se monta en **3 fases** (33 + 33 + 34 %). Al llegar al 100 % desaparece el consumo pasivo de Oxígeno por Sol (−4 hoy; ver [diseno.md](diseno.md#equilibrio-de-la-dificultad)).
+MOXIE se monta en **3 fases** (33 + 33 + 34 %). Al llegar al 100 % desaparece el consumo pasivo de Oxígeno por Sol (−3 en la versión entregada, `PASSIVE_OXYGEN_LOSS` en `game_state.gd`; ver [diseno.md](diseno.md#equilibrio-de-la-dificultad)).
 
 ### M1. Primera fase
 `moxie-phase-1` · **Condición:** objetivo activo · **Fuente NASA:** MOXIE, instrumento del rover Perseverance; en 2021 produjo oxígeno a partir del CO₂ marciano
@@ -203,7 +208,7 @@ Sin elección, solo celebración: **elimina el consumo pasivo de oxígeno**. *«
 
 ## Eventos especiales
 
-Aún no están en `events.json` como eventos: las reglas de la ayuda están en el bloque `earth_help`.
+La ayuda de la Tierra no es un evento de `events.json`: sus opciones están en `TurnManager.EARTH_HELP_OPTIONS` (`game/Scripts/turn_manager.gd`) y la espera entre peticiones en `GameState.EARTH_HELP_COOLDOWN_SOLS`. La alerta solar sí es un evento: `rt-solar-flare`.
 
 ### Pedir ayuda a la Tierra
 **Fuente NASA:** retraso de las comunicaciones Tierra–Marte (4 a 24 minutos por mensaje) y operaciones del Control de Misión · **API prevista, no conectada:** JPL Horizons (distancia del día)
@@ -212,11 +217,11 @@ Aún no están en `events.json` como eventos: las reglas de la ayuda están en e
 
 | Opción | Quién | Efectos | Resultado |
 |---|---|---|---|
-| Enviar el informe completo | Comandante | −5 Energía (antena a máxima potencia). Respuesta rápida. | La Comandante transmitió todos los datos. Houston lo tiene claro y ya ha preparado una solución. |
+| Enviar el informe completo | Comandante | −5 Energía (antena a máxima potencia). Respuesta rápida. | El Comandante transmitió todos los datos. Houston lo tiene claro y ya ha preparado una solución. |
 | Enviar un mensaje rápido | Todos | Sin coste. Respuesta lenta. | El mensaje salió corto y sin detalles. Houston responderá lo que pueda. |
 | Cancelar y decidir vosotros | Todos | Vuelve el evento normal; no se puede pedir ayuda sobre él ese Sol. | — |
 
-Una vez por Sol. En la versión entregada la Tierra devuelve una pista y tarda 1 o 2 Sols (ver [decisiones de diseño](diseno.md#decisiones-de-diseño)).
+En el diseño original, una vez por Sol. En la versión entregada solo hay dos opciones (informe completo: −5 Energía, respuesta en 1 Sol; mensaje rápido: gratis, respuesta en 2 Sols), se puede pedir una vez cada 4 Sols y la respuesta trae la pista del evento (`earth_hint`) (ver [decisiones de diseño](diseno.md#decisiones-de-diseño)).
 
 ### Alerta solar en tiempo real
 **API activa:** DONKI `/DONKI/FLR`; `/DONKI/CME` no se consulta. La partida busca llamaradas M/X de los últimos 3 días al iniciarse.
@@ -231,5 +236,6 @@ Durante ese Sol y el siguiente no se puede pedir ayuda a la Tierra y hay que pro
 |---|---|---|
 | Batidos con probióticos | Bióloga | −5 Oxígeno, +5 Salud |
 | Escudos | Ingeniero | −10 Energía |
+| Refugiarse en la sala central (`shelter`) | Todos | −5 Salud, −5 Energía |
 
-Ojo: las dos opciones son de rol. Hace falta una opción de votación general para cuando no estén ni la Bióloga ni el Ingeniero (ver [roles](diseno.md#roles)).
+La opción general `shelter` (`rt-solar-flare` en `events.json`) garantiza que se pueda resolver aunque no estén ni la Bióloga ni el Ingeniero (ver [roles](diseno.md#roles)).

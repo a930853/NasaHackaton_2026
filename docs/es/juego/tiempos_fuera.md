@@ -1,14 +1,14 @@
 # Sistema de Disponibilidad de la Tripulación y Tiempos por Tarea
 
-Este documento define cómo gestionar el tiempo que tarda cada personaje (Ingeniero, Bióloga, Médico y Comandante) en realizar sus acciones dentro de una partida de **20 Sols**, así como el comportamiento del juego cuando todos los miembros están fuera de la base.
+Este documento define cómo gestionar el tiempo que tarda cada personaje (Ingeniero, Bióloga, Médico y Generalista) en realizar sus acciones dentro de una partida de **20 Sols**, así como el comportamiento del juego cuando todos los miembros están fuera de la base.
 
 ---
 
 ## 1. Regla Principal: Ocupación y Base Vacía
 
 * **Bloqueo por tarea:** Cuando un jugador elige una opción asignada a su rol (o una salida conjunta), ese personaje queda marcado como **Ocupado / Fuera de la base** durante un número determinado de Sols (`0`, `1` o `2`).
-* **Imposibilidad de selección:** Mientras un personaje tenga `sols_ocupado > 0`, no puede ser seleccionado para resolver opciones exclusivas de su rol en turnos posteriores.
-* **Regla de Base Vacía:** Al inicio de un nuevo Sol, el sistema comprueba cuántos personajes tienen `sols_ocupado == 0`. Si **los 4 personajes están ocupados (`disponibles == 0`)**, no hay nadie en la base para recibir o gestionar problemas: **no se genera ningún evento ese día**, se aplica el consumo diario normal y el turno avanza automáticamente al siguiente Sol con un mensaje informativo.
+* **Imposibilidad de selección:** Mientras un personaje esté fuera (tiene entrada en `GameState.crew_away`, que guarda el Sol en que vuelve), no puede ser seleccionado para resolver opciones exclusivas de su rol en turnos posteriores.
+* **Regla de Base Vacía:** Al inicio de un nuevo Sol, el sistema comprueba quién está en la base. Si **los 4 personajes están ocupados (`GameState.base_is_empty()`)**, no hay nadie en la base para recibir o gestionar problemas: **no se genera ningún evento ese día** y se aplica el consumo diario normal. El turno no avanza solo: la pantalla muestra «The base is empty!» en fase de resolución, con el Sol en que vuelve la tripulación, y se espera a pulsar *Continue* (`TurnManager._empty_base_day()`).
 
 ---
 
@@ -18,7 +18,7 @@ Dado que la partida dura **20 Sols**, las duraciones están equilibradas entre `
 
 | Rol | Tarea Instantánea (`0 Sols`) | Tarea Estándar (`1 Sol`) | Expedición / Tarea Larga (`2 Sols`) |
 | :--- | :--- | :--- | :--- |
-| **Comandante** | Comunicaciones rápidas y envío de informes a la Tierra. | Gestión de moral, protocolos de emergencia y organización de turnos. | *No tiene tareas de 2 Sols (siempre supervisa el mando).* |
+| **Generalista** (`generalist`) | Comunicaciones rápidas y envío de informes a la Tierra. | Gestión de moral, protocolos de emergencia y organización de turnos. | *No tiene tareas de 2 Sols (siempre supervisa el mando).* |
 | **Médico** | Aplicar botiquín de primeros auxilios o tratamientos rápidos. | Terapias cognitivas, relajación y seguimiento médico profundo. | *No tiene tareas de 2 Sols (permanece en enfermería).* |
 | **Bióloga** | *Sus procesos biológicos requieren al menos 1 Sol.* | Preparación de batidos probióticos, racionamiento y reparto horario de luz. | Cultivo intensivo de cosechas y ciclos completos de laboratorio. |
 | **Ingeniero** | *Sus reparaciones requieren al menos 1 Sol.* | Operaciones remotas desde consola (telemetría, luces, vibración de paneles, impresión 3D). | Salidas extravehiculares (EVA) largas: colocar sensores sísmicos o ensamblar fases pesadas de MOXIE. |
@@ -37,8 +37,8 @@ Dado que la partida dura **20 Sols**, las duraciones están equilibradas entre `
   * Opción 1 (Bióloga - Batidos probióticos): `1 Sol` ocupada
   * Opción 2 (Médico - Botiquín estándar): `0 Sols`
   * Opción 3 (General - Posponer): `0 Sols`
-* **E3 (Niebla Mental):**
-  * Opción 1 (Comandante - Torneo videojuegos): `1 Sol` ocupado
+* **E3 (Niebla Mental; en el juego, «The Space Blues»):**
+  * Opción 1 (Generalista - Torneo videojuegos): `1 Sol` ocupado
   * Opción 2 (Médico - Ejercicios de memoria): `1 Sol` ocupado
   * Opción 3 (General - Ignorarlo): `0 Sols`
 * **E4 (Rover Atrapado):**
@@ -76,14 +76,14 @@ Dado que la partida dura **20 Sols**, las duraciones están equilibradas entre `
 * **M2 (MOXIE vs Invernadero):**
   * Opción 1 (General - Priorizar MOXIE): `0 Sols`
   * Opción 2 (Bióloga - Horarios compartidos): `1 Sol` ocupada
-  * Opción 3 (Comandante - Apagar laboratorio): `1 Sol` ocupado
+  * Opción 3 (Generalista - Apagar laboratorio): `1 Sol` ocupado
 * **M3 (Fallo en el filtro):**
   * Opción 1 (General EVA - Limpiar a mano): `1 Sol` **todos ocupados**
   * Opción 2 (Ingeniero - Cambiar filtro): `1 Sol` ocupado
   * Opción 3 (General - Ignorar): `0 Sols`
 
 ### Especiales
-* **Pedir ayuda a la Tierra:** `0 Sols` (tanto para Comandante como para Votación General).
+* **Pedir ayuda a la Tierra:** `0 Sols` (con cualquiera de las dos opciones: informe completo o mensaje rápido).
 * **Alerta Solar (DONKI):** `1 Sol` ocupado para el rol elegido (Bióloga o Ingeniero).
 
 ---
