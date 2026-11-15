@@ -26,5 +26,6 @@ mono_crash.*.json
 
 node_modules
 
-# Build del mando (Vite)
+# Builds de Vite (mando y landing)
 dist/controller/
+dist/landing/

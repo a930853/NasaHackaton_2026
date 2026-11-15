@@ -7,6 +7,7 @@ import tailwindcss from '@tailwindcss/vite'
 const backendPort = process.env.BACKEND_PORT || 3000
 
 // El mando se sirve en /controller/ (Nginx en producción, Vite en desarrollo).
+// En `npm run dev` se entra por el Vite de la landing (landing/vite.config.js), que reenvía /controller aquí.
 export default defineConfig({
   base: '/controller/',
   plugins: [vue(), tailwindcss()],

@@ -61,14 +61,28 @@ text = "Jezero Crater, Mars"
 label_settings = ExtResource("2_title")
 horizontal_alignment = 1
 
-[node name="BodyLabel" type="RichTextLabel" parent="Margin/VBox"]
-unique_name_in_owner = true
+[node name="Content" type="HBoxContainer" parent="Margin/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_font_sizes/normal_font_size = 20
-theme_override_font_sizes/bold_font_size = 20
+theme_override_constants/separation = 24
+
+[node name="BodyLabel" type="RichTextLabel" parent="Margin/VBox/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 3.0
+theme_override_font_sizes/normal_font_size = 19
+theme_override_font_sizes/bold_font_size = 19
 bbcode_enabled = true
 text = "Page text"
+
+[node name="ImageColumn" type="VBoxContainer" parent="Margin/VBox/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 2.0
+theme_override_constants/separation = 12
+alignment = 1
 
 [node name="Footer" type="HBoxContainer" parent="Margin/VBox"]
 layout_mode = 2

@@ -153,7 +153,7 @@ function leaveRoom() {
 }
 
 // Placa de arriba: con rol, quién eres; sin rol, el nombre del juego.
-const plateTitle = computed(() => (showRoleScreen.value && roleInfo.value ? roleInfo.value.name : 'Mars Mission'))
+const plateTitle = computed(() => (showRoleScreen.value && roleInfo.value ? roleInfo.value.name : 'Red Planet Survivors'))
 const plateSubtitle = computed(() => {
   if (!s.name || !s.code) return 'Crew controller'
   return s.commander ? `${s.name}, crew commander` : s.name

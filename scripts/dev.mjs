@@ -1,4 +1,7 @@
-// Entorno de desarrollo: backend + mando (Vite) con un solo comando (`npm run dev`).
+// Entorno de desarrollo con un solo comando (`npm run dev`): backend, mando (Vite) y landing (Vite).
+//
+// Se entra por la landing (http://localhost:5173/): reenvía /controller al Vite del mando y /ws al
+// backend, y sirve /game/ desde dist/game, así que todo sale del mismo origen, como en producción.
 //
 // - Busca puertos libres: en Windows, Hyper-V/WSL a veces reservan el 3000.
 // - Activa el log de mensajes del backend (LOG_MESSAGES=1). Para quitarlo: LOG_MESSAGES=0.
@@ -19,6 +22,7 @@ const tags = {
   dev: color('90')('[dev]       '),
   backend: color('36')('[backend]   '),
   controller: color('32')('[controller]'),
+  landing: color('35')('[landing]   '),
 }
 const say = (tag, text) => console.log(`${tags[tag]} ${text}`)
 
@@ -74,7 +78,7 @@ process.on('SIGTERM', () => shutdown(0))
 
 // ---------- arranque ----------
 
-for (const dir of ['backend', 'controller']) {
+for (const dir of ['backend', 'controller', 'landing']) {
   if (!existsSync(join(root, dir, 'node_modules'))) {
     say('dev', `Faltan dependencias en ${dir}/. Ejecuta "npm install" en la raíz.`)
     process.exit(1)
@@ -84,7 +88,8 @@ for (const dir of ['backend', 'controller']) {
 const preferred = Number(process.env.PORT) || 3000
 const backendPort = await freePort([preferred, 8787, 0])
 if (backendPort !== preferred) say('dev', `El puerto ${preferred} no está disponible; el backend usará el ${backendPort}.`)
-const controllerPort = await freePort([5173, 5174, 5175, 0])
+const landingPort = await freePort([5173, 5175, 5177, 0])
+const controllerPort = await freePort([5174, 5176, 5178, 0])
 
 run('backend', ['--watch', 'src/server.js'], {
   cwd: join(root, 'backend'),
@@ -97,5 +102,11 @@ run('controller', [join(root, 'controller', 'node_modules', 'vite', 'bin', 'vite
   env: { BACKEND_PORT: String(backendPort) },
 })
 
-say('dev', `Backend:  http://localhost:${backendPort}  (WebSocket en ws://localhost:${backendPort}/ws)`)
-say('dev', `Mando:    http://localhost:${controllerPort}/controller/  (desde el móvil, con la IP del PC)`)
+run('landing', [join(root, 'landing', 'node_modules', 'vite', 'bin', 'vite.js'), '--port', String(landingPort), '--strictPort'], {
+  cwd: join(root, 'landing'),
+  env: { BACKEND_PORT: String(backendPort), CONTROLLER_PORT: String(controllerPort) },
+})
+
+say('dev', `Entrada:  http://localhost:${landingPort}/  (landing; /game/ sirve la última exportación de dist/game)`)
+say('dev', `Mando:    http://localhost:${landingPort}/controller/  (desde el móvil, con la IP del PC)`)
+say('dev', `Backend:  http://localhost:${backendPort}  (WebSocket en /ws a través de la entrada)`)

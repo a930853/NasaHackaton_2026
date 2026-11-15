@@ -18,20 +18,23 @@ controller/        Mando web: Vue 3 + Vite + Tailwind 4 (JS). Compila a ../dist/
   src/net/socket.js       Único punto que toca el WebSocket
   src/stores/session.js   Estado de la sesión e interpretación de mensajes
   src/views/, components/ Pantallas (solo leen el estado y llaman acciones)
-landing/           Página de inicio "/" (crear partida o entrar con código)
+landing/           Página de inicio "/": Vue 3 + Vite + Tailwind 4 (JS). Compila a ../dist/landing/
+  src/components/IntroView.vue    portada (qué es el juego)
+  src/components/SlidingDoor.vue  puerta lateral con crear partida y unirse con el móvil
 backend/
   src/server.js    HTTP (/api/health) + WebSocket (/ws), enrutado de mensajes
   src/rooms.js     Modelo en memoria: salas, jugadores, roles, tokens
   src/protocol.js  Tipos de mensaje y validación de entrada
   package.json
   Dockerfile
-deploy/web.Dockerfile     Imagen web: compila el mando y copia landing/ y dist/<GAME_EXPORT>/
+deploy/web.Dockerfile     Imagen web: compila el mando y la landing y copia dist/<GAME_EXPORT>/
 deploy/nginx/default.conf Nginx de la app por HTTP: estáticos y proxy de /ws y /api
 deploy/tls/               Solo local: proxy HTTPS con certificado autofirmado (volumen `certs`)
 scripts/dev.mjs    `npm run dev`: arranca backend y mando con puertos libres y log de mensajes
 dist/game/         Exportación web de Godot (generada, se versiona: re-exportar tras cambiar game/)
 dist/game_debug/   Exportación web de game_debug (generada, se versiona)
 dist/controller/   Build del mando (generado, no se versiona)
+dist/landing/      Build de la landing (generado, no se versiona)
 compose.yaml       Despliegue principal (Internet, Coolify): `web` (Nginx) y `backend` (Node), sin puertos. Sirve dist/game
 compose.local.yaml En local: añade `tls` (HTTPS autofirmado en 80/443)
 compose.dev.yaml   En local, desarrollo: GAME_EXPORT=game_debug y LOG_MESSAGES=1
@@ -48,7 +51,7 @@ El lobby y las pantallas por rol son **estados internos del mando**, no aplicaci
 
 | Ruta | Qué sirve |
 |---|---|
-| `/` | `landing/` |
+| `/` | `dist/landing/` (la landing) |
 | `/game/` | `dist/game/` (Godot) |
 | `/controller/` y `/controller/?room=K7MP` | `dist/controller/` (precarga el código del QR) |
 | `/controller/<engineer\|biologist\|doctor\|generalist>` | Mismo mando, entrando directamente a ese rol (NFC). Nginx con *fallback* a `index.html` |
@@ -83,7 +86,7 @@ Los clientes construyen la URL del WebSocket a partir de `location` (`ws(s)://<h
 ```bash
 # Todo desde la raíz (Node ≥ 22)
 npm install                                   # instala también backend/ y controller/
-npm run dev                                   # backend + mando, con LOG_MESSAGES=1 (mensajes en bruto)
+npm run dev                                   # backend + mando + landing; se entra por la landing (:5173): / , /controller/, /game/ (dist/game) y /ws
 npm test                                      # tests de backend y mando
 
 # Backend en local (sin Docker)

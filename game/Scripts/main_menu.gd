@@ -13,6 +13,8 @@ const MODE_BOX_WIDTH: float = 580.0        # ancho de la pregunta (se parte en d
 const MODE_BUTTON_WIDTH: float = 440.0
 const LOBBY_FONT_SIZE: int = 16           # texto de los botones del lobby (más estrecho que el del menú)
 const QR_SIZE: float = 186.0              # lado del QR del lobby en pantalla
+const CREDITS_WIDTH: float = 900.0
+const CREDITS_HEIGHT: float = 620.0
 
 @onready var mainButtons: Control = $MenuButtons
 @onready var lobby: Control = $Lobby
@@ -26,6 +28,7 @@ var _local_button: Button        # en el lobby: pasar a jugar solo (p. ej. si no
 var _back_button: Button         # en el lobby: volver a la elección de modo
 var _qr_box: VBoxContainer       # en el lobby: QR con la dirección del mando para los móviles
 var _qr_rect: TextureRect
+var _credits: Control
 var _starting: bool = false
 
 
@@ -39,6 +42,7 @@ func _ready() -> void:
 
 	_build_mode_box()
 	_build_qr_box()
+	_build_credits()
 
 	# Botones del lobby: todos con el estilo azul del menú (MenuStyle).
 	MenuStyle.apply(start_expedition_button, LOBBY_FONT_SIZE)
@@ -185,6 +189,120 @@ func _on_local_pressed() -> void:
 
 func _on_options_button_pressed() -> void:
 	options.visible = true
+
+
+func _on_credits_button_pressed() -> void:
+	mainButtons.visible = false
+	_credits.visible = true
+
+
+func _on_credits_back_pressed() -> void:
+	_credits.visible = false
+	mainButtons.visible = true
+
+
+func _build_credits() -> void:
+	_credits = Control.new()
+	_credits.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_credits.mouse_filter = Control.MOUSE_FILTER_STOP
+	_credits.visible = false
+	add_child(_credits)
+
+	var shade := ColorRect.new()
+	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	shade.color = Color(0.0, 0.0, 0.0, 0.9)
+	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_credits.add_child(shade)
+
+	var content := VBoxContainer.new()
+	content.set_anchors_preset(Control.PRESET_CENTER)
+	content.offset_left = -CREDITS_WIDTH / 2.0
+	content.offset_right = CREDITS_WIDTH / 2.0
+	content.offset_top = -CREDITS_HEIGHT / 2.0
+	content.offset_bottom = CREDITS_HEIGHT / 2.0
+	content.add_theme_constant_override("separation", 12)
+	content.alignment = BoxContainer.ALIGNMENT_CENTER
+	_credits.add_child(content)
+
+	var title := RichTextLabel.new()
+	title.bbcode_enabled = true
+	title.fit_content = true
+	title.scroll_active = false
+	title.custom_minimum_size.y = 58.0
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_override("normal_font", MenuStyle.FONT)
+	title.add_theme_font_size_override("normal_font_size", 28)
+	title.text = "[center][color=#ffffff]RED PLANET SURVIVORS[/color][/center]"
+	content.add_child(title)
+
+	var subtitle := RichTextLabel.new()
+	subtitle.bbcode_enabled = true
+	subtitle.fit_content = true
+	subtitle.scroll_active = false
+	subtitle.custom_minimum_size.y = 40.0
+	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle.add_theme_font_override("normal_font", MenuStyle.FONT)
+	subtitle.add_theme_font_size_override("normal_font_size", 14)
+	subtitle.text = "[center][color=#ffd933]A project by Sticky Bit Triggers[/color]\n[color=#d9d9e3]for the NASA Space Apps Challenge Zaragoza[/color][/center]"
+	content.add_child(subtitle)
+
+	var text := RichTextLabel.new()
+	text.bbcode_enabled = true
+	text.fit_content = true
+	text.scroll_active = false
+	text.custom_minimum_size.y = 390.0
+	text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	text.add_theme_font_override("normal_font", MenuStyle.FONT)
+	text.add_theme_font_size_override("normal_font_size", 14)
+	text.text = """[center]
+[color=#66e680][font_size=17]GAME ENGINE DEVELOPMENT (GODOT)[/font_size][/color]
+Hector Manzano Miranda
+Javier Martínez Virto
+
+[color=#66e680][font_size=17]BACKEND ARCHITECTURE & CONTROLLER (NODE.JS & VUE)[/font_size][/color]
+Robert Sebastian Visu
+Rodrigo Herce Alonso
+
+[color=#66e680][font_size=17]USER INTERFACE DESIGN (UI/UX)[/font_size][/color]
+Javier Martínez Virto
+Robert Sebastian Visu
+
+[color=#66e680][font_size=17]NARRATIVE DESIGN & EVENT IMPLEMENTATION[/font_size][/color]
+Mijayl Mandzyak Melnyk
+Razvan Ghita Calangiu
+
+[color=#66e680][font_size=17]MUSIC & SOUND DESIGN[/font_size][/color]
+Hector Manzano Miranda
+
+[color=#66e680][font_size=17]QUALITY ASSURANCE & TESTING[/font_size][/color]
+Hector Manzano Miranda · Mijayl Mandzyak Melnyk
+Razvan Ghita Calangiu · Rodrigo Herce Alonso
+[/center]"""
+	content.add_child(text)
+
+	var footer := RichTextLabel.new()
+	footer.bbcode_enabled = true
+	footer.fit_content = true
+	footer.scroll_active = false
+	footer.custom_minimum_size.y = 36.0
+	footer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	footer.add_theme_font_override("normal_font", MenuStyle.FONT)
+	footer.add_theme_font_size_override("normal_font_size", 13)
+	footer.text = "[center][color=#ffffff]20 Sols · 4 Astronauts · One Single Decision[/color]\n[color=#ffd933]Sticky Bit Triggers · Zaragoza, 2026[/color][/center]"
+	content.add_child(footer)
+
+	var back := Button.new()
+	back.text = "Back"
+	back.custom_minimum_size = Vector2(220.0, 64.0)
+	back.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	MenuStyle.apply(back, 18)
+	back.pressed.connect(_on_credits_back_pressed)
+	content.add_child(back)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if _credits != null and _credits.visible and event.is_action_pressed("ui_cancel"):
+		_on_credits_back_pressed()
 
 
 # ---------------------------------------------------------------- Red

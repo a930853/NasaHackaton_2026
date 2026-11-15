@@ -5,6 +5,7 @@
 **/.godot
 **/.gitkeep
 dist/controller
+dist/landing
 backend
 docs
 game
