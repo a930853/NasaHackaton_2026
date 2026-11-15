@@ -112,6 +112,7 @@ test('el primer jugador recibe la capacidad de Comandante y puede elegir rol', a
 test('el primer jugador conserva su comandante al elegir un rol principal', async () => {
   const { code } = await host();
   const first = await player(code, 'Ana');
+  await first.p.next('lobby_state'); // lobby inicial, todavía sin rol
   first.p.send({ type: 'select_role', role: 'engineer' });
   const lobby = await first.p.next('lobby_state');
   const mine = lobby.players.find((p) => p.id === first.joined.playerId);
