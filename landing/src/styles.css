@@ -27,14 +27,9 @@
 @layer base {
   :root {
     color-scheme: dark;
-    /* Canto de la puerta: ancho en PC (borde derecho) y alto en el móvil (borde de abajo) */
-    --hatch-w: 68px;
-    --hatch-h: 76px;
     --door-time: 520ms;
-  }
-
-  @media (width < 48rem) {
-    :root { --hatch-w: 0px; }
+    /* Móvil: alto de la barra gris (el canto de la puerta) que asoma abajo */
+    --hatch-h: 76px;
   }
 
   body {
@@ -90,14 +85,14 @@
 
   /* Pantalla con bisel: las mismas que el mando */
   .screen {
-    @apply rounded-[22px] border-3 border-ink bg-screen p-[26px] text-glass;
+    @apply rounded-[22px] border-3 border-ink bg-screen p-[26px] text-glass max-md:rounded-[18px] max-md:p-4;
     box-shadow: inset 0 0 0 5px var(--color-hull-light), inset 0 0 0 8px var(--color-ink), inset 0 0 30px rgb(77 184 255 / .14);
   }
 
   /* Tecla: color sólido (--key), contorno y sombra dura que desaparece al pulsar */
   .key {
     --key: var(--color-energy);
-    @apply block w-full cursor-pointer rounded-2xl border-3 border-ink bg-(--key) px-[18px] py-[15px] text-center text-[19px] leading-snug font-bold text-ink no-underline;
+    @apply block w-full cursor-pointer rounded-2xl border-3 border-ink bg-(--key) px-[18px] py-[15px] text-center text-[19px] leading-snug font-bold text-ink no-underline max-md:py-3 max-md:text-[17px];
     box-shadow: 0 6px 0 var(--color-ink), inset 0 3px 0 rgb(255 255 255 / .35);
     transition: transform 80ms ease-out, box-shadow 80ms ease-out, filter 120ms;
   }
@@ -117,7 +112,7 @@
   }
 
   .field {
-    @apply mt-1.5 block w-full rounded-[14px] border-3 border-ink bg-screen-2 px-4 py-3 font-display text-[22px] tracking-[.18em] text-glass uppercase placeholder:text-glass-dim/45;
+    @apply mt-1.5 block w-full rounded-[14px] border-3 border-ink bg-screen-2 px-4 py-3 font-display text-[22px] max-md:py-2.5 max-md:text-[19px] tracking-[.18em] text-glass uppercase placeholder:text-glass-dim/45;
     box-shadow: inset 0 3px 0 rgb(0 0 0 / .35);
   }
 
