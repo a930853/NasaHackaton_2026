@@ -8,9 +8,8 @@ extends Control
 const ART_NORMAL: String = "res://Images/Evento.png"
 const ART_PRESSED: String = "res://Images/Evento_pulsado.png"
 const ART_PIXELS: float = 32.0              # lado del pixel art original
-const GROW: float = 1.3                     # cuánto más grande que el botón se dibuja
+const GROW: float = 1.4                     # cuánto más grande que el botón se dibuja
 const HOVER_TINT: Color = Color(1.15, 1.1, 1.1)
-const LABEL: String = "EVENT"
 const LABEL_COLOR: Color = Color(1.0, 0.95, 0.9)
 const LABEL_SHADOW: Color = Color(0.25, 0.02, 0.05)
 const FALLBACK_RED: Color = Color(0.84, 0.12, 0.15)
@@ -68,14 +67,7 @@ func _draw() -> void:
 	else:
 		# Si la imagen aún no está importada, un círculo rojo evita dejar un hueco.
 		draw_circle(box.get_center(), side * 0.38, FALLBACK_RED)
-
-	# Etiqueta sobre la tapa del botón
-	var font: Font = ThemeDB.fallback_font
-	var font_size: int = clampi(int(side * 0.16), 11, 28)
-	var label_y: float = box.position.y + (17.0 if pressed else 15.0) * unit + float(font_size) * 0.4
-	draw_string(font, Vector2(1.0, label_y + 1.0), LABEL, HORIZONTAL_ALIGNMENT_CENTER, size.x, font_size, LABEL_SHADOW)
-	draw_string(font, Vector2(0.0, label_y), LABEL, HORIZONTAL_ALIGNMENT_CENTER, size.x, font_size, LABEL_COLOR)
-
+	
 	if alert:
 		_draw_exclamation(box, unit)
 

@@ -1,17 +1,10 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://cn3cpbs4gnocq"]
 
-[ext_resource type="Script" path="res://Scripts/main_ui.gd" id="1_mainui"]
-[ext_resource type="Script" path="res://Scripts/mars_view.gd" id="2_mars"]
-[ext_resource type="Script" path="res://Scripts/glossary_view.gd" id="3_glossary"]
-[ext_resource type="Texture2D" path="res://Images/hud_frame.png" id="4_frame"]
-[ext_resource type="Script" path="res://Scripts/crew_panel.gd" id="6_crew"]
-[ext_resource type="LabelSettings" uid="uid://d4nqt6gbcthqp" path="res://TextFonts/Subtitulo.tres" id="5_title"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dim"]
-bg_color = Color(0, 0, 0, 0.58)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_screen"]
-bg_color = Color(0.04, 0.07, 0.12, 1)
+[ext_resource type="Script" uid="uid://dbpkvyd54kwe7" path="res://Scripts/main_ui.gd" id="1_mainui"]
+[ext_resource type="Script" uid="uid://688gxm70ml8u" path="res://Scripts/mars_view.gd" id="2_mars"]
+[ext_resource type="Script" uid="uid://d4nu4h30kcwew" path="res://Scripts/glossary_view.gd" id="3_glossary"]
+[ext_resource type="Texture2D" uid="uid://c4s1oejvjm10u" path="res://Images/hud_frame.png" id="4_frame"]
+[ext_resource type="Script" uid="uid://e5c8bk6rssqt" path="res://Scripts/crew_panel.gd" id="6_crew"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_timer"]
 font_size = 26
@@ -25,7 +18,10 @@ font_color = Color(0.7, 1, 0.8, 1)
 outline_size = 5
 outline_color = Color(0, 0, 0, 1)
 
-[node name="MainUI" type="Control"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_screen"]
+bg_color = Color(0.04, 0.07, 0.12, 1)
+
+[node name="MainUI" type="Control" unique_id=83195144]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -34,7 +30,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_mainui")
 
-[node name="Backdrop" type="ColorRect" parent="."]
+[node name="Backdrop" type="ColorRect" parent="." unique_id=1948162967]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -44,15 +40,14 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0.03, 0.04, 0.07, 1)
 
-[node name="MarsWindow" type="Control" parent="."]
+[node name="MarsWindow" type="Control" parent="." unique_id=1202045743]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 0
 mouse_filter = 2
 script = ExtResource("2_mars")
 
-
-[node name="TimerLabel" type="Label" parent="MarsWindow"]
+[node name="TimerLabel" type="Label" parent="MarsWindow" unique_id=1221123442]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -64,12 +59,11 @@ offset_top = 14.0
 offset_right = 160.0
 offset_bottom = 50.0
 grow_horizontal = 2
-mouse_filter = 2
 text = "Hurry up! 20 s"
 label_settings = SubResource("LabelSettings_timer")
 horizontal_alignment = 1
 
-[node name="ToastLabel" type="Label" parent="MarsWindow"]
+[node name="ToastLabel" type="Label" parent="MarsWindow" unique_id=990562342]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 10
@@ -77,72 +71,64 @@ anchor_right = 1.0
 offset_top = 56.0
 offset_bottom = 84.0
 grow_horizontal = 2
-mouse_filter = 2
 text = "New word"
 label_settings = SubResource("LabelSettings_toast")
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="RightScreen" type="PanelContainer" parent="."]
+[node name="RightScreen" type="PanelContainer" parent="." unique_id=122116086]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_screen")
 
-[node name="ScreenMargin" type="MarginContainer" parent="RightScreen"]
+[node name="ScreenMargin" type="MarginContainer" parent="RightScreen" unique_id=464917084]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 8
 
-[node name="ScreenVBox" type="VBoxContainer" parent="RightScreen/ScreenMargin"]
+[node name="ScreenVBox" type="VBoxContainer" parent="RightScreen/ScreenMargin" unique_id=619240354]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="Header" type="VBoxContainer" parent="RightScreen/ScreenMargin/ScreenVBox"]
+[node name="Header" type="VBoxContainer" parent="RightScreen/ScreenMargin/ScreenVBox" unique_id=1625351163]
 layout_mode = 2
 theme_override_constants/separation = 2
 
-[node name="HeaderRow" type="HBoxContainer" parent="RightScreen/ScreenMargin/ScreenVBox/Header"]
+[node name="HeaderRow" type="HBoxContainer" parent="RightScreen/ScreenMargin/ScreenVBox/Header" unique_id=1640983191]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="SolLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Header/HeaderRow"]
+[node name="SolLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Header/HeaderRow" unique_id=425113448]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 20
 text = "Sol 1 / 20"
 
-
-[node name="DebugOptionsButton" type="Button" parent="RightScreen/ScreenMargin/ScreenVBox/Header/HeaderRow"]
+[node name="DebugOptionsButton" type="Button" parent="RightScreen/ScreenMargin/ScreenVBox/Header/HeaderRow" unique_id=1072151615]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
 theme_override_font_sizes/font_size = 10
 text = "Phone (debug)"
 
-
-
-
-[node name="DebugFlareButton" type="Button" parent="RightScreen/ScreenMargin/ScreenVBox/Header/HeaderRow"]
+[node name="DebugFlareButton" type="Button" parent="RightScreen/ScreenMargin/ScreenVBox/Header/HeaderRow" unique_id=1043366535]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
 theme_override_font_sizes/font_size = 10
 text = "Flare (debug)"
 
-
-[node name="ObjectivesLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Header"]
+[node name="ObjectivesLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Header" unique_id=1480831685]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "Goals"
 autowrap_mode = 3
 
-
-[node name="ConditionsLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Header"]
+[node name="ConditionsLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Header" unique_id=528163909]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -151,25 +137,24 @@ theme_override_font_sizes/font_size = 12
 text = "Problems"
 autowrap_mode = 3
 
-
-[node name="HeaderLine" type="HSeparator" parent="RightScreen/ScreenMargin/ScreenVBox"]
+[node name="HeaderLine" type="HSeparator" parent="RightScreen/ScreenMargin/ScreenVBox" unique_id=67955704]
 layout_mode = 2
 
-[node name="Views" type="MarginContainer" parent="RightScreen/ScreenMargin/ScreenVBox"]
+[node name="Views" type="MarginContainer" parent="RightScreen/ScreenMargin/ScreenVBox" unique_id=1706851565]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="DecisionsView" type="ScrollContainer" parent="RightScreen/ScreenMargin/ScreenVBox/Views"]
+[node name="DecisionsView" type="ScrollContainer" parent="RightScreen/ScreenMargin/ScreenVBox/Views" unique_id=132587599]
 unique_name_in_owner = true
 layout_mode = 2
 horizontal_scroll_mode = 0
 
-[node name="DecisionsVBox" type="VBoxContainer" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView"]
+[node name="DecisionsVBox" type="VBoxContainer" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView" unique_id=1586905563]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="SummaryLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox"]
+[node name="SummaryLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox" unique_id=164855305]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -178,7 +163,7 @@ theme_override_font_sizes/font_size = 13
 text = "Morning news"
 autowrap_mode = 3
 
-[node name="TitleLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox"]
+[node name="TitleLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox" unique_id=1377114640]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.93, 0.7, 1)
@@ -186,7 +171,7 @@ theme_override_font_sizes/font_size = 22
 text = "Event title"
 autowrap_mode = 3
 
-[node name="DescriptionLabel" type="RichTextLabel" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox"]
+[node name="DescriptionLabel" type="RichTextLabel" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox" unique_id=1378843001]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/normal_font_size = 15
@@ -196,7 +181,7 @@ text = "Description"
 fit_content = true
 scroll_active = false
 
-[node name="NasaFactLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox"]
+[node name="NasaFactLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox" unique_id=1349403788]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.85, 1, 1)
@@ -204,7 +189,7 @@ theme_override_font_sizes/font_size = 13
 text = "NASA fact"
 autowrap_mode = 3
 
-[node name="HintLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox"]
+[node name="HintLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox" unique_id=775744673]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -213,7 +198,7 @@ theme_override_font_sizes/font_size = 13
 text = "Hint from Earth"
 autowrap_mode = 3
 
-[node name="WaitingLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox"]
+[node name="WaitingLabel" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox" unique_id=1718566714]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.95, 1, 1)
@@ -221,7 +206,7 @@ theme_override_font_sizes/font_size = 15
 text = "The crew is choosing on their phones..."
 autowrap_mode = 3
 
-[node name="FeedbackLabel" type="RichTextLabel" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox"]
+[node name="FeedbackLabel" type="RichTextLabel" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox" unique_id=1532560419]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -232,52 +217,52 @@ text = "Feedback"
 fit_content = true
 scroll_active = false
 
-[node name="ContinueButton" type="Button" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox"]
+[node name="ContinueButton" type="Button" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox" unique_id=1721989252]
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 text = "Continue"
 
-[node name="EarthHelpButton" type="Button" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox"]
+[node name="EarthHelpButton" type="Button" parent="RightScreen/ScreenMargin/ScreenVBox/Views/DecisionsView/DecisionsVBox" unique_id=1935442003]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "Ask Earth for help"
 
-[node name="StatView" type="VBoxContainer" parent="RightScreen/ScreenMargin/ScreenVBox/Views"]
+[node name="StatView" type="VBoxContainer" parent="RightScreen/ScreenMargin/ScreenVBox/Views" unique_id=280209087]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="StatTitle" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/StatView"]
+[node name="StatTitle" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/StatView" unique_id=1937536553]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 26
 text = "HEALTH"
 
-[node name="StatValue" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/StatView"]
+[node name="StatValue" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/StatView" unique_id=1218312193]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 38
 text = "80 / 100"
 
-[node name="StatBar" type="ProgressBar" parent="RightScreen/ScreenMargin/ScreenVBox/Views/StatView"]
+[node name="StatBar" type="ProgressBar" parent="RightScreen/ScreenMargin/ScreenVBox/Views/StatView" unique_id=207596520]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 18)
 layout_mode = 2
 show_percentage = false
 
-[node name="StatDescription" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/StatView"]
+[node name="StatDescription" type="Label" parent="RightScreen/ScreenMargin/ScreenVBox/Views/StatView" unique_id=1739268163]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "Description"
 autowrap_mode = 3
 
-[node name="StatEffects" type="RichTextLabel" parent="RightScreen/ScreenMargin/ScreenVBox/Views/StatView"]
+[node name="StatEffects" type="RichTextLabel" parent="RightScreen/ScreenMargin/ScreenVBox/Views/StatView" unique_id=1476485055]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/normal_font_size = 14
@@ -287,7 +272,7 @@ text = "Right now"
 fit_content = true
 scroll_active = false
 
-[node name="StatHistory" type="RichTextLabel" parent="RightScreen/ScreenMargin/ScreenVBox/Views/StatView"]
+[node name="StatHistory" type="RichTextLabel" parent="RightScreen/ScreenMargin/ScreenVBox/Views/StatView" unique_id=74889304]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
@@ -296,13 +281,13 @@ theme_override_font_sizes/bold_font_size = 14
 bbcode_enabled = true
 text = "What changed it"
 
-[node name="GlossaryView" type="HBoxContainer" parent="RightScreen/ScreenMargin/ScreenVBox/Views"]
+[node name="GlossaryView" type="HBoxContainer" parent="RightScreen/ScreenMargin/ScreenVBox/Views" unique_id=700133772]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 script = ExtResource("3_glossary")
 
-[node name="Frame" type="TextureRect" parent="."]
+[node name="Frame" type="TextureRect" parent="." unique_id=1429332865]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -313,38 +298,31 @@ mouse_filter = 2
 texture = ExtResource("4_frame")
 expand_mode = 1
 
-[node name="CrewPanel" type="PanelContainer" parent="."]
+[node name="CrewPanel" type="PanelContainer" parent="." unique_id=859770511]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 0
 script = ExtResource("6_crew")
 
-[node name="HealthButton" type="Button" parent="."]
+[node name="HealthButton" type="Button" parent="." unique_id=680170917]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 0
 
-[node name="OxygenButton" type="Button" parent="."]
+[node name="OxygenButton" type="Button" parent="." unique_id=648080561]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 0
 
-[node name="EnergyButton" type="Button" parent="."]
+[node name="EnergyButton" type="Button" parent="." unique_id=1107667519]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 0
 
-[node name="IntegrityButton" type="Button" parent="."]
+[node name="IntegrityButton" type="Button" parent="." unique_id=726785595]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 0
 
-[node name="DecideButton" type="Button" parent="."]
+[node name="DecideButton" type="Button" parent="." unique_id=1053791032]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 0
 
-[node name="WordsButton" type="Button" parent="."]
+[node name="WordsButton" type="Button" parent="." unique_id=240832141]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 0
