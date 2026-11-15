@@ -1,124 +1,119 @@
-# NASA Hackathon 2026
+# Red Planet Survivors
 
-A cooperative, room-based game for the NASA Hackathon 2026. Each session has a **main Godot screen** (exported to the web) and up to **four web controllers** (mobile phones), connected by a **Node backend** that keeps rooms separate. Nginx serves the application, and Docker Compose runs it on a local network or on the Internet.
+**A cooperative Mars survival game built for NASA Hackathon 2026.**
 
-> **Core rule:** Godot is the authority on the game; Node is the authority on who is connected, which room they belong to, and their role. Phones only send choices; they never decide consequences.
+Players work together to keep a Mars base alive for 20 Sols. One shared Godot game screen presents the mission, while up to four players use their phones to join a room, choose roles and vote on decisions.
 
-## How it fits together
+[![Apache-2.0 License](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A522-green.svg)](https://nodejs.org/)
+
+> **Project:** Red Planet Survivors<br>
+> **Event:** NASA Hackathon 2026<br>
+> **Status:** Active development
+
+This is an independent hackathon project and is not an official NASA product or affiliated with or endorsed by NASA.
+
+## At a glance
+
+- **Cooperative gameplay:** discuss trade-offs and protect the crew, oxygen, energy and base integrity.
+- **Flexible player count:** play solo or with 1–4 mobile controllers.
+- **Real science inspiration:** events draw on NASA missions and planetary science.
+- **Room-based multiplayer:** a Node.js backend keeps game sessions and player identities separate.
+- **Web deployment:** play in a browser; Docker Compose and Nginx support local demos and Internet hosting.
+- **Offline-ready demo:** game assets are bundled locally, and NASA data features have fallbacks.
+
+## How it works
 
 ```text
- Main screen (Godot, web) ──┐
-                            ├── WebSocket /ws ──► Node backend ◄── Controllers (phones)
- Controllers (HTML/JS) ─────┘        (Nginx serves files, provides HTTPS and proxies requests)
+Godot game screen ─────────┐
+                           ├── WebSocket (/ws) ── Node.js backend
+Mobile web controllers ───┘                         │
+                                        Nginx serves the web apps
 ```
 
-## Project structure
+**Authority is deliberately split:** Godot owns game rules, event validation and consequences. Node owns rooms, connections and player roles. A phone sends only an `optionId`; it never calculates game outcomes. Player identity is derived from the registered connection, not trusted from a phone-supplied `playerId`.
 
-| Folder | Contents | Status |
-|---|---|---|
-| [`game/`](game/) | Godot 4.7 project (GDScript) | In development |
-| [`game_debug/`](game_debug/) | Separate Godot project for testing the connection with debug information | In development |
-| [`backend/`](backend/) | Node server (Express + `ws`) | Implemented, with tests |
-| [`controller/`](controller/) | Web controller (Vue 3 + Vite + Tailwind) | Implemented, with tests |
-| [`landing/`](landing/) | Home page `/` (Vue + Vite + Tailwind): what the game is and how to play | Implemented |
-| [`deploy/`](deploy/) | Nginx application image and local HTTPS proxy | Implemented |
-| [`scripts/`](scripts/) | `npm run dev` (backend + controller) | Development tools |
-| `dist/game/` | Godot web export | Generated on export and committed; re-export and commit it after changing `game/` |
-| `dist/game_debug/` | `game_debug` web export | Generated on export and committed |
-| `dist/controller/` | Controller build | Generated with `npm run build`; not committed |
-| [`docs/`](docs/) | Documentation in Spanish and English | See below |
-| `compose.yaml` | Main Internet deployment with Coolify | Implemented |
-| `compose.local.yaml`, `compose.dev.yaml` | Local deployment (game or debug screen) | Implemented |
+## Technology
 
-## Documentation
-
-The [English documentation index](docs/en/README.md) lists the available guides. Spanish originals remain in [`docs/`](docs/README.md).
-
-| Document | Audience | Contents |
-|---|---|---|
-| [`docs/en/protocol.md`](docs/en/protocol.md) | **Everyone** | Message contract, errors, sequences and acceptance criteria. **Source of truth**: update it first. |
-| [`docs/en/game-design.md`](docs/en/game-design.md) | **Everyone** | Game rules: Sol loop, roles, resources, objectives, NASA APIs and **open decisions**. |
-| [`docs/en/event-catalog.md`](docs/en/event-catalog.md) | Design / Godot | Events, options, effects and NASA sources. Numbers come from `game/Data/events.json`. |
-| [`docs/en/godot/architecture.md`](docs/en/godot/architecture.md) | Godot team | Managers, Sol state machine, models and `events.json` format. |
-| [`docs/en/godot/networking.md`](docs/en/godot/networking.md) | Godot team | Implementing the contract: `Net` autoload, lobby, QR, events, idempotency and voting. |
-| [`docs/en/controller.md`](docs/en/controller.md) | Web controller | Vue architecture, role routes (NFC), states, session recovery, styling and deployment. |
-| [`docs/en/backend.md`](docs/en/backend.md) | Backend | Technologies, structure, room model, reconnection and MVP limits. |
-| [`docs/en/deploy.md`](docs/en/deploy.md) | Deployment | Coolify Internet deployment, local deployment and common issues. |
-| [`docs/en/overview.md`](docs/en/overview.md) | Everyone | Summary of the implemented game. |
-| [`docs/en/crew-availability.md`](docs/en/crew-availability.md) | Game design / Godot | Crew task durations and empty-base rules. |
+| Area | Technologies |
+|---|---|
+| Game | Godot 4.7, GDScript |
+| Mobile controller | Vue 3, Vite, Tailwind CSS 4 |
+| Landing page | Vue 3, Vite, Tailwind CSS 4 |
+| Backend | Node.js 22+, Express, `ws` |
+| Hosting | Nginx, Docker Compose; Coolify for the primary Internet deployment |
 
 ## Get started
 
-Requirement: Node.js ≥ 22.
+### Requirements
 
-### Run the full development setup
+- Node.js **22 or later**
+- npm
+- Godot 4.7 to run or export the game screen
+- Docker Compose for containerized deployment
+
+### Run the development environment
+
+From the repository root:
 
 ```bash
-npm install      # also installs backend/ and controller/ dependencies
+npm install
 npm run dev
 ```
 
-This starts the **backend** and **controller** (Vite). The host creates the room in Godot; then open the controller on a phone on the same Wi-Fi at `http://<PC-IP>:5173/controller/?room=<code>`.
+This starts the backend, mobile controller and landing page. Open the URL printed in the terminal (normally `http://localhost:5173/`). The host creates a room in Godot; players can then join from phones on the same Wi-Fi using the displayed room code.
 
-The same terminal shows **all raw messages** passing through the backend (`←` received, `→` sent, and the connection involved):
+The development server serves the most recent Godot export at `/game/`. If port 3000 is unavailable, the backend selects another free port and the web apps are configured to use it.
+
+```bash
+npm test       # backend and controller tests
+npm run build  # build controller and landing page
+```
+
+### Run the game in Godot
+
+Open `game/project.godot` in Godot 4.7. To build the browser version, select **Project → Export → Web** and export to `dist/game/`.
+
+### Run with Docker
+
+Export the Godot project to web before building the image.
+
+```bash
+npm run docker:local  # local HTTPS deployment serving dist/game/
+npm run docker:dev    # local HTTPS deployment serving dist/game_debug/
+```
+
+The local HTTPS certificate is self-signed, so each browser will ask you to accept it on first use. Open the game and controllers using the host PC's **LAN IP address**, not `localhost`. For Internet deployment with Coolify, configure `compose.yaml` and the domain on the `web` service.
+
+## Project layout
 
 ```text
-[backend]    ← host K7MP     {"type":"start_game"}
-[backend]    → K7MP/p1       {"type":"game_started","players":[...]}
+game/                  Godot game
+game_debug/            Godot connection-testing project
+backend/               Node.js room/session server
+controller/            Mobile web controller
+landing/               Landing page and join/create entry point
+deploy/                Nginx and TLS Docker configuration
+scripts/               Root development launcher
+dist/game/             Committed Godot web export
+dist/game_debug/       Committed debug-game web export
+docs/                  Spanish documentation
+docs/en/               English documentation
+compose*.yaml          Docker Compose deployment configurations
 ```
 
-Disable message logging with `LOG_MESSAGES=0 npm run dev`.
+## Documentation
 
-Other commands from the repository root:
+- **English:** [Documentation index](docs/en/README.md)
+- **Español:** [Índice de documentación](docs/README.md)
+- [Message protocol](docs/en/protocol.md) — shared contract and source of truth for network changes
+- [Game design](docs/en/game-design.md) · [Event catalog](docs/en/event-catalog.md)
+- [Godot architecture](docs/en/godot/architecture.md) · [Godot networking](docs/en/godot/networking.md)
+- [Controller guide](docs/en/controller.md) · [Backend guide](docs/en/backend.md)
+- [Deployment guide](docs/en/deploy.md)
 
-```bash
-npm test              # backend and controller tests
-npm run build         # generates dist/controller/
-```
+## License and credits
 
-Ports are selected automatically. If port 3000 is occupied or reserved (Hyper-V/WSL may reserve it on Windows), the backend selects another port and the controller is configured to use it. If the phone cannot load the page, check that it is on the same network and that the Windows firewall allows Node on private networks.
+This project is distributed under the **Apache License 2.0**; see [`LICENSE`](LICENSE). Third-party fonts, images and other assets may have their own terms and attributions. For example, the landing-page Mars image is credited to **ESA/DLR/FU Berlin**, processed by **J. Cowart**. Please retain applicable third-party notices when using or redistributing those materials.
 
-### Run each part separately
-
-```bash
-cd backend && npm run dev       # :3000 (PORT=<other> to change it, LOG_MESSAGES=1 to log messages)
-cd controller && npm run dev    # :5173/controller/ (BACKEND_PORT=<backend port>)
-```
-
-### Godot
-
-Open `game/project.godot` with Godot 4.7. To export, choose **Project → Export → Web** (generates `dist/game/index.html`).
-
-### Docker deployment
-
-The main deployment is **on the Internet with Coolify**: create a *Docker Compose* resource using `compose.yaml` and configure the domain on the `web` service. Coolify provides HTTPS (Let's Encrypt).
-
-For local HTTPS with a self-signed certificate:
-
-```bash
-npm run docker:local   # the game (dist/game)
-npm run docker:dev     # the debug screen (dist/game_debug), with message logging
-```
-
-Locally, open the screen using the **LAN IP** (`https://192.168.1.50/game/`), not `localhost`; browsers will warn about the certificate the first time. See [`docs/en/deploy.md`](docs/en/deploy.md).
-
-## Routes
-
-| Route | Serves |
-|---|---|
-| `/` | Create a game or join with a code |
-| `/game/` | Main screen (Godot) |
-| `/controller/` · `/controller/?room=K7MP` | Web controller (the QR code preloads the room code) |
-| `/controller/engineer` · `/biologist` · `/doctor` · `/generalist` | Controller opening directly to a role (physical NFC board) |
-| `/ws` | WebSocket |
-| `/api/health` | Backend health check |
-
-## First milestone
-
-A real button on a phone changes text in Godot exported to the web. Then verify the acceptance criteria in [`docs/en/protocol.md`](docs/en/protocol.md#acceptance-criteria).
-
-## Conventions
-
-- Code and identifiers are in English. Game and controller text uses simple English for children aged 7–12. Documentation is available in Spanish and English.
-- Commits use [Conventional Commits](https://www.conventionalcommits.org/): `type(scope): description`. Example: `feat(backend): create in-memory rooms`.
-- Any message-contract change must be agreed in `docs/protocol.md` first.
+NASA names and mission references are used to identify scientific sources and inspirations; they do not imply NASA endorsement.
