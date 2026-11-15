@@ -65,7 +65,7 @@ INICIO DEL SOL ─► SELECCIÓN DEL EVENTO ─► DECISIÓN ─► RESOLUCIÓN 
 
 | Fase | Qué pasa |
 |---|---|
-| Inicio del Sol | Vuelven los tripulantes que terminan su tarea. Oxígeno −5 (hasta acabar MOXIE). Energía +10 (paneles solares). Se aplican los problemas activos y los efectos diferidos de hoy. |
+| Inicio del Sol | Vuelven los tripulantes que terminan su tarea. Cambios automáticos de las barras (oxígeno −4 hasta acabar MOXIE, energía +7, base −3, y desde el Sol 4 salud −6). Se aplican los problemas activos y los efectos diferidos de hoy. |
 | Selección | Se elige el evento del día (ver [orden de selección](#orden-de-selección)). Se desbloquean sus palabras del libro. |
 | Decisión | Se lee el evento y se elige una opción (clic o votación). |
 | Resolución | Se tira el éxito o fallo, se aplican los efectos y se muestra qué cambió. |
@@ -77,10 +77,12 @@ Cuatro barras de 0 a 100 que empiezan en **80**. Si cualquiera llega a **0**, se
 
 | Recurso | Id | Cambio automático cada Sol |
 |---|---|---|
-| Salud | `health` | — |
-| Oxígeno | `oxygen` | −5 hasta que MOXIE está al 100 % |
-| Energía | `energy` | +10 (paneles solares) |
-| Fuerza de la base | `integrity` | — |
+| Salud | `health` | −6 desde el Sol 4 (estrés y radiación) |
+| Oxígeno | `oxygen` | −4 hasta que MOXIE está al 100 % |
+| Energía | `energy` | +7 (paneles solares), +6 desde el Sol 8 (polvo) |
+| Fuerza de la base | `integrity` | −3 (viento y polvo) |
+
+Estas presiones reparten las derrotas entre las cuatro barras (ver [Equilibrio de la dificultad](juego/diseno.md#equilibrio-de-la-dificultad)): un jugador atento pierde un ~19 % por oxígeno, ~13 % por energía, ~9 % por salud y ~11 % por integridad, y gana ~47 %.
 
 ### Roles
 
@@ -114,7 +116,7 @@ Cada evento de `events.json` tiene un campo `kind` que decide cuándo puede sali
 | Tipo (`kind`) | Cuántos | Cuándo sale | Eventos |
 |---|---|---|---|
 | **Aleatorio** (`random`) | 5 | Cualquier Sol en que cumpla sus condiciones y haya pasado su enfriamiento. | Invernadero, dolor de barriga, tristeza espacial, rover atrapado, polvo en los paneles |
-| **Objetivo** (`objective`) | 8 | Forman cadenas: cada uno exige que el anterior esté hecho. Tienen prioridad sobre los aleatorios. | Sensores (fabricar, colocar, sensor con polvo), terremotos (con y sin aviso), MOXIE (fases 1, 2 y 3) |
+| **Objetivo** (`objective`) | 8 | Forman cadenas: cada uno exige que el anterior esté hecho. Tienen prioridad sobre los aleatorios. Los de MOXIE pesan el doble al elegir (`weight: 2`). | Sensores (fabricar, colocar, sensor con polvo), terremotos (con y sin aviso), MOXIE (fases 1, 2 y 3) |
 | **Relleno** (`filler`) | 1 | Solo si no hay ningún otro evento posible. | Sol tranquilo |
 | **Automático** (`auto`) | 1 | En cuanto se cumple su condición, antes que cualquier otro. | MOXIE funciona |
 | **Tiempo real** (`realtime`) | 1 | Si la NASA registra una llamarada solar fuerte reciente. Una vez por partida. | Alerta de tormenta solar |
@@ -172,6 +174,7 @@ Cada Sol se elige un solo evento, en este orden:
 | Efecto al aparecer | `on_start` | Terremoto sin aviso: Fuerza de la base −20 antes de decidir |
 | Cuenta atrás | `timer_seconds`, `timeout_option` | Terremotos: 20 s |
 | Ocupación | `away_sols`, `away_all` | El ingeniero, ocupado 2 Sols |
+| Peso al elegir | `weight` | Los eventos de MOXIE salen el doble de a menudo entre los objetivos |
 
 ---
 

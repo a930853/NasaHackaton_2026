@@ -120,9 +120,20 @@ func _begin_sol() -> void:
 		if loss > 0:
 			GameState.modify_stat("oxygen", -loss)
 			lines.append("Everyone breathed: Oxygen -%d." % loss)
-		if GameState.PASSIVE_ENERGY_GAIN > 0:
-			GameState.modify_stat("energy", GameState.PASSIVE_ENERGY_GAIN)
-			lines.append("Sunshine! The solar panels made Energy +%d." % GameState.PASSIVE_ENERGY_GAIN)
+		var gain: int = GameState.passive_energy_gain()
+		GameState.modify_stat("energy", gain)
+		if gain < GameState.PASSIVE_ENERGY_GAIN:
+			lines.append("The solar panels are dusty and made less power: Energy +%d." % gain)
+		else:
+			lines.append("Sunshine! The solar panels made Energy +%d." % gain)
+		var wear: int = GameState.passive_integrity_loss()
+		if wear > 0:
+			GameState.modify_stat("integrity", -wear)
+			lines.append("Wind and dust wore down the base: Base strength -%d." % wear)
+		var stress: int = GameState.passive_health_loss()
+		if stress > 0:
+			GameState.modify_stat("health", -stress)
+			lines.append("Living far from home is tiring: Health -%d." % stress)
 		lines.append_array(GameState.process_conditions())
 		lines.append_array(GameState.process_delayed_effects())
 		lines.append_array(_after_state_change())

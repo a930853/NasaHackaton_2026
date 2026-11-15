@@ -155,7 +155,7 @@ Hay que fabricar y colocar 3 sensores. **Si están colocados antes del Sol 20**,
 
 ## Objetivo: generador de oxígeno MOXIE
 
-MOXIE se monta en **3 fases** (33 + 33 + 34 %). Al llegar al 100 % desaparece el consumo pasivo de −5 Oxígeno por Sol.
+MOXIE se monta en **3 fases** (33 + 33 + 34 %). Al llegar al 100 % desaparece el consumo pasivo de Oxígeno por Sol (−4 hoy; ver [diseno.md](diseno.md#equilibrio-de-la-dificultad)).
 
 ### M1. Primera fase
 `moxie-phase-1` · **Condición:** objetivo activo · **Fuente NASA:** MOXIE, instrumento del rover Perseverance; en 2021 produjo oxígeno a partir del CO₂ marciano

@@ -45,10 +45,10 @@ const STAT_COLORS: Dictionary = {
 	"energy": Color(1.0, 0.66, 0.15), "integrity": Color(0.72, 0.42, 1.0),
 }
 const STAT_EXPLANATIONS: Dictionary = {
-	"health": "How well the crew feels. If it drops to 0, everyone is too sick to go on. Try to keep it above 50!",
+	"health": "How well the crew feels. Stress and space radiation tire everyone a little every Sol. At 0, everyone is too sick to go on. Try to keep it above 50!",
 	"oxygen": "The air you breathe. It goes down every Sol until the MOXIE machine works. At 0, the base has no air!",
-	"energy": "Power for the lights, the machines and the heat. Solar panels make some every Sol. At 0, everything shuts off!",
-	"integrity": "How strong the base walls are. Quakes, storms and bumps hurt it. At 0, the base falls apart!",
+	"energy": "Power for the lights, the machines and the heat. Solar panels make some every Sol, but dust makes them weaker. At 0, everything shuts off!",
+	"integrity": "How strong the base walls are. Wind and dust wear them down every Sol, and quakes and bumps hurt them. At 0, the base falls apart!",
 }
 const LOW_STAT_THRESHOLD: int = 30
 const LOW_STAT_COLOR: Color = Color(1.0, 0.3, 0.3)
@@ -424,8 +424,17 @@ func _stat_effects_text(stat: String) -> String:
 			lines.append("MOXIE is working: no air is lost each Sol.")
 		else:
 			lines.append("Everyone breathes: -%d each Sol until MOXIE works." % GameState.PASSIVE_OXYGEN_LOSS)
-	elif stat == "energy" and GameState.PASSIVE_ENERGY_GAIN > 0:
-		lines.append("Solar panels: +%d each Sol." % GameState.PASSIVE_ENERGY_GAIN)
+	elif stat == "energy":
+		lines.append("Solar panels: +%d each Sol%s." % [GameState.passive_energy_gain(),
+			" (dusty)" if GameState.current_sol >= GameState.DUSTY_PANELS_FROM_SOL else ""])
+	elif stat == "integrity":
+		lines.append("Wind and dust: -%d each Sol." % GameState.PASSIVE_INTEGRITY_LOSS)
+	elif stat == "health":
+		if GameState.current_sol >= GameState.HEALTH_LOSS_FROM_SOL:
+			lines.append("Stress and radiation: -%d each Sol." % GameState.PASSIVE_HEALTH_LOSS)
+		else:
+			lines.append("Everyone is fresh for now. From Sol %d, stress and radiation cost -%d each Sol." % [
+				GameState.HEALTH_LOSS_FROM_SOL, GameState.PASSIVE_HEALTH_LOSS])
 	for condition in GameState.active_conditions:
 		var effects: Dictionary = _next_condition_effects(condition)
 		if effects.has(stat):

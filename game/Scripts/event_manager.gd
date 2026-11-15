@@ -4,7 +4,7 @@ extends Node
 ##
 ## Campos de un evento: id, kind (random | objective | filler | auto | realtime),
 ## title, description, nasa_fact, terms, conditions, cooldown_sols, scheduled_only,
-## timer_seconds, timeout_option, on_start, earth_hint, options[].
+## timer_seconds, timeout_option, on_start, earth_hint, weight (peso al elegir entre objetivos), options[].
 ##
 ## Condiciones (todas opcionales, se combinan con AND):
 ##   min_sol / max_sol           rango de Sol actual
@@ -75,12 +75,26 @@ func pick_event() -> Dictionary:
 	var objectives: Array[Dictionary] = _valid_events("objective")
 	var randoms: Array[Dictionary] = _valid_events("random")
 	if not objectives.is_empty() and (randoms.is_empty() or randf() < OBJECTIVE_PRIORITY):
-		return objectives.pick_random()
+		return _weighted_pick(objectives)
 	if not randoms.is_empty():
 		return randoms.pick_random()
 
 	var fillers: Array[Dictionary] = _valid_events("filler")
 	return fillers.pick_random() if not fillers.is_empty() else {}
+
+
+## Elige uno al azar según el campo "weight" del evento (1 si no lo tiene). Los eventos de MOXIE
+## pesan el doble para que la fábrica de oxígeno no se retrase demasiado.
+func _weighted_pick(candidates: Array[Dictionary]) -> Dictionary:
+	var total: float = 0.0
+	for event in candidates:
+		total += float(event.get("weight", 1.0))
+	var roll: float = randf() * total
+	for event in candidates:
+		roll -= float(event.get("weight", 1.0))
+		if roll <= 0.0:
+			return event
+	return candidates[candidates.size() - 1]
 
 
 # --- Filtrado ---

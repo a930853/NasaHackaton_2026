@@ -32,7 +32,7 @@ INICIO DEL SOL ──► SELECCIÓN DEL EVENTO ──► DECISIÓN ──► RES
 
 | Fase | Qué pasa |
 |---|---|
-| **Inicio del Sol** | Avanza el contador de Sol. Consumo pasivo: −5 Oxígeno (hasta completar MOXIE). Se aplican los efectos de eventos persistentes y los efectos diferidos que tocan hoy. Se consulta la API de clima espacial: si hay llamarada, salta el [evento en tiempo real](#evento-en-tiempo-real-alerta-solar). |
+| **Inicio del Sol** | Avanza el contador de Sol. Cambios automáticos de las barras (ver [Equilibrio](#equilibrio-de-la-dificultad)): Oxígeno −4 (hasta completar MOXIE), Energía +7 (+6 desde el Sol 8), Fuerza de la base −3 y, desde el Sol 4, Salud −6. Se aplican los efectos de eventos persistentes y los efectos diferidos que tocan hoy. Se consulta la API de clima espacial: si hay llamarada, salta el [evento en tiempo real](#evento-en-tiempo-real-alerta-solar). |
 | **Selección del evento** | Se elige un evento válido según sus condiciones (cadenas de objetivos o aleatorios). Se desbloquean sus términos en el [Libro de tecnicismos](#libro-de-tecnicismos). |
 | **Decisión** | Se muestran título, descripción, dato NASA y opciones. Los jugadores votan o decide el rol indicado. Se puede [pedir ayuda a la Tierra](#pedir-ayuda-a-la-tierra). |
 | **Resolución** | Se aplican los efectos inmediatos, se programan los diferidos y se muestra el texto de resultado. |
@@ -58,10 +58,36 @@ Cuatro barras de 0 a 100. Empiezan en 80. **Si cualquiera llega a 0, se pierde l
 
 | Recurso | Id | Notas |
 |---|---|---|
-| Energía | `energy` | Baterías y paneles solares. |
-| Oxígeno | `oxygen` | Pierde **5 por Sol** de forma pasiva hasta que MOXIE está terminado. |
+| Energía | `energy` | Baterías y paneles solares. Gana **+7 por Sol** (+6 desde el Sol 8, cuando el polvo cubre los paneles). |
+| Oxígeno | `oxygen` | Pierde **4 por Sol** de forma pasiva hasta que MOXIE está terminado. |
 | Integridad | `integrity` | Estado de la estructura y los equipos. |
 | Salud | `health` | Salud de la tripulación. Objetivo extra: no bajar nunca del 50 %. |
+
+### Equilibrio de la dificultad
+
+Las barras no solo cambian por las decisiones: cada una tiene una **presión automática** al amanecer, para que las derrotas se repartan entre las cuatro y no solo por oxígeno. Las cifras son constantes de `GameState` (`PASSIVE_*`, `*_FROM_SOL`) y el peso de los eventos de MOXIE es el campo `weight` de `events.json` (los eventos de MOXIE pesan **2** frente a 1 al elegir entre objetivos).
+
+| Barra | Qué pasa cada Sol | Por qué |
+|---|---|---|
+| Oxígeno | −4, hasta que MOXIE está al 100 % | Respirar. Es la carrera contra el reloj del juego. |
+| Energía | +7 (+6 desde el Sol 8) | Paneles solares que se llenan de polvo. |
+| Fuerza de la base | −3 | El viento y el polvo desgastan los muros. |
+| Salud | −6 desde el Sol 4 | Estrés y radiación; los primeros Sols la tripulación está descansada. |
+
+**Por qué se cambió:** con las reglas anteriores (oxígeno −5 y nada más), un jugador atento perdía el 100 % de sus derrotas por oxígeno: 95 puntos de pérdida en 20 Sols contra 80 de partida, así que o se terminaba MOXIE a tiempo o se perdía. Salud e integridad no mataban nunca.
+
+**Cómo se midió:** el simulador `tools/balance_sim.py` repite las reglas del juego (se comprobó que el juego real y el simulador reparten las derrotas igual) y se ejecuta con `python tools/balance_sim.py`. Hay dos jugadores simulados: el **atento** (mira costes y objetivos y protege la barra más baja) y el **al azar**. Una persona real está entre los dos.
+
+| Jugador | Gana | Pierde por oxígeno | energía | salud | integridad |
+|---|---|---|---|---|---|
+| Atento, antes | 41 % | 59 % | 0 % | 0 % | 0 % |
+| Atento, ahora | 47 % | 19 % | 13 % | 9 % | 11 % |
+| Al azar, antes | 6 % | 94 % | 0 % | 0 % | 0 % |
+| Al azar, ahora | 3 % | 55 % | 3 % | 33 % | 7 % |
+
+Para el jugador atento el reparto es parejo; para quien elige sin pensar sigue pesando el oxígeno y la salud, que es lo esperable. MOXIE se completa en el 82 % de las partidas atentas (antes el 51 %).
+
+**Cómo retocarlo:** subir `PASSIVE_OXYGEN_LOSS` o bajar el peso de MOXIE endurece la partida y la carga hacia el oxígeno; `PASSIVE_HEALTH_LOSS` y `HEALTH_LOSS_FROM_SOL` son muy sensibles (pasar de −5 a −6 multiplica por 3 las derrotas por salud); bajar `PASSIVE_ENERGY_GAIN` carga la energía. Tras cambiar algo, repetir `tools/balance_sim.py`, que usa las mismas constantes (están copiadas en su clase `Cfg`).
 
 ## Victoria y derrota
 
